@@ -17,13 +17,13 @@ def look_at_table(
     elif table_type == "dimension":
         df = pd.read_parquet(DIMENSIONS_DIR / table_id / f"table_{lang}.parquet")
     else:
-        raise ValueError(f"Invalid table type: {table_type}")
+        print(f"Invalid table type: {table_type}")
     return df_preview(df, name=table_id)
 
 
 def read_dimension_description(table_id: str) -> pd.DataFrame:
     with open(DIMENSIONS_DIR / table_id / "table_info_da.md", "r") as f:
-        return f.read()
+        return drop_first_last(f.read())
 
 
 def df_preview(df: pd.DataFrame, max_rows: int = 10, name: str = "df") -> str:
@@ -41,3 +41,8 @@ def df_preview(df: pd.DataFrame, max_rows: int = 10, name: str = "df") -> str:
         return csv_string
     else:
         return f"{name}.head({n_rows})\n" + csv_string
+
+
+def drop_first_last(text: str) -> str:
+    lines = text.splitlines()
+    return "\n".join(lines[1:-1]) if len(lines) > 2 else ""

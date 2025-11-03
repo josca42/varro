@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 import pickle
-from typing import List, Optional, Sequence
-
+from typing import List, Optional, Sequence, Literal
+from pathlib import Path
 import networkx as nx
-from numpy import True_
 import typer
 from pydantic_ai import format_as_xml
+import json
 
 # --- Load data (as provided) ---
 G = nx.read_gml("/root/varro/data/subjects_graph_da.gml")
 with open("/root/varro/data/tables_info_da.pkl", "rb") as f:
     tables_info = pickle.load(f)
+TABLES_INFO_DIR = Path("/root/varro/data/tables_info_raw_da")
 
 ROOT_NAME = "DST"
 
@@ -183,7 +184,7 @@ def browse(
 
 # --- Get XML for a list of table IDs ---
 @app.command("tables-info")
-def tables_xml(
+def tables_info(
     table_ids: List[str] = typer.Argument(
         ..., help="One or more table IDs, e.g. FOLK1A FOLK1AM"
     ),
@@ -191,6 +192,15 @@ def tables_xml(
     payload = {"tables": {tid: tables_info[tid] for tid in table_ids}}
     xml = format_as_xml(payload)
     typer.echo(xml)
+
+
+@app.command("table-info")
+def table_info_json(
+    table_id: str = typer.Argument(..., help="Table ID, e.g. FOLK1A"),
+):
+    with open(TABLES_INFO_DIR / f"{table_id}.pkl", "rb") as f:
+        table_info = pickle.load(f)
+    typer.echo(json.dumps(table_info, indent=2))
 
 
 if __name__ == "__main__":

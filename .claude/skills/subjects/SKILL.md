@@ -52,8 +52,14 @@ python scripts/subjects.py browse "Befolkningstal" --parents
 
 ## Table metadata
 
-Use `tables-info` to output XML metadata for one or more table IDs:
+Use `tables-info` to output XML metadata for one or more table IDs.
 
 ```bash
 python scripts/subjects.py tables-info FOLK1A FOLK1AM
+```
+
+Use `table-info` to get all metadata for a table id. Much more verbose than `tables-info`. Usually prefer `tables-info` that gives you a curated subset of metadata, whereas `table-info` gives you all the metadata.
+
+```bash
+python scripts/subjects.py table-info FOLK1A
 ```
