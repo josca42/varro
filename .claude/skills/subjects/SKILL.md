@@ -5,9 +5,7 @@ description: Explore Danmarks Statistik’s subject hierarchy and related tables
 
 # subjects CLI
 
-This CLI lets you explore Danmarks Statistik’s subject hierarchy and related tables
-
-Run cli from project root in order to use python venv
+This CLI lets you explore Danmarks Statistik’s subject hierarchy and related tables. Only fact tables are included in the subject hierarchy
 
 ```bash
 python scripts/subjects.py  

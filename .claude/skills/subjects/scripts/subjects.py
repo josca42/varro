@@ -8,10 +8,11 @@ from pydantic_ai import format_as_xml
 import json
 
 # --- Load data (as provided) ---
-G = nx.read_gml("/root/varro/data/subjects_graph_da.gml")
-with open("/root/varro/data/tables_info_da.pkl", "rb") as f:
+METADATA_DIR = Path("/mnt/HC_Volume_103849439/metadata")
+G = nx.read_gml(METADATA_DIR / "subjects_graph_da.gml")
+with open(METADATA_DIR / "tables_info_da.pkl", "rb") as f:
     tables_info = pickle.load(f)
-TABLES_INFO_DIR = Path("/root/varro/data/tables_info_raw_da")
+TABLES_INFO_DIR = METADATA_DIR / "tables_info_raw_da"
 
 ROOT_NAME = "DST"
 
@@ -184,7 +185,7 @@ def browse(
 
 # --- Get XML for a list of table IDs ---
 @app.command("tables-info")
-def tables_info(
+def tables_info_cmd(
     table_ids: List[str] = typer.Argument(
         ..., help="One or more table IDs, e.g. FOLK1A FOLK1AM"
     ),
