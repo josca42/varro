@@ -13,8 +13,8 @@ Use the following folder as working directory: agents
 When doing a task check if there are relevant notes in agents/notes
 
 # Goal
-The goal of this repo is move data from denmarks statistics in a local postgres database. The table is downloaded to disk. The data is organised as fact tables and dimension tables.
-The current task is now to insert the tables into the postgres database and do it such that the database has a simple schema that is easy to query. Part of the process is to create documentation and helper tools that makes it easy for an experienced data analyst, who has never seen the data before to explore the data and create the relevant sql queries for performing an analysis.
+The goal of this repo is to create a better version denmark statistics "statistikbank" that can be used by AI analyst and human analysts alike. 
+All the data from denmark statistics is currently downloaded to disk. The data is organised as fact tables and dimension tables.
 
 # Assistants
 You have access to a research assistant that can analyze the data for you. The assistant analyzes the data using the tools in the skills folder .claude/skills .
