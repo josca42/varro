@@ -5,21 +5,11 @@ from typing import Literal, Optional
 import pandas as pd
 import typer
 
-# ---------------------------------------------------------------------
-# Data roots
-# ---------------------------------------------------------------------
 FACTS_DIR = Path("/mnt/HC_Volume_103849439/statbank_tables")
 DIMENSIONS_DIR = Path("/mnt/HC_Volume_103849439/mapping_tables")
-
-app = typer.Typer(
-    add_completion=False,
-    help="Preview StatBank fact/dimension tables and read dimension descriptions.",
-)
+DIM_COLS = ["KODE", "NIVEAU", "TITEL"]
 
 
-# ---------------------------------------------------------------------
-# Core utilities (kept compatible with existing imports)
-# ---------------------------------------------------------------------
 def look_at_table(
     table_id: str,
     table_type: Literal["fact", "dimension"],
@@ -38,7 +28,11 @@ def look_at_table(
         raise FileNotFoundError(f"Parquet not found: {path}")
 
     df = pd.read_parquet(path)
-    return df_preview(df, max_rows=max_rows, name=table_id)
+    if table_type == "dimension":
+        df = df[DIM_COLS].copy()
+    dtypes_str = df_dtypes(df)
+    preview_str = df_preview(df, max_rows=max_rows, name=table_id)
+    return f"{dtypes_str}\n\n{preview_str}"
 
 
 def read_dimension_description(table_id: str, lang: Literal["da", "en"] = "da") -> str:
@@ -80,26 +74,19 @@ def drop_first_last(text: str) -> str:
     return "\n".join(lines[1:-1]) if len(lines) > 2 else ""
 
 
-# ---------------------------------------------------------------------
-# Extra helpers for CLI
-# ---------------------------------------------------------------------
-def _dimension_parquet_path(table_id: str, lang: Literal["da", "en"]) -> Path:
-    return DIMENSIONS_DIR / table_id / f"table_{lang}.parquet"
-
-
-def _fact_parquet_path(table_id: str) -> Path:
-    return FACTS_DIR / f"{table_id}.parquet"
-
-
-def _format_schema(df: pd.DataFrame) -> str:
+def df_dtypes(df: pd.DataFrame) -> str:
     """Return a pipe-separated 'column|dtype' listing."""
     parts = [f"{col}|{dtype}" for col, dtype in df.dtypes.items()]
     return "column|dtype\n" + "\n".join(parts)
 
 
-# ---------------------------------------------------------------------
-# CLI Commands
-# ---------------------------------------------------------------------
+# --- CLI Commands ---
+app = typer.Typer(
+    add_completion=False,
+    help="Preview StatBank fact/dimension tables and read dimension descriptions.",
+)
+
+
 @app.command("preview")
 def cli_preview(
     table_id: str = typer.Argument(
@@ -125,33 +112,6 @@ def cli_preview(
     typer.echo(text)
 
 
-@app.command("schema")
-def cli_schema(
-    table_id: str = typer.Argument(..., help="Table ID."),
-    table_type: Literal["fact", "dimension"] = typer.Option(
-        ..., "--type", "-t", help="Which kind of table to read."
-    ),
-    lang: Literal["da", "en"] = typer.Option(
-        "da", help="Language for dimension parquet."
-    ),
-):
-    """Show column names and dtypes for a parquet table."""
-    try:
-        if table_type == "fact":
-            path = _fact_parquet_path(table_id)
-        else:
-            path = _dimension_parquet_path(table_id, lang)
-
-        if not path.exists():
-            raise FileNotFoundError(path)
-
-        df = pd.read_parquet(path)
-        typer.echo(_format_schema(df))
-    except Exception as e:
-        typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
-        raise typer.Exit(1)
-
-
 @app.command("describe")
 def cli_describe(
     table_id: str = typer.Argument(..., help="Dimension table folder name."),
@@ -166,25 +126,6 @@ def cli_describe(
         typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(1)
     typer.echo(text)
-
-
-@app.command("path")
-def cli_path(
-    table_id: str = typer.Argument(..., help="Table ID."),
-    table_type: Literal["fact", "dimension"] = typer.Option(
-        ..., "--type", "-t", help="Which kind of table path to show."
-    ),
-    lang: Literal["da", "en"] = typer.Option(
-        "da", help="Language for dimension parquet."
-    ),
-):
-    """Show the underlying parquet path that would be used."""
-    path = (
-        _fact_parquet_path(table_id)
-        if table_type == "fact"
-        else _dimension_parquet_path(table_id, lang)
-    )
-    typer.echo(str(path.resolve()))
 
 
 @app.command("list")

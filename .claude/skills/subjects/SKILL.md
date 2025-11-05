@@ -56,8 +56,8 @@ Use `tables-info` to output XML metadata for one or more table IDs.
 python scripts/subjects.py tables-info FOLK1A FOLK1AM
 ```
 
-Use `table-info` to get all metadata for a table id. Much more verbose than `tables-info`. Usually prefer `tables-info` that gives you a curated subset of metadata, whereas `table-info` gives you all the metadata.
+Use `--verbose` og `-v` to get all metadata for a table id as json. Much more verbose. Usually prefer not to use. Only works with a single table id
 
 ```bash
-python scripts/subjects.py table-info FOLK1A
+python scripts/subjects.py table-info FOLK1A -v
 ```

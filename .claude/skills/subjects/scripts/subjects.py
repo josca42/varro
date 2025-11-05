@@ -189,19 +189,17 @@ def tables_info_cmd(
     table_ids: List[str] = typer.Argument(
         ..., help="One or more table IDs, e.g. FOLK1A FOLK1AM"
     ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
 ):
-    payload = {"tables": {tid: tables_info[tid] for tid in table_ids}}
-    xml = format_as_xml(payload)
-    typer.echo(xml)
-
-
-@app.command("table-info")
-def table_info_json(
-    table_id: str = typer.Argument(..., help="Table ID, e.g. FOLK1A"),
-):
-    with open(TABLES_INFO_DIR / f"{table_id}.pkl", "rb") as f:
-        table_info = pickle.load(f)
-    typer.echo(json.dumps(table_info, indent=2))
+    if verbose:
+        assert len(table_ids) == 1, "Verbose output only supports one table ID"
+        with open(TABLES_INFO_DIR / f"{table_ids[0]}.pkl", "rb") as f:
+            table_info = pickle.load(f)
+        typer.echo(json.dumps(table_info, indent=2))
+    else:
+        payload = {"tables": {tid: tables_info[tid] for tid in table_ids}}
+        xml = format_as_xml(payload)
+        typer.echo(xml)
 
 
 if __name__ == "__main__":
