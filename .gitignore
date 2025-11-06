@@ -6,8 +6,11 @@ dist/
 wheels/
 *.egg-info
 .env
+.env*
 # Virtual environments
 .venv
 /data
 /notebooks
 /agents
+
+

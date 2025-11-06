@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 from pathlib import Path
 from typing import Literal, Optional
-
 import pandas as pd
 import typer
+from varro.disk_to_db.process_fact_tables import process_fact_table
+from varro.utils import df_preview
 
 FACTS_DIR = Path("/mnt/HC_Volume_103849439/statbank_tables")
 DIMENSIONS_DIR = Path("/mnt/HC_Volume_103849439/mapping_tables")
@@ -15,6 +16,7 @@ def look_at_table(
     table_type: Literal["fact", "dimension"],
     lang: Literal["da", "en"] = "da",
     max_rows: int = 10,
+    processed: bool = False,
 ) -> str:
     """Load a parquet table and return a small, pipe-separated preview as text."""
     if table_type == "fact":
@@ -28,8 +30,11 @@ def look_at_table(
         raise FileNotFoundError(f"Parquet not found: {path}")
 
     df = pd.read_parquet(path)
+    if processed:
+        df = process_fact_table(df)
     if table_type == "dimension":
         df = df[DIM_COLS].copy()
+
     dtypes_str = df_dtypes(df)
     preview_str = df_preview(df, max_rows=max_rows, name=table_id)
     return f"{dtypes_str}\n\n{preview_str}"
@@ -50,23 +55,6 @@ def read_dimension_description(table_id: str, lang: Literal["da", "en"] = "da") 
 
     with open(md_path, "r", encoding="utf-8") as f:
         return drop_first_last(f.read())
-
-
-def df_preview(df: pd.DataFrame, max_rows: int = 10, name: str = "df") -> str:
-    """Generate a pipe-separated DataFrame preview."""
-    if df.index.name:
-        df = df.reset_index()
-    n_rows = min(max_rows, len(df))
-    csv_string = df.head(n_rows).to_csv(
-        sep="|",
-        index=False,
-        float_format="%.3f",
-        na_rep="N/A",
-    )
-    if n_rows == len(df):
-        return csv_string
-    else:
-        return f"{name}.head({n_rows})\n" + csv_string
 
 
 def drop_first_last(text: str) -> str:
@@ -101,6 +89,9 @@ def cli_preview(
     ),
     rows: int = typer.Option(
         10, "--rows", "-n", min=1, help="Number of rows to preview."
+    ),
+    processed: bool = typer.Option(
+        False, "--processed", "-p", help="Process the table before previewing."
     ),
 ):
     """Print a small preview of a fact or dimension parquet table."""
