@@ -10,11 +10,13 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28.1",
+    "jinja2>=3.1.6",
     "matplotlib>=3.10.7",
     "networkx>=3.5",
     "numpy>=2.3.3",
     "pandas>=2.3.3",
     "plotly>=6.3.1",
+    "psycopg[binary]>=3.2.12",
     "pyarrow>=22.0.0",
     "pydantic-ai>=1.7.0",
     "sqlmodel>=0.0.27",

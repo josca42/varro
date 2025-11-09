@@ -59,5 +59,5 @@ python scripts/subjects.py tables-info FOLK1A FOLK1AM
 Use `--verbose` og `-v` to get all metadata for a table id as json. Much more verbose. Usually prefer not to use. Only works with a single table id
 
 ```bash
-python scripts/subjects.py table-info FOLK1A -v
+python scripts/subjects.py tables-info FOLK1A -v
 ```

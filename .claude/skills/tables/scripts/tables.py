@@ -3,12 +3,18 @@ from pathlib import Path
 from typing import Literal, Optional
 import pandas as pd
 import typer
-from varro.disk_to_db.process_fact_tables import process_fact_table
+from varro.disk_to_db.process_tables import (
+    process_fact_table,
+    check_if_dim_fits_fact_col,
+    process_kode_col,
+)
 from varro.utils import df_preview
+import json
 
 FACTS_DIR = Path("/mnt/HC_Volume_103849439/statbank_tables")
 DIMENSIONS_DIR = Path("/mnt/HC_Volume_103849439/mapping_tables")
 DIM_COLS = ["KODE", "NIVEAU", "TITEL"]
+DIMENSION_LINKS_DIR = Path("/mnt/HC_Volume_103849439/dimension_links")
 
 
 def look_at_table(
@@ -34,6 +40,7 @@ def look_at_table(
         df = process_fact_table(df)
     if table_type == "dimension":
         df = df[DIM_COLS].copy()
+        df = process_kode_col(df)
 
     dtypes_str = df_dtypes(df)
     preview_str = df_preview(df, max_rows=max_rows, name=table_id)
@@ -123,6 +130,37 @@ def cli_describe(
 def cli_list():
     """List all dimension tables."""
     typer.echo(", ".join([fp.stem for fp in DIMENSIONS_DIR.glob("*")]))
+
+
+@app.command("save-dimension-links")
+def cli_save_dimension_links(
+    table_id: str = typer.Argument(..., help="Table ID."),
+    dimension_links: str = typer.Option(..., help="Dimension links as JSON string."),
+):
+    links_data = json.loads(dimension_links)
+    DIMENSION_LINKS_DIR.mkdir(parents=True, exist_ok=True)
+    with open(DIMENSION_LINKS_DIR / f"{table_id}.json", "w") as f:
+        json.dump(links_data, f, indent=2)
+    typer.echo(f"Dimension links saved to {DIMENSION_LINKS_DIR / f'{table_id}.json'}")
+
+
+@app.command("check-dimension-links")
+def cli_check_dimension_links(
+    fact_table_id: str = typer.Argument(..., help="Fact table ID."),
+    dim_table_id: str = typer.Option(..., help="Dimension table ID."),
+    fact_col: str = typer.Option(..., help="Fact column name."),
+):
+    df_fact = pd.read_parquet(FACTS_DIR / f"{fact_table_id}.parquet")
+    df_dim = pd.read_parquet(
+        DIMENSIONS_DIR / f"{dim_table_id}" / "table_da.parquet"
+    ).rename(columns={"KODE": "kode"})
+    try:
+        result = check_if_dim_fits_fact_col(df_fact, df_dim, fact_col)
+        typer.echo(
+            f"Values in fact column {fact_col} are in dimension table {dim_table_id}"
+        )
+    except ValueError as e:
+        typer.echo(e)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,95 @@
+Your task is to discover which columns in a **fact table** should link to which **dimension tables**, validate those links, and persist them to disk in the **exact JSON format** required by our tables CLI.
+
+You are taksed with doing so for the following fact tables: {{ table_ids }}.
+
+save potential notes about the process of creating the links in the following file: /mnt/HC_Volume_103849439/dimension_links/notes/{{ subject_name }}.md
+
+## Inputs
+
+* Local CLIs:
+
+  * Tables skill: `python .claude/skills/tables/scripts/tables.py`
+  * Subjects skill: `python .claude/skills/subjects/scripts/subjects.py`
+* Reference guide: `agents/tasks/fact_dimension_linking/fact_to_dimension_linking_guide.md`
+
+## Output (strict)
+
+For each fact table, produce a JSON array of one-key objects:
+
+```json
+[
+  {"OMRÅDE": "nuts"}
+]
+```
+
+If no columns are likely to link to a dimension, output `[]`.
+
+Then **save** the JSON using:
+
+```bash
+python .claude/skills/tables/scripts/tables.py save-dimension-links <TABLE_ID> \
+  --dimension-links '<JSON_ARRAY>'
+```
+
+Notes:
+
+* The option name is `--dimension-links` (hyphenated).
+* Wrap the JSON in single quotes for shell safety.
+* Overwrite existing files if present.
+
+## What counts as a likely link?
+
+Use the guide /root/varro/agents/tasks/fact_dimension_linking/fact_to_dimension_linking_guide.md plus CLI-derived evidence. Prioritize **evidence over guesswork**.
+Always start by reading the guide and then use the CLI to gather evidence.
+
+
+## Save
+
+For each table processed:
+
+```bash
+python .claude/skills/tables/scripts/tables.py save-dimension-links <TABLE_ID> \
+  --dimension-links '<THE_JSON_ARRAY>'
+```
+
+The CLI will write:
+
+```
+/mnt/HC_Volume_103849439/dimension_links/<TABLE_ID>.json
+```
+
+## Example session (illustrative)
+
+1. Inspect fact:
+
+```bash
+python .claude/skills/tables/scripts/tables.py preview FOLK1A --type fact --rows 20
+```
+
+2. Check metadata:
+
+```bash
+python .claude/skills/subjects/scripts/subjects.py tables-info FOLK1A
+```
+
+3. Validate candidates (if flat parquets exist).
+**IMPORTANT**: Sometimes there is a likely match but there is a small mismatch between the fact table and the dimension table. It could be that the fact column has 4990 and the dimension table has "49.90" or the fact column has "11" and the dimension table has "HC1.1". If this is the case then create the link between the fact column and the dimension anyway.
+:
+
+```bash
+python .claude/skills/tables/scripts/tables.py check-dimension-links FOLK1A --dim-table-id nuts --fact-col OMRÅDE
+```
+
+4. Save:
+
+```bash
+python .claude/skills/tables/scripts/tables.py save-dimension-links FOLK1A \
+  --dimension-links '[{"OMRÅDE":"nuts"}]'
+```
+
+## Final behavior
+
+* If links exist: save them as above and print the CLI’s confirmation.
+* If no links: save `[]`.
+
+* Dimension tables are stored as parquet files with the following structure: /mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_da.parquet
