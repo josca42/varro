@@ -17,6 +17,7 @@ def process_fact_table(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_dim_table(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_column_names(df)
+    df = process_kode_col(df)
     df = df[DIM_COLS].copy()
     return df
 
@@ -24,13 +25,15 @@ def process_dim_table(df: pd.DataFrame) -> pd.DataFrame:
 def process_kode_col(df: pd.DataFrame) -> pd.DataFrame:
     if df["KODE"].dtype == "object":
         try:
-            n_unique = df["KODE"].nunique()
-            kode_as_int = df["KODE"].str.replace(".", "").astype(int)
-            if n_unique == kode_as_int.nunique():
-                df["KODE"] = kode_as_int
+            df["KODE_INT"] = df["KODE"].str.replace(".", "").astype(int)
+            for group, df_group in df.groupby("NIVEAU"):
+                if df_group["KODE"].nunique() != df_group["KODE_INT"].nunique():
+                    raise ValueError(f"Kode column is not unique for level {group}")
+            df["KODE"] = df["KODE_INT"]
+            return df
         except ValueError:
             pass
-    return df
+    return df[["KODE", "NIVEAU", "TITEL"]]
 
 
 def process_tid_col(df: pd.DataFrame) -> pd.DataFrame:

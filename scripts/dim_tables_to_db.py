@@ -24,3 +24,8 @@ for dir in DIMENSIONS_DIR.iterdir():
 
     # TODO: Add dimension links
     emit_and_apply_dimension(df, dir.stem, dimension_links=...)
+
+
+def db_codes_preprocessing(df: pd.DataFrame) -> pd.DataFrame:
+    df = df[df["niveau"] != 1].copy()
+    return df
