@@ -67,8 +67,8 @@ def dump_cat_table_csv(url: str, table_dir: str, lang: Literal["da", "en"]):
             r.raise_for_status()
             txt = r.text
             # Some endpoints return an HTML page with a manual redirect link
-            if "Object moved" in txt and "href=\"/Site/Dst/SingleFiles/" in txt:
-                m = re.search(r'href=\"(\/Site\/Dst\/SingleFiles\/[^\"]+)', txt)
+            if "Object moved" in txt and 'href="/Site/Dst/SingleFiles/' in txt:
+                m = re.search(r"href=\"(\/Site\/Dst\/SingleFiles\/[^\"]+)", txt)
                 if m:
                     new_url = "https://www.dst.dk" + m.group(1)
                     r = client.get(new_url)

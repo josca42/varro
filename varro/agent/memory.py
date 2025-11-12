@@ -12,14 +12,14 @@ from anthropic.types.beta import (
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, List, Literal
 import pandas as pd
-from mojo.agent.jupyter_kernel import JupyterCodeExecutor
-from mojo.db.models.user import User
+from varro.agent.jupyter_kernel import JupyterCodeExecutor
+from varro.db.models.user import User
 
-from mojo.db.crud.file import CrudMemoryFile
-from mojo.db.db import engine
+from varro.db.crud.memory import CrudMemory
+from varro.db.db import engine
 from pathlib import Path, PurePosixPath
 from collections import defaultdict
-from mojo.db import crud, models
+from varro.db import crud
 
 
 @dataclass
@@ -33,7 +33,6 @@ class SessionStore:
     figs: Dict[str, Any] = field(default_factory=dict)
     dfs: Dict[str, pd.DataFrame] = field(default_factory=dict)
     dfs_added_to_notebook: List[str] = field(default_factory=list)
-    notebook_cells: List[str] = field(default_factory=list)
     cached_prompts: Dict[str, str] = field(default_factory=dict)
 
     def data_in_store(self) -> str:
@@ -45,7 +44,7 @@ class SessionStore:
 class Memory(BetaAbstractMemoryTool):
     def __init__(self, user_id: int):
         super().__init__()
-        self.crud = CrudMemoryFile(engine, user_id)
+        self.crud = CrudMemory(engine, user_id)
         self.user_id = user_id
         self.has_pension_plans = crud.pension_plan.exists(user_id)
 
