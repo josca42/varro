@@ -56,7 +56,9 @@ def infer_pg_type(colname: str, s: pd.Series) -> str:
         return "timestamp without time zone"
 
     # ALDER as textual range -> int4range
-    if colname == "alder" and all(looks_like_range_text(str(x)) for x in vals_sample):
+    if colname in ["alder", "tid"] and all(
+        looks_like_range_text(str(x)) for x in vals_sample
+    ):
         return "int4range"
 
     # object that is all ints
@@ -153,8 +155,7 @@ def create_dimension_links_stmts(
         return [], [], []
     fk_stmts, comment_stmts, fk_names = [], [], []
     for col, ref in dimension_links.items():
-        dim_schema, dim_table = parse_dim_ref(ref)
-        dim_fq = fq_name(dim_schema, dim_table)
+        dim_fq = fq_name("dim", ref)
         if col_types.get(col, "") == "int4range":
             if add_comments:
                 txt = f"Range column; conceptually maps to {dim_fq}."
@@ -162,7 +163,7 @@ def create_dimension_links_stmts(
                     f"COMMENT ON COLUMN {fq_name(schema, table)}.{col} IS {sql_literal(txt)};"
                 )
             continue
-        fkname = idx_name(schema, f"{table}_{col}_{dim_table}", "kode", "fk")
+        fkname = idx_name(schema, f"{table}_{col}_{ref}", "kode", "fk")
         fk_stmts.append(
             f"ALTER TABLE {fq_name(schema, table)} "
             f"ADD CONSTRAINT {fkname} FOREIGN KEY ({col}) "

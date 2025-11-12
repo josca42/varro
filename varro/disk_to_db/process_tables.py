@@ -23,17 +23,17 @@ def process_dim_table(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_kode_col(df: pd.DataFrame) -> pd.DataFrame:
-    if df["KODE"].dtype == "object":
+    if df["kode"].dtype == "object":
         try:
-            df["KODE_INT"] = df["KODE"].str.replace(".", "").astype(int)
-            for group, df_group in df.groupby("NIVEAU"):
-                if df_group["KODE"].nunique() != df_group["KODE_INT"].nunique():
+            df["kode_int"] = df["kode"].str.replace(".", "").astype(int)
+            for group, df_group in df.groupby("niveau"):
+                if df_group["kode"].nunique() != df_group["kode_int"].nunique():
                     raise ValueError(f"Kode column is not unique for level {group}")
-            df["KODE"] = df["KODE_INT"]
+            df["kode"] = df["kode_int"]
             return df
         except ValueError:
             pass
-    return df[["KODE", "NIVEAU", "TITEL"]]
+    return df[["kode", "niveau", "titel"]]
 
 
 def process_tid_col(df: pd.DataFrame) -> pd.DataFrame:
@@ -43,13 +43,16 @@ def process_tid_col(df: pd.DataFrame) -> pd.DataFrame:
                 df["tid"] = pd.to_datetime(df["tid"].str.replace("K", "Q"))
             elif "M" in df["tid"].iloc[0]:
                 df["tid"] = pd.to_datetime(df["tid"], format="%YM%m")
+            elif ":" in df["tid"].iloc[0]:
+                df["tid"] = df["tid"].str.replace(":", "-").map(to_int4range_text)
             else:
-                raise ValueError(f"Unknown TID format: {df['TID'].iloc[0]}")
+                raise ValueError(f"Unknown tid format: {df['tid'].iloc[0]}")
         else:
-            assert 1800 < df["tid"].iloc[0] < 2150, "Not a year column"
+            assert 1700 < df["tid"].iloc[0] < 2150, "Not a year column"
             df["tid"] = pd.to_datetime(df["tid"], format="%Y")
 
-        df["tid"] = df["tid"].dt.date
+        if df["tid"].dtype != "object":
+            df["tid"] = df["tid"].dt.date
     return df
 
 
@@ -59,7 +62,10 @@ def remove_total_rows(df: pd.DataFrame) -> pd.DataFrame:
             continue
 
         if df[col].dtype == "object":
-            df = df[~df[col].isin(["TOT", "IALT"])].copy()
+            df = df[~df[col].isin(["TOT", "IALT", "TOTR"])].copy()
+
+        if df[col].dtype == "int64":
+            df = df[df[col] != 0].copy()
     return df
 
 
@@ -71,6 +77,12 @@ def process_alder_col(df: pd.DataFrame) -> pd.DataFrame:
                 df["alder"] = df["alder"].str.replace("-", "").astype(int)
             else:
                 df["alder"] = df["alder"].map(to_int4range_text)
+        else:
+            if df["alder"].max() > 1_000:
+                raise ValueError(
+                    f"Alder column has values greater than 1000: {df['alder'].max()}"
+                )
+
     return df
 
 

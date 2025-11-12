@@ -4,8 +4,9 @@ from varro.disk_to_db.create_db_table import emit_and_apply_dimension
 from varro.disk_to_db.process_tables import process_dim_table
 from varro.db import engine
 from sqlalchemy import inspect
+from varro.config import DATA_DIR
 
-DIMENSIONS_DIR = Path("/mnt/HC_Volume_103849439/statbank_tables")
+DIMENSIONS_DIR = DATA_DIR / "mapping_tables"
 insp = inspect(engine)
 
 for dir in DIMENSIONS_DIR.iterdir():
@@ -23,7 +24,7 @@ for dir in DIMENSIONS_DIR.iterdir():
         df = df[~kode_isna].copy()
 
     # TODO: Add dimension links
-    emit_and_apply_dimension(df, dir.stem, dimension_links=...)
+    emit_and_apply_dimension(df, dir.stem)
 
 
 def db_codes_preprocessing(df: pd.DataFrame) -> pd.DataFrame:
