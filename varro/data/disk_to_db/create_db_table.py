@@ -6,7 +6,7 @@ from typing import NamedTuple
 import numpy as np
 import pandas as pd
 import psycopg
-from varro.db import POSTGRES_DSN
+from varro.db.db import POSTGRES_DSN
 # -------------------------- inference helpers --------------------------
 
 _RANGE_RE = re.compile(r"^\s*\[\s*-?\d+\s*,\s*(-?\d+)?\s*\)\s*$")

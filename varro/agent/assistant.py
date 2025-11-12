@@ -20,18 +20,12 @@ from pydantic_ai.builtin_tools import MemoryTool
 from pathlib import Path
 import logfire
 from varro.db import crud
+from varro.agent.memory import Memory
+from varro.agent.jupyter_kernel import JupyterCodeExecutor
+from varro.agent.playwright_render import html_to_png
 
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
-
-DEFAULT_PRODUCTS = [
-    "vækstpension aktiv",
-    "profilpension",
-    "3 i 1 livspension",
-    "ap active",
-    "danica balance",
-    "pfa plus",
-]
 
 
 sonnet_model = AnthropicModel("claude-sonnet-4-5")
@@ -186,3 +180,6 @@ async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
         + "\n</rendered output and cell output>"
     )
     return ToolReturn(return_value=out_str, content=outputs)
+
+
+def sql_query(ctx: RunContext[SessionStore], query: str): ...

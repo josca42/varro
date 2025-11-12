@@ -21,7 +21,8 @@ from pydantic_ai.messages import (
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from mojo.agent.memory import SessionStore
+    from varro.agent.memory import SessionStore
+    from varro.agent.assistant import agent
 
 
 async def assistant_msg(msg_content: str):

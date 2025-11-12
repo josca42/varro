@@ -89,11 +89,12 @@ for table_id in tqdm(get_all_table_ids()):
             df = copy_table(table_id, variables)
             df.to_parquet(data_dir / f"{table_id}.parquet")
         else:
+            df_folder = data_dir / f"{table_id}"
+            df_folder.mkdir(parents=True, exist_ok=True)
             for i, time_values in enumerate(partitions):
                 variables = build_variables_payload(table_info, time_values=time_values)
                 df = copy_table(table_id, variables)
-                df_folder = data_dir / f"{table_id}"
-                df_folder.mkdir(parents=True, exist_ok=True)
+
                 df.to_parquet(df_folder / f"partition_{i}.parquet")
 
     except:
