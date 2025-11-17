@@ -61,7 +61,7 @@ def copy_table(table_id, variables):
             "valuePresentation": "Code",
             "variables": variables,
         },
-        # timeout=60 * 10,
+        timeout=60 * 10,
     )
     df = pd.read_csv(StringIO(r.text), sep=";", decimal=",", low_memory=False)
     return df
@@ -92,12 +92,19 @@ for table_id in tqdm(get_all_table_ids()):
             df_folder = data_dir / f"{table_id}"
             df_folder.mkdir(parents=True, exist_ok=True)
             for i, time_values in enumerate(partitions):
+                df_fp = df_folder / f"partition_{i}.parquet"
+                if df_fp.exists():
+                    continue
+
                 variables = build_variables_payload(table_info, time_values=time_values)
                 df = copy_table(table_id, variables)
 
-                df.to_parquet(df_folder / f"partition_{i}.parquet")
+                df.to_parquet(df_fp)
+                sleep(60)
 
-    except:
-        print(f"Error copying table {table_id}")
-        sleep(60 * 10)
+        sleep(60)
+
+    except Exception as e:
+        print(f"Error copying table {table_id}: {e}")
+        sleep(60 * 5)
         continue
