@@ -18,13 +18,6 @@ BEGIN; CREATE TABLE t(id int); COMMIT;
 SQL
 ```
 
-## Switch database/profile
-
-```bash
-PGSERVICE=analytics sql "SELECT version();"
-# (Default profile is used if PGSERVICE is unset.)
-```
-
 ## Introspection & sanity checks
 
 ```bash
@@ -47,17 +40,6 @@ sql -A -t -F $'\t' -c "SELECT * FROM my_table"     > out.tsv   # TSV
 ```bash
 sql -c "\copy public.my_table FROM 'in.csv'  csv header"       # import
 sql -c "\copy (SELECT * FROM public.my_table) TO 'out.csv' csv header"  # export
-```
-
-## Variables & transactions
-
-```bash
-sql -v n=10 -c "SELECT generate_series(1,:n);"
-sql <<'SQL'
-BEGIN;
--- your statements
-COMMIT;
-SQL
 ```
 
 ## Behavior
