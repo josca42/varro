@@ -1,122 +1,67 @@
-# Dimension table (shows only KODE|NIVEAU|TITEL)
-python scripts/tables.py view nuts --type dimension --lang da --rows 12
+## Dimension-linking helpers
 
+Use these commands when you map fact-table columns to their dimension tables.
 
-### List all dimension tables
+### Fact tables (context)
+
+Preview the raw or DB-ready fact data and pull official metadata with the updated tables skill:
 
 ```bash
-python scripts/tables.py list
+python .claude/skills/tables/scripts/tables.py view FOLK1A --rows 15
+python .claude/skills/tables/scripts/tables.py view FOLK1A --db-format   # processed layout
+python .claude/skills/tables/scripts/tables.py info FOLK1A               # XML metadata
 ```
 
-Prints a comma-separated list of dimension folder names under the mapping tables directory.
+All fact tables ultimately land in Postgres under the `fact` schema with lower-case/ASCII column names and coded values.
 
----
+### Dimension tables
 
-### Dimension description
+The CLI in this folder exposes the dimension-specific actions:
 
 ```bash
-# Prints table_info.md
-python scripts/tables.py describe nuts
-
-
-
-### Save dimension links
-
-Store your fact→dimension mappings as JSON.
-**Structure:** an array of one-key objects mapping `{FACT_COLUMN: DIMENSION_TABLE_ID}`
-
-```json
-[
-  {"OMRÅDE": "nuts"}
-]
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view nuts --rows 12
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view nuts --db-format
+python varro/data/fact_col_to_dim_table/create_dimension_links.py list
+python varro/data/fact_col_to_dim_table/create_dimension_links.py describe nuts
 ```
 
-**Inline example (quote carefully):**
+`view` shows the `KODE | NIVEAU | TITEL` columns (optionally normalized to the DB schema), `list` enumerates every mapping table, and `describe` prints the trimmed `table_info_da.md`.
+
+### Save links
+
+Persist the mapping you discover as JSON:
 
 ```bash
-python scripts/tables.py save-links FOLK1A \
+python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOLK1A \
   --dimension-links '[{"OMRÅDE": "nuts"}]'
 ```
 
-**From a file:**
+Or load from a local file:
 
 ```bash
-cat > links.json <<'JSON'
-[
-  {"OMRÅDE": "nuts"}
-]
-JSON
-
-python scripts/tables.py save-links FOLK1A \
+python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOLK1A \
   --dimension-links "$(cat links.json)"
 ```
 
-This writes:
+Files are written to `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`. Keys must match the fact column names (pre-processing), and values must match the dimension folder name (`nuts`, `db`, …).
 
-```
-/mnt/HC_Volume_103849439/dimension_links/FOLK1A.json
-```
+### Validate a link
 
-Notes:
-
-* Keys/values must be valid JSON (double quotes). Wrap the whole JSON in single quotes in your shell.
-* Column names are case-sensitive and must match the fact table exactly.
-* `DIMENSION_TABLE_ID` should match the dimension’s folder/id (e.g., `nuts`, `db`).
-
----
-
-### Check a single fact ↔ dimension mapping
-
-Validate that all values in a fact column exist in a dimension’s key column:
+Check whether every value in a fact column exists in the dimension’s `KODE` column:
 
 ```bash
-python scripts/tables.py check-links FOLK1A \
+python varro/data/fact_col_to_dim_table/create_dimension_links.py check-links FOLK1A \
   --dim-table-id nuts \
   --fact-col OMRÅDE
 ```
 
-* Success prints:
-  `Values in fact column OMRÅDE are in dimension table nuts`
-* On mismatch: prints the set of missing values.
+Success prints a confirmation message; otherwise you get the missing codes (a lone `0` is treated as a placeholder and ignored). The checker loads `/statbank_tables/{FACT}.parquet` and `/mapping_tables/{DIM}/table_da.parquet`, so make sure those files exist before running it.
 
-**Special case:** A lone `0` mismatch is treated as a placeholder and ignored.
+### Paths & conventions
 
-> Under the hood, this compares `unique(df_fact[fact_col])` against `df_dim['kode']` (dimension file must expose a `KODE` column, which is normalized to `kode` before checking).
+- Facts: `/mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet`
+- Dimensions: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_da.parquet`
+- Dimension metadata: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_info_{da|en}.md`
+- Dimension links JSON: `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`
 
----
-
-## Paths & Layout
-
-**Facts**
-
-```
-/mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet
-```
-
-**Dimensions (used by `preview` / `describe`)**
-
-```
-/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_{da|en}.parquet
-/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_info_{da|en}.md
-```
-
-**Dimension links (written by `save-links`)**
-
-```
-/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json
-```
-
-**Dimension (used by `check-links`)**
-
-```
-/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}.parquet
-```
-
-The checker expects a flat `{DIM_ID}.parquet` exposing columns `KODE, NIVEAU, TITEL`. If your dimensions only exist as `.../{DIM_ID}/table_{lang}.parquet`, export a flat parquet (or adapt the path).
-
----
-
-## Conventions
-
-* Dimension previews show only `KODE | NIVEAU | TITEL`.
-* `KODE` is treated as the join key for validations.
+Dimension previews only show `KODE | NIVEAU | TITEL`, and `KODE` is always the join key you should validate against.

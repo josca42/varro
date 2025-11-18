@@ -159,10 +159,10 @@ Ensure the fact table column data type matches the dimension KODE type.
 
 ```bash
 # Check fact table column type
-python scripts/tables.py preview YOUR_FACT_TABLE --type fact --rows 5
+python .claude/skills/tables/scripts/tables.py view YOUR_FACT_TABLE --rows 5
 
 # Check dimension KODE type
-python scripts/tables.py preview DIMENSION_NAME --type dimension --rows 5
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIMENSION_NAME --rows 5
 ```
 
 ### Step 4: Validate Values
@@ -170,10 +170,10 @@ Preview both tables and verify that values in the fact table column exist in the
 
 ```bash
 # Preview fact table to see actual values
-python scripts/tables.py preview YOUR_FACT_TABLE --type fact --rows 20
+python .claude/skills/tables/scripts/tables.py view YOUR_FACT_TABLE --rows 20
 
 # Preview dimension to see KODE values
-python scripts/tables.py preview DIMENSION_NAME --type dimension --rows 20
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIMENSION_NAME --rows 20
 ```
 
 ### Step 5: Verify Semantic Meaning
@@ -181,7 +181,7 @@ Read the dimension TITEL column to ensure the classification matches the expecte
 
 ```bash
 # See dimension descriptions
-python scripts/tables.py preview DIMENSION_NAME --type dimension --rows 50
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIMENSION_NAME --rows 50
 ```
 
 ---
@@ -203,11 +203,11 @@ INDHOLD (int64)    → measure value
 **Validation:**
 ```bash
 # Check OMRÅDE values
-python scripts/tables.py preview FOLK1A --type fact --rows 10
+python .claude/skills/tables/scripts/tables.py view FOLK1A --rows 10
 # Shows: 101, 147, 155 (municipality codes)
 
 # Verify in nuts
-python scripts/tables.py preview nuts --type dimension --rows 20
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view nuts --rows 20
 # Confirms: 101=København, 147=Frederiksberg, 155=Dragør
 ```
 
@@ -228,11 +228,11 @@ INDHOLD (int64)     → measure value
 **Validation:**
 ```bash
 # Check MOHERK values
-python scripts/tables.py preview FODIE --type fact --rows 10
+python .claude/skills/tables/scripts/tables.py view FODIE --rows 10
 # Shows: 5 and other values
 
 # Verify in herkomst
-python scripts/tables.py preview herkomst --type dimension --rows 10
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view herkomst --rows 10
 # Confirms: 1=dansk oprindelse, 2=indvandrere, 3=efterkommere, 9=uoplyst
 # Note: Value 5 might need further investigation
 ```
@@ -299,21 +299,17 @@ Some columns are simple coded values and don't need dimension tables:
 ## Quick Commands Reference
 
 ```bash
-# List all available dimension tables
-python scripts/tables.py list
-
 # Preview a fact table
-python scripts/tables.py preview TABLE_NAME --type fact --rows 20
+python .claude/skills/tables/scripts/tables.py view TABLE_NAME --rows 20
 
 # Preview a dimension table
-python scripts/tables.py preview DIM_NAME --type dimension --rows 20
+python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIM_NAME --rows 20
 
 # Get dimension description (if available)
-python scripts/tables.py describe DIM_NAME
+python varro/data/fact_col_to_dim_table/create_dimension_links.py describe DIM_NAME
 
-# Get table path
-python scripts/tables.py path TABLE_NAME --type fact
-python scripts/tables.py path DIM_NAME --type dimension
+# List all available dimension tables
+python varro/data/fact_col_to_dim_table/create_dimension_links.py list
 ```
 
 ---

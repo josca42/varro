@@ -6,10 +6,16 @@ save potential notes about the process of creating the links in the following fi
 
 ## Inputs
 
-* Local CLIs:
+* Relevant skills:
 
-  * Tables skill: `python .claude/skills/tables/scripts/tables.py`
-  * Subjects skill: `python .claude/skills/subjects/scripts/subjects.py`
+  * Tables skill (facts + metadata): `python .claude/skills/tables/scripts/tables.py`
+  * Subjects skill (browse hierarchy): `python .claude/skills/subjects/scripts/subjects.py`
+
+* Helper cli:
+
+  * Dimension helper CLI: `python varro/data/fact_col_to_dim_table/create_dimension_links.py`
+  * Dimension helper CLI guide: varro/data/fact_col_to_dim_table/create_dimension_links.md
+
 * Reference guide: `agents/tasks/fact_dimension_linking/fact_to_dimension_linking_guide.md`
 
 ## Output (strict)
@@ -24,10 +30,10 @@ For each fact table, produce a JSON array of one-key objects:
 
 If no columns are likely to link to a dimension, output `[]`.
 
-Then **save** the JSON using:
+Then **save** the JSON using the dimension helper CLI:
 
 ```bash
-python .claude/skills/tables/scripts/tables.py save-dimension-links <TABLE_ID> \
+python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links <TABLE_ID> \
   --dimension-links '<JSON_ARRAY>'
 ```
 
@@ -48,7 +54,7 @@ Always start by reading the guide and then use the CLI to gather evidence.
 For each table processed:
 
 ```bash
-python .claude/skills/tables/scripts/tables.py save-dimension-links <TABLE_ID> \
+python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links <TABLE_ID> \
   --dimension-links '<THE_JSON_ARRAY>'
 ```
 
@@ -63,13 +69,13 @@ The CLI will write:
 1. Inspect fact:
 
 ```bash
-python .claude/skills/tables/scripts/tables.py preview FOLK1A --type fact --rows 20
+python .claude/skills/tables/scripts/tables.py view FOLK1A --rows 20
 ```
 
 2. Check metadata:
 
 ```bash
-python .claude/skills/subjects/scripts/subjects.py tables-info FOLK1A
+python .claude/skills/tables/scripts/tables.py info FOLK1A
 ```
 
 3. Validate candidates (if flat parquets exist).
@@ -77,13 +83,14 @@ python .claude/skills/subjects/scripts/subjects.py tables-info FOLK1A
 :
 
 ```bash
-python .claude/skills/tables/scripts/tables.py check-dimension-links FOLK1A --dim-table-id nuts --fact-col OMRÅDE
+python varro/data/fact_col_to_dim_table/create_dimension_links.py check-links FOLK1A \
+  --dim-table-id nuts --fact-col OMRÅDE
 ```
 
 4. Save:
 
 ```bash
-python .claude/skills/tables/scripts/tables.py save-dimension-links FOLK1A \
+python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOLK1A \
   --dimension-links '[{"OMRÅDE":"nuts"}]'
 ```
 

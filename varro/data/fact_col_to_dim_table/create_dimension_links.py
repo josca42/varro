@@ -60,14 +60,19 @@ def cli_view(
 ):
     """View a dimension table."""
 
-    df = pd.read_parquet(DIMENSIONS_DIR / f"{table_id}" / "table_da.parquet")
+    try:
+        df = pd.read_parquet(DIMENSIONS_DIR / f"{table_id}" / "table_da.parquet")
+    except FileNotFoundError as exc:
+        typer.secho(f"Error: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+
     df = df[DIM_COLS].copy()
     if db_format:
         df = process_dim_table(df)
 
     dtypes_str = df_dtypes(df)
     preview_str = df_preview(df, max_rows=rows, name=table_id)
-    return f"{dtypes_str}\n\n{preview_str}"
+    typer.echo(f"{dtypes_str}\n\n{preview_str}")
 
 
 @app.command("list")
@@ -118,3 +123,7 @@ def cli_check_dimension_links(
         )
     except ValueError as e:
         typer.echo(e)
+
+
+if __name__ == "__main__":
+    app()
