@@ -1,5 +1,8 @@
 import httpx
 import networkx as nx
+from varro.config import DATA_DIR
+
+METADATA_DIR = DATA_DIR / "metadata"
 
 
 def create_subjects_graph():
@@ -21,7 +24,7 @@ def create_subjects_graph():
 
     G = nx.DiGraph()
     add_nodes_edges(G, subjects_total)
-    nx.write_gml(G, "/root/varro/data/subjects_graph.gml")
+    nx.write_gml(G, METADATA_DIR / "subjects_graph.gml")
 
 
 def add_nodes_edges(G, subjects, parent=None):

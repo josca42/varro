@@ -14,7 +14,7 @@ from pydantic_ai import (
 )
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
-from varro.utils import df_preview
+from varro.data.utils import df_preview
 from varro.agent.memory import SessionStore
 from pydantic_ai.builtin_tools import MemoryTool
 from pathlib import Path

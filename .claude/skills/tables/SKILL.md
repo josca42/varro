@@ -1,164 +1,34 @@
 ---
 name: tables
-description: Preview StatBank fact/dimension Parquet tables, read dimension descriptions, and manage/validate dimension links
+description: Preview denmark statistics fact tables and inspect their metadata
 ---
 
 # tables CLI
 
-Small utilities for inspecting cloned StatBank data and wiring fact↔dimension relationships:
+Inspect a denmark statistics fact table before loading it into Postgres and view its official table metadata.
 
-* **preview** a fact or dimension parquet (first *n* rows)
-* **describe** print the markdown description for a dimension
-* **list** enumerate available dimension tables (folder names)
-* **save-dimension-links** persist declared fact→dimension mappings as JSON
-* **check-dimension-links** validate that a fact column’s values exist in a dimension’s key column
+Run the CLI from `.claude/skills/tables`:
 
 ```bash
 python scripts/tables.py --help
 ```
 
-## Commands
-
-### Preview rows
+## `view` — preview a fact table
 
 ```bash
-# Fact table
-python scripts/tables.py preview FOLK1A --type fact --rows 15
-
-# Dimension table (shows only KODE|NIVEAU|TITEL)
-python scripts/tables.py preview nuts --type dimension --lang da --rows 12
+python scripts/tables.py view FOLK1A --rows 5
+python scripts/tables.py view FOLK1A --db-format   # show the DB-ready schema
 ```
 
-Options:
+- `--rows/-n` controls how many rows to display (default 10).
+- `--db-format/-d` runs the same processing used during ingestion (renames to lower-case, normalizes dtypes, parses date strings).
 
-* `--lang {da|en}`: only relevant for dimensions (selects `table_{lang}.parquet`)
-* `--rows/-n`: number of rows to show
-* `--processed/-p`: apply the fact-table processing before previewing (facts only)
+Output is always a `column|dtype` list followed by a pipe-delimited preview (`TABLE.head(n)`), which stays consistent whether you use the raw or DB-formatted view.
 
-**Output format:**
-First a dtypes list (`column|dtype`), then a small, pipe-separated preview for easy copy-paste.
-
----
-
-### Dimension description
+## `info` — metadata snapshot
 
 ```bash
-# Prints table_info_{lang}.md with first & last line removed
-python scripts/tables.py describe nuts --lang en
+python scripts/tables.py info FOLK1A
 ```
 
-If `table_info_en.md` is missing, it gracefully falls back to Danish (`table_info_da.md`).
-
----
-
-### List all dimension tables
-
-```bash
-python scripts/tables.py list
-```
-
-Prints a comma-separated list of dimension folder names under the mapping tables directory.
-
----
-
-### Save dimension links
-
-Store your fact→dimension mappings as JSON.
-**Structure:** an array of one-key objects mapping `{FACT_COLUMN: DIMENSION_TABLE_ID}`
-
-```json
-[
-  {"OMRÅDE": "nuts"}
-]
-```
-
-**Inline example (quote carefully):**
-
-```bash
-python scripts/tables.py save-dimension-links FOLK1A \
-  --dimension-links '[{"OMRÅDE": "nuts"}]'
-```
-
-**From a file:**
-
-```bash
-cat > links.json <<'JSON'
-[
-  {"OMRÅDE": "nuts"}
-]
-JSON
-
-python scripts/tables.py save-dimension-links FOLK1A \
-  --dimension-links "$(cat links.json)"
-```
-
-This writes:
-
-```
-/mnt/HC_Volume_103849439/dimension_links/FOLK1A.json
-```
-
-Notes:
-
-* Keys/values must be valid JSON (double quotes). Wrap the whole JSON in single quotes in your shell.
-* Column names are case-sensitive and must match the fact table exactly.
-* `DIMENSION_TABLE_ID` should match the dimension’s folder/id (e.g., `nuts`, `db`).
-
----
-
-### Check a single fact ↔ dimension mapping
-
-Validate that all values in a fact column exist in a dimension’s key column:
-
-```bash
-python scripts/tables.py check-dimension-links FOLK1A \
-  --dim-table-id nuts \
-  --fact-col OMRÅDE
-```
-
-* Success prints:
-  `Values in fact column OMRÅDE are in dimension table nuts`
-* On mismatch: prints the set of missing values.
-
-**Special case:** A lone `0` mismatch is treated as a placeholder and ignored.
-
-> Under the hood, this compares `unique(df_fact[fact_col])` against `df_dim['kode']` (dimension file must expose a `KODE` column, which is normalized to `kode` before checking).
-
----
-
-## Paths & Layout
-
-**Facts**
-
-```
-/mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet
-```
-
-**Dimensions (used by `preview` / `describe`)**
-
-```
-/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_{da|en}.parquet
-/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_info_{da|en}.md
-```
-
-**Dimension links (written by `save-dimension-links`)**
-
-```
-/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json
-```
-
-**Dimension (used by `check-dimension-links`)**
-
-```
-/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}.parquet
-```
-
-The checker expects a flat `{DIM_ID}.parquet` exposing columns `KODE, NIVEAU, TITEL`. If your dimensions only exist as `.../{DIM_ID}/table_{lang}.parquet`, export a flat parquet (or adapt the path).
-
----
-
-## Conventions
-
-* Dimension previews show only `KODE | NIVEAU | TITEL`.
-* `KODE` is treated as the join key for validations.
-* All commands exit with non-zero on error (useful for scripting/CI).
+Prints metadata for a single table, including id, title, description, unit and every dimension (text plus the coded values present in the metadata). The metadata is printed as XML. The XML is easy to feed into other tools or to scan quickly when deciding which dimensions to join.

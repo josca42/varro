@@ -1,7 +1,10 @@
 from pathlib import Path
 import pandas as pd
-from varro.disk_to_db.create_db_table import emit_and_apply_fact
-from varro.disk_to_db.process_tables import process_fact_table, normalize_column_names
+from varro.data.disk_to_db.create_db_table import emit_and_apply_fact
+from varro.data.disk_to_db.process_tables import (
+    process_fact_table,
+    normalize_column_names,
+)
 from varro.db import engine
 from sqlalchemy import inspect
 from varro.config import DATA_DIR

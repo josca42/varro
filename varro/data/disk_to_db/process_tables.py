@@ -64,8 +64,6 @@ def remove_total_rows(df: pd.DataFrame) -> pd.DataFrame:
         if df[col].dtype == "object":
             df = df[~df[col].isin(["TOT", "IALT", "TOTR"])].copy()
 
-        if df[col].dtype == "int64":
-            df = df[df[col] != 0].copy()
     return df
 
 

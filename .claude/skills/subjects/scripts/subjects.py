@@ -91,8 +91,7 @@ def _render_tables(node, indent: int) -> List[str]:
     indent_str = "  " * indent
     lines = []
     for table_id in tables:
-        info = tables_info.get(table_id)
-        descr = "" if info is None else str(info.get("description", ""))
+        descr = get_table_description(table_id)
         line = f"{indent_str}- {table_id}: {descr}".rstrip()
         lines.append(line)
     return lines
@@ -135,6 +134,16 @@ def _render_subject(
     return _render_tables(node, indent)
 
 
+def get_table_description(table_id: str) -> str:
+    fp = TABLES_INFO_DIR / f"{table_id}.pkl"
+    if not fp.exists():
+        return ""
+
+    with open(fp, "rb") as f:
+        table_info = pickle.load(f)
+    return table_info.get("description", "")
+
+
 def _breadcrumb_for(node, lineage: Sequence):
     if lineage and lineage[0] == _find_node(ROOT_NAME):
         return lineage
@@ -159,16 +168,8 @@ def browse_subject(subject: str, depth: int = 1, show_parents: bool = False) -> 
     return "\n".join(lines).rstrip()
 
 
-# --- Default behavior: no args -> children of "DST";
-#     with one positional arg -> browse that subject ---
-@app.callback(invoke_without_command=True)
-def main(ctx: typer.Context):
-    if ctx.invoked_subcommand is None:
-        typer.echo(browse_subject(ROOT_NAME))
-
-
 # --- Browse a subject (optional arg; defaults to DST) ---
-@app.command("browse")
+@app.callback(invoke_without_command=True)
 def browse(
     subject: Optional[str] = typer.Argument(
         None, help="Subject description/label, node id, or slash path"
@@ -181,25 +182,6 @@ def browse(
     ),
 ):
     typer.echo(browse_subject(subject or ROOT_NAME, depth=depth, show_parents=parents))
-
-
-# --- Get XML for a list of table IDs ---
-@app.command("tables-info")
-def tables_info_cmd(
-    table_ids: List[str] = typer.Argument(
-        ..., help="One or more table IDs, e.g. FOLK1A FOLK1AM"
-    ),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
-):
-    if verbose:
-        assert len(table_ids) == 1, "Verbose output only supports one table ID"
-        with open(TABLES_INFO_DIR / f"{table_ids[0]}.pkl", "rb") as f:
-            table_info = pickle.load(f)
-        typer.echo(json.dumps(table_info, indent=2))
-    else:
-        payload = {"tables": {tid: tables_info[tid] for tid in table_ids}}
-        xml = format_as_xml(payload)
-        typer.echo(xml)
 
 
 if __name__ == "__main__":
