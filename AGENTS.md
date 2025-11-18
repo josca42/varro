@@ -25,4 +25,5 @@ You have access to the research assistant through the bash terminal
 claude -p "Give me an overview of the dimension tables"
 ```
 
-You can also ask for assistance from a highly skilled researcher on difficult design decisions. This is done by compiling a markdown file containing a detailed overview of what should be researched along with links to relevant files (links should be made using the relative file paths). Then the user will submit research request to the expert researcer.The researcher only has access to the markdown file and the files linked in the markdon file.
+# Context
+Denmark’s StatBank export lives on disk as ~2000 fact tables (Parquet) plus ~40 dimension tables; they form a classic star schema that we ingest into Postgres under the fact and dim schemas using the scripts in varro/data/disk_to_db/. Every fact table is normalized during loading (lower-case ASCII column names, parsed tid, etc.), while each dimension exposes kode, niveau, titel, and related metadata for decoding categorical codes.
