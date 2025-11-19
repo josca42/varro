@@ -19,10 +19,10 @@ All fact tables ultimately land in Postgres under the `fact` schema with lower-c
 The CLI in this folder exposes the dimension-specific actions:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view nuts --rows 12
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view nuts --db-format
-python varro/data/fact_col_to_dim_table/create_dimension_links.py list
-python varro/data/fact_col_to_dim_table/create_dimension_links.py describe nuts
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view nuts --rows 12
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view nuts --db-format
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py list
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py describe nuts
 ```
 
 `view` shows the `KODE | NIVEAU | TITEL` columns (optionally normalized to the DB schema), `list` enumerates every mapping table, and `describe` prints the trimmed `table_info_da.md`.
@@ -32,36 +32,41 @@ python varro/data/fact_col_to_dim_table/create_dimension_links.py describe nuts
 Persist the mapping you discover as JSON:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOLK1A \
-  --dimension-links '[{"OMRÅDE": "nuts"}]'
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py save-links FOLK1A \
+  --dimension-links '[{"column": "OMRÅDE", "dimension": "nuts", "match_type": "exact"}]'
 ```
 
 Or load from a local file:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOLK1A \
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py save-links FOLK1A \
   --dimension-links "$(cat links.json)"
 ```
 
-Files are written to `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`. Keys must match the fact column names (pre-processing), and values must match the dimension folder name (`nuts`, `db`, …).
+Files are written to `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`. Each link object must include:
+
+- `column`: fact column name (pre-processing)
+- `dimension`: dimension folder name (`nuts`, `db`, …)
+- `match_type`: `"exact"` if codes align and can be enforced as a foreign key, otherwise `"approx"` for a soft/semantic link
+- optional `note` for clarifying any quirks
 
 ### Validate a link
 
 Check whether every value in a fact column exists in the dimension’s `KODE` column:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py check-links FOLK1A \
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py check-links FOLK1A \
   --dim-table-id nuts \
   --fact-col OMRÅDE
 ```
 
-Success prints a confirmation message; otherwise you get the missing codes (a lone `0` is treated as a placeholder and ignored). The checker loads `/statbank_tables/{FACT}.parquet` and `/mapping_tables/{DIM}/table_da.parquet`, so make sure those files exist before running it.
+Success prints a confirmation message; otherwise you get the missing codes (a lone `0` is treated as a placeholder and ignored). If real differences show up, save the link anyway but set `"match_type": "approx"`. The checker loads `/statbank_tables/{FACT}.parquet` and `/mapping_tables/{DIM}/table_da.parquet`, so make sure those files exist before running it.
 
 ### Paths & conventions
 
 - Facts: `/mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet`
 - Dimensions: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_da.parquet`
-- Dimension metadata: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_info_{da|en}.md`
+- Dimension metadata: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_info_da.md`
 - Dimension links JSON: `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`
 
 Dimension previews only show `KODE | NIVEAU | TITEL`, and `KODE` is always the join key you should validate against.

@@ -4,7 +4,12 @@ from typing import Literal, Optional
 import pandas as pd
 import typer
 from varro.data.disk_to_db.process_tables import process_fact_table
-from varro.data.utils import df_preview, df_dtypes, create_table_info_dict
+from varro.data.utils import (
+    df_preview,
+    df_dtypes,
+    create_table_info_dict,
+    show_column_values,
+)
 from varro.config import DATA_DIR
 import json
 from pydantic_ai import format_as_xml
@@ -72,11 +77,22 @@ def cli_preview(
 @app.command("info")
 def tables_info_cmd(
     table_id: str = typer.Argument(..., help="table ID, e.g. FOLK1A"),
+    column: str | None = typer.Option(
+        None,
+        "--column",
+        "-c",
+        help="View all values for a given column. Both text and id values are shown.",
+    ),
 ):
     with open(TABLES_INFO_DIR / f"{table_id}.pkl", "rb") as f:
         table_info = pickle.load(f)
 
     table_info_dict = create_table_info_dict(table_info)
+    if column:
+        values = show_column_values(table_info, column)
+        typer.echo(values)
+        return
+
     xml = format_as_xml(table_info_dict)
     typer.echo(xml)
 

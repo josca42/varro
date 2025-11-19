@@ -10,8 +10,6 @@ import json
 # --- Load data (as provided) ---
 METADATA_DIR = Path("/mnt/HC_Volume_103849439/metadata")
 G = nx.read_gml(METADATA_DIR / "subjects_graph_da.gml")
-with open(METADATA_DIR / "tables_info_da.pkl", "rb") as f:
-    tables_info = pickle.load(f)
 TABLES_INFO_DIR = METADATA_DIR / "tables_info_raw_da"
 
 ROOT_NAME = "DST"

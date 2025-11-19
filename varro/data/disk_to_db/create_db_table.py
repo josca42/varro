@@ -149,16 +149,25 @@ def create_dimension_links_stmts(
     schema: str | None,
     col_types: dict[str, str],
     dimension_links: dict[str, str] | None,
+    soft_cols: set[str] | None = None,
     add_comments: bool = True,
 ) -> tuple[list[str], list[str], list[str]]:
     if not dimension_links:
         return [], [], []
+    soft_cols = soft_cols or set()
     fk_stmts, comment_stmts, fk_names = [], [], []
     for col, ref in dimension_links.items():
         dim_fq = fq_name("dim", ref)
         if col_types.get(col, "") == "int4range":
             if add_comments:
                 txt = f"Range column; conceptually maps to {dim_fq}."
+                comment_stmts.append(
+                    f"COMMENT ON COLUMN {fq_name(schema, table)}.{col} IS {sql_literal(txt)};"
+                )
+            continue
+        if col in soft_cols:
+            if add_comments:
+                txt = f"Soft link to {dim_fq}(kode); codes may not align exactly."
                 comment_stmts.append(
                     f"COMMENT ON COLUMN {fq_name(schema, table)}.{col} IS {sql_literal(txt)};"
                 )
@@ -192,6 +201,7 @@ def make_fact_plan(
     df: pd.DataFrame,
     table_name: str,
     dimension_links: dict[str, str] | None = None,
+    soft_dimension_columns: set[str] | None = None,
     add_dimension_comments: bool = True,
 ) -> DDLPlan:
     schema, exclude_index_cols = "fact", ("indhold",)
@@ -199,7 +209,12 @@ def make_fact_plan(
     create_sql = create_table_stmt(table_name, schema, col_types, True)
     idxs = create_indexes_stmts(table_name, schema, col_types, exclude_index_cols)
     fks, comments, fk_names = create_dimension_links_stmts(
-        table_name, schema, col_types, dimension_links, add_dimension_comments
+        table_name,
+        schema,
+        col_types,
+        dimension_links,
+        soft_dimension_columns,
+        add_dimension_comments,
     )
     post_statements = idxs + comments + fks
     post_sql = "\n".join(post_statements)
@@ -293,11 +308,13 @@ def emit_and_apply_fact(
     df: pd.DataFrame,
     table_name: str,
     dimension_links: dict[str, str] | None = None,
+    soft_dimension_columns: set[str] | None = None,
 ) -> DDLPlan:
     plan = make_fact_plan(
         df=df,
         table_name=table_name,
         dimension_links=dimension_links,
+        soft_dimension_columns=soft_dimension_columns,
         add_dimension_comments=True,
     )
     create_insert_then_post(

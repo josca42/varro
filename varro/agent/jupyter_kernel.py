@@ -44,7 +44,6 @@ class JupyterCodeExecutor:
     """
     Stateful Jupyter code executor using nbclient (synchronous).
     - Keeps one live kernel across messages
-    - No pip installs; uses current environment
     - Parquet-based DataFrame transfer to/from kernel
     """
 

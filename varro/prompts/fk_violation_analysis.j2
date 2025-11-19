@@ -1,0 +1,52 @@
+You are triaging an error happening when trying to create a fact table in a postgres db and possible link certain of the columns in the fact table to a dimension talbe. Typically the error will be a **foreign key violation** during fact table loading.
+
+The TABLE_ID is: {{ table_id }}
+
+The error message is:
+
+{{ error_message }}
+
+## Tasks
+If it is a foreign key violation then:
+
+1. Reproduce and understand the mismatch by inspecting the column values in the fact table and the corresponding dimension.
+2. Identify whether the offending code(s) represent totals, aggregations, or other records that should be dropped before loading.
+3. Update the filter rules JSON so the loader will automatically drop those codes the next time it sees this column/dimension combination.
+
+## Tools
+
+* Tables skill (facts + metadata): `python .claude/skills/tables/scripts/tables.py`
+  * Preview processed fact table rows: `python .claude/skills/tables/scripts/tables.py view {{ fact_table_id }} --rows 20 --db-format`
+  * List column values extracted from metadata: `python .claude/skills/tables/scripts/tables.py info {{ fact_table_id }} --column {{ fact_column|upper }}`
+* Dimension helper CLI: `python varro/data/fact_col_to_dim_table/create_dimension_links.py`
+
+## Filter Rules Format
+
+Append (or edit) objects in `{{ filter_rules_path }}` that look like:
+
+```json
+[
+  {
+    "fact_column": "omrade",
+    "dimension_table": "nuts",
+    "drop_values": [0]
+  }
+]
+```
+
+Use lower-case fact column names (processed form). `drop_values` is a list of codes that should be removed before insertion. Rules apply whenever that fact column links to the same dimension table.
+
+## Deliverable
+
+* Document your findings and commands in `{{ notes_path }}`.
+* Update `{{ filter_rules_path }}` with any necessary drop rules.
+* Re-run the loader after saving so the table succeeds without FK violations.
+
+## Notes
+
+Note that column names in the fact table are normalized to lowercase and ASCII-safe. So å -> a, ø -> o, æ -> ae.
+So if the error message is about a column named "omrade" the the column name in the table info call could be "OMRÅDE". When creating the filter rules you should use the normalized column name "omrade".
+
+Fact tables are stored as parquet files with the following structure: /mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet
+
+IMPORTANT: The program will automatically be rerun once the filter rules are updated. So once you have updated the filter rules you can stop the program. If you deem the error to not be fixable by udpdating the filter rule then likewise stop the program.

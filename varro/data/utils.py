@@ -47,3 +47,12 @@ def values_text_repr(values, type_: Literal["text", "id"] = "text"):
         values_text = values_start + " ... " + values_end
 
     return values_text
+
+
+def show_column_values(table_info, column: str):
+    for var in table_info["variables"]:
+        if var["text"] == column:
+            return "\n".join(
+                f"<value id={d['id']}>{d['text']}</value>" for d in var["values"]
+            )
+    return None

@@ -6,9 +6,6 @@ from sqlalchemy import Column
 from typing import Optional
 from sqlalchemy import DateTime, func
 
-if TYPE_CHECKING:
-    from varro.db.models.memory import Memory
-
 
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -24,4 +21,3 @@ class User(SQLModel, table=True):
             onupdate=func.now(),
         )
     )
-    memories: list["Memory"] = Relationship(back_populates="user")

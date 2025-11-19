@@ -13,6 +13,17 @@ Follow these steps to identify the correct dimension table for a fact table colu
 
 ---
 
+## Match Types
+
+Every saved link must include a `match_type`:
+
+- `exact` – Confident that the codes align (after trivial normalization like casing or padding). `check-links` passes or only complains about ignorable placeholders (e.g., single `0` values).
+- `approx` – Semantic match but codes do not line up 1:1 (different vintages, stripped dots, aggregated buckets, etc.). Use this when `check-links` reports real gaps or you can clearly see mismatched formats.
+
+Always run `check-links` for likely links. If it fails for real data differences, still record the link but flag it as `approx` so ingestion treats it as a soft link.
+
+---
+
 ## Column Name → Dimension Table Mapping
 
 ### Geographic & Administrative
@@ -162,7 +173,7 @@ Ensure the fact table column data type matches the dimension KODE type.
 python .claude/skills/tables/scripts/tables.py view YOUR_FACT_TABLE --rows 5
 
 # Check dimension KODE type
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIMENSION_NAME --rows 5
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view DIMENSION_NAME --rows 5
 ```
 
 ### Step 4: Validate Values
@@ -173,15 +184,17 @@ Preview both tables and verify that values in the fact table column exist in the
 python .claude/skills/tables/scripts/tables.py view YOUR_FACT_TABLE --rows 20
 
 # Preview dimension to see KODE values
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIMENSION_NAME --rows 20
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view DIMENSION_NAME --rows 20
 ```
+
+If every value lines up (or only trivial differences like casing/padding), label the link as `match_type: "exact"`. When `check-links` reports genuine gaps or you can see systematic format differences, still keep the link but mark it as `match_type: "approx"` so the loader treats it as a soft link.
 
 ### Step 5: Verify Semantic Meaning
 Read the dimension TITEL column to ensure the classification matches the expected meaning of your fact table column.
 
 ```bash
 # See dimension descriptions
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIMENSION_NAME --rows 50
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view DIMENSION_NAME --rows 50
 ```
 
 ---
@@ -207,7 +220,7 @@ python .claude/skills/tables/scripts/tables.py view FOLK1A --rows 10
 # Shows: 101, 147, 155 (municipality codes)
 
 # Verify in nuts
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view nuts --rows 20
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view nuts --rows 20
 # Confirms: 101=København, 147=Frederiksberg, 155=Dragør
 ```
 
@@ -232,7 +245,7 @@ python .claude/skills/tables/scripts/tables.py view FODIE --rows 10
 # Shows: 5 and other values
 
 # Verify in herkomst
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view herkomst --rows 10
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view herkomst --rows 10
 # Confirms: 1=dansk oprindelse, 2=indvandrere, 3=efterkommere, 9=uoplyst
 # Note: Value 5 might need further investigation
 ```
@@ -303,13 +316,13 @@ Some columns are simple coded values and don't need dimension tables:
 python .claude/skills/tables/scripts/tables.py view TABLE_NAME --rows 20
 
 # Preview a dimension table
-python varro/data/fact_col_to_dim_table/create_dimension_links.py view DIM_NAME --rows 20
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py view DIM_NAME --rows 20
 
 # Get dimension description (if available)
-python varro/data/fact_col_to_dim_table/create_dimension_links.py describe DIM_NAME
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py describe DIM_NAME
 
 # List all available dimension tables
-python varro/data/fact_col_to_dim_table/create_dimension_links.py list
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py list
 ```
 
 ---

@@ -31,7 +31,8 @@ def process_kode_col(df: pd.DataFrame) -> pd.DataFrame:
                     raise ValueError(f"Kode column is not unique for level {group}")
             df["kode"] = df["kode_int"]
             return df
-        except ValueError:
+        except ValueError as e:
+            print(f"Kode not converted to int: {e}")
             pass
     return df[["kode", "niveau", "titel"]]
 
@@ -94,7 +95,7 @@ def process_indhold_col(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def to_int4range_text(s: str) -> str:
-    s = s.strip()
+    s = s.strip().replace("OV", "-")
     lo_str, hi_str = s.split("-", 1)  # expect exactly one dash
     lo = int(lo_str.strip())
 

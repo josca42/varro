@@ -1,0 +1,17 @@
+[
+  {
+    "fact_column": "komk",
+    "dimension_table": "nuts",
+    "drop_values": [0]
+  },
+  {
+    "fact_column": "omrade",
+    "dimension_table": "nuts",
+    "drop_values": [0]
+  },
+  {
+    "fact_column": "komgrp",
+    "dimension_table": "kommunegrupper",
+    "drop_values": [0]
+  }
+]

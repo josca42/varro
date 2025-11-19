@@ -3,14 +3,13 @@ When writing code then only include essential comments. Otherwise leave comments
 
 Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
 
-# Work dir
-Use the following folder as working directory: agents
+# Agent folder
+
+If you want to create python scripts or notes use the following structure:
 
 - Put scripts you make in agents/scripts
 - General notes or updates to notes in agents/notes
 - Task specific notes in agents/tasks. In general create a new folder in agents/tasks and put your notes related to the task there.
-
-When doing a task check if there are relevant notes in agents/notes
 
 # Goal
 The goal of this repo is to create a better version denmark statistics "statistikbank" that can be used by AI analyst and human analysts alike. 

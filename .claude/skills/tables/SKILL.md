@@ -32,3 +32,9 @@ python scripts/tables.py info FOLK1A
 ```
 
 Prints metadata for a single table, including id, title, description, unit and every dimension (text plus the coded values present in the metadata). The metadata is printed as XML. The XML is easy to feed into other tools or to scan quickly when deciding which dimensions to join.
+
+```bash
+python scripts/tables.py info FOLK1A --column "område"
+```
+
+Will print only the coded values ("id") and the text titles for the column specifiec. All unique values will be printed.

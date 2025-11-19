@@ -3,8 +3,9 @@ When writing code then only include essential comments. Otherwise leave comments
 
 Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
 
-# Work dir
-Use the following folder as working directory: agents
+# Agent folder
+
+If you want to create python scripts or notes use the following structure:
 
 - Put scripts you make in agents/scripts
 - General notes or updates to notes in agents/notes
