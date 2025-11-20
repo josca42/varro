@@ -4,6 +4,10 @@ from typing import Literal
 HEADER_VARS = ["id", "text", "description", "unit"]
 
 
+def normalize_column_name(col_name: str) -> str:
+    return col_name.lower().replace("å", "a").replace("ø", "o").replace("æ", "ae")
+
+
 def df_preview(df: pd.DataFrame, max_rows: int = 10, name: str = "df") -> str:
     """Generate a pipe-separated DataFrame preview."""
     if df.index.name:
@@ -26,7 +30,7 @@ def df_dtypes(df: pd.DataFrame) -> str:
     return "\n".join([f"{col}|{dtype}" for col, dtype in df.dtypes.items()])
 
 
-def create_table_info_dict(table_info):
+def create_table_info_dict(table_info, normalize_col_names: bool = False):
     info = {v: table_info[v] for v in HEADER_VARS}
     info["dimensions"] = {}
     for var in table_info["variables"]:
@@ -34,7 +38,12 @@ def create_table_info_dict(table_info):
             "text": values_text_repr(var["values"], type_="text"),
             "id": values_text_repr(var["values"], type_="id"),
         }
-        info["dimensions"][var["text"]] = values_text
+        if normalize_col_names:
+            col_name = normalize_column_name(var["id"])
+        else:
+            col_name = var["text"]
+
+        info["dimensions"][col_name] = values_text
     return info
 
 

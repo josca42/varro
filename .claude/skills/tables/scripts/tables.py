@@ -83,11 +83,20 @@ def tables_info_cmd(
         "-c",
         help="View all values for a given column. Both text and id values are shown.",
     ),
+    normalize_col_names: bool = typer.Option(
+        False,
+        "--normalize-col-names",
+        "-n",
+        help="Normalize column names so they match the database schema.",
+    ),
 ):
+    table_id = table_id.upper()
     with open(TABLES_INFO_DIR / f"{table_id}.pkl", "rb") as f:
         table_info = pickle.load(f)
 
-    table_info_dict = create_table_info_dict(table_info)
+    table_info_dict = create_table_info_dict(
+        table_info, normalize_col_names=normalize_col_names
+    )
     if column:
         values = show_column_values(table_info, column)
         typer.echo(values)

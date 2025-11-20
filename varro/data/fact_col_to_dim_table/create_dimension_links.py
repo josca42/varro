@@ -15,9 +15,6 @@ dim_links_created = set(fp.stem for fp in DIM_LINKS_DIR.glob("*.json"))
 
 for k, v in subject_tables_dict.items():
     print(f"Processing {k}")
-
-    if k == "Arbejde og indkomst/Indkomst og løn/Person- og familieindkomster":
-        continue
     table_ids = [table_id for table_id in v if table_id not in dim_links_created]
     if not table_ids:
         continue

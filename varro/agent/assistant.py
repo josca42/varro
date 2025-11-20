@@ -23,6 +23,7 @@ from varro.db import crud
 from varro.agent.memory import Memory
 from varro.agent.jupyter_kernel import JupyterCodeExecutor
 from varro.agent.playwright_render import html_to_png
+from varro.db.db import engine
 
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
@@ -56,33 +57,12 @@ agent = Agent(
 )
 
 
-@agent.instructions
-async def get_system_prompt(ctx: RunContext[SessionStore]) -> str:
-    prompts = ctx.deps.cached_prompts
-    if not prompts:
-        prompts = get_prompts(prompts, ctx.deps.user)
-        ctx.deps.cached_prompts = prompts
+# @agent.tool()
+# async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
+#     if ctx.deps.memory is None:
+#         ctx.deps.memory = Memory(ctx.deps.user.id)
 
-    prompts["SESSION_STORE"] = ctx.deps.data_in_store()
-    return crud.prompt.render_prompt(name="pension_advisor", **prompts)
-
-
-def get_prompts(prompts, user):
-    prompts["USER"] = user.to_xml()
-    prompts["CURRENT_DATE"] = datetime.now().strftime("%Y-%m-%d")
-    prompts["PENSION_PRODUCTS"] = crud.pension_product.get_grouped_by_fund_string()
-    prompts["WIKI_TABLE_OF_CONTENTS"] = crud.prompt.render_markdown(
-        name="indholdsfortegnelse"
-    )
-    return prompts
-
-
-@agent.tool()
-async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
-    if ctx.deps.memory is None:
-        ctx.deps.memory = Memory(ctx.deps.user.id)
-
-    return ctx.deps.memory.call(command)
+#     return ctx.deps.memory.call(command)
 
 
 @agent.tool(docstring_format="google")
@@ -182,4 +162,7 @@ async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
     return ToolReturn(return_value=out_str, content=outputs)
 
 
-def sql_query(ctx: RunContext[SessionStore], query: str): ...
+def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str):
+    with engine.connect() as conn:
+        df = pd.read_sql(query, conn)
+    return df_preview(df, max_rows=30, name=query)

@@ -38,3 +38,9 @@ python scripts/tables.py info FOLK1A --column "område"
 ```
 
 Will print only the coded values ("id") and the text titles for the column specifiec. All unique values will be printed.
+
+```bash
+python scripts/tables.py info FOLK1A --normalize-col-names
+```
+
+Will normalize column names so they match the database schema. This means lowercasing col names and replacing å -> a, ø -> o, æ -> ae. So OMRÅDE becomes omrade.
