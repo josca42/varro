@@ -1,5 +1,7 @@
 Your task is to discover which columns in a **fact table** should link to which **dimension tables**, validate those links, and persist them to disk in the **exact JSON format** required by our tables CLI.
 
+Standard columns like ALDER, KØN, CIVILSTAND with only a few coded values will typically not be linked to a dimension table.
+
 You are taksed with doing so for the following fact tables: {{ table_ids }}.
 
 save potential notes about the process of creating the links in the following file: agents/tasks/create_dimension_links/{{ subject_name }}.md
@@ -10,11 +12,11 @@ Importantly if their is a likely dimension table match, where the dimension tabl
 * Relevant skills:
 
   * Tables skill (facts + metadata): `python .claude/skills/tables/scripts/tables.py`
-  * Subjects skill (browse hierarchy): `python .claude/skills/subjects/scripts/subjects.py`
+  * Tables skill guide: .claude/skills/tables/SKILL.md
 
 * Helper cli:
 
-  * Dimension helper CLI: `python varro/data/fact_col_to_dim_table/create_dimension_links.py`
+  * Dimension helper CLI: `python varro/data/fact_col_to_dim_table/dimension_links_cli.py`
   * Dimension helper CLI guide: varro/data/fact_col_to_dim_table/create_dimension_links.md
 
 * Reference guide: `varro/data/fact_col_to_dim_table/fact_to_dimension_linking_guide.md`
@@ -37,7 +39,7 @@ If no columns are likely to link to a dimension, output `[]`.
 Then **save** the JSON using the dimension helper CLI:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links <TABLE_ID> \
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py save-links <TABLE_ID> \
   --dimension-links '<JSON_ARRAY>'
 ```
 
@@ -58,7 +60,7 @@ Always start by reading the guide and then use the CLI to gather evidence.
 For each table processed:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links <TABLE_ID> \
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py save-links <TABLE_ID> \
   --dimension-links '<THE_JSON_ARRAY>'
 ```
 
@@ -87,14 +89,14 @@ python .claude/skills/tables/scripts/tables.py info FOLK1A
 :
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py check-links FOLK1A \
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py check-links FOLK1A \
   --dim-table-id nuts --fact-col OMRÅDE
 ```
 
 4. Save:
 
 ```bash
-python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOLK1A \
+python varro/data/fact_col_to_dim_table/dimension_links_cli.py save-links FOLK1A \
   --dimension-links '[{"column":"OMRÅDE","dimension":"nuts","match_type":"exact"}]'
 ```
 
@@ -102,5 +104,3 @@ python varro/data/fact_col_to_dim_table/create_dimension_links.py save-links FOL
 
 * If links exist: save them as above and print the CLI’s confirmation.
 * If no links: save `[]`.
-
-IMPORTANT: DO NOT WRITE OR EXECUTE ANY PYTHON CODE. ONLY USE THE CLI TOOLS AND BASH COMMANDS. Do not do any extensive research just do some basic analysis with the tools provided, make your conclusion, save the links and be done.

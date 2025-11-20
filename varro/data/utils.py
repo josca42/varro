@@ -52,7 +52,10 @@ def values_text_repr(values, type_: Literal["text", "id"] = "text"):
 def show_column_values(table_info, column: str):
     for var in table_info["variables"]:
         if var["text"] == column:
+            var_vals = (
+                var["values"][:500] if len(var["values"]) > 500 else var["values"]
+            )
             return "\n".join(
-                f"<value id={d['id']}>{d['text']}</value>" for d in var["values"]
+                f"<value id={d['id']}>{d['text']}</value>" for d in var_vals
             )
     return None
