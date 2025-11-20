@@ -48,4 +48,6 @@ sql --csv -c "SELECT * FROM fact.folk1a LIMIT 100" > folk1a_sample.csv
 sql -A -F $'\t' -c "SELECT kode, titel FROM dim.nuts LIMIT 20" > nuts.tsv
 ```
 
-Exit codes bubble up from `psql`, so failed queries stop scripts immediately (`ON_ERROR_STOP=1`). Output respects `psql` defaults: tabular for interactive use, unaligned/no headers when piped. Use `\?` inside `sql` for the full list of meta-commands.***
+Exit codes bubble up from `psql`, so failed queries stop scripts immediately (`ON_ERROR_STOP=1`). Output respects `psql` defaults: tabular for interactive use, unaligned/no headers when piped. Use `\?` inside `sql` for the full list of meta-commands.
+
+If a column in a fact table links to a dim table then this will be noted as a comment on the table

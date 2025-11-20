@@ -112,7 +112,9 @@ def cli_check_dimension_links(
     dim_table_id: str = typer.Option(..., help="Dimension table ID."),
     fact_col: str = typer.Option(..., help="Fact column name."),
 ):
-    df_fact = pd.read_parquet(FACTS_DIR / f"{fact_table_id}.parquet")
+    df_fact = pd.read_parquet(
+        FACTS_DIR / f"{fact_table_id}.parquet", columns=[fact_col]
+    )
     df_dim = pd.read_parquet(
         DIMENSIONS_DIR / f"{dim_table_id}" / "table_da.parquet"
     ).rename(columns={"KODE": "kode"})

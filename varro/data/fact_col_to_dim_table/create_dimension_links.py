@@ -5,6 +5,7 @@ from pathlib import Path
 from varro.db import crud
 from varro.config import DATA_DIR
 
+
 DIM_LINKS_DIR = DATA_DIR / "dimension_links"
 with open("/root/varro/agents/notes/subject_tables_dict.json", "r") as f:
     subject_tables_dict = json.load(f)
@@ -13,6 +14,7 @@ dim_links_created = set(fp.stem for fp in DIM_LINKS_DIR.glob("*.json"))
 
 
 for k, v in subject_tables_dict.items():
+    print(f"Processing {k}")
     table_ids = [table_id for table_id in v if table_id not in dim_links_created]
     if not table_ids:
         continue
@@ -23,7 +25,8 @@ for k, v in subject_tables_dict.items():
         table_ids=table_ids,
         subject_name=subject_name,
     )
-    subprocess.run(
+
+    proc = subprocess.run(
         [
             "claude",
             "-p",
@@ -35,4 +38,6 @@ for k, v in subject_tables_dict.items():
         ],
         check=True,
     )
+
+    print(f"Created links for {k}")
     sleep(5 * 60)
