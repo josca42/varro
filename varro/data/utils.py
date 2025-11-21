@@ -38,11 +38,9 @@ def create_table_info_dict(table_info, normalize_col_names: bool = False):
             "text": values_text_repr(var["values"], type_="text"),
             "id": values_text_repr(var["values"], type_="id"),
         }
-        if normalize_col_names:
-            col_name = normalize_column_name(var["id"])
-        else:
-            col_name = var["text"]
-
+        col_name = (
+            normalize_column_name(var["id"]) if normalize_col_names else var["id"]
+        )
         info["dimensions"][col_name] = values_text
     return info
 
