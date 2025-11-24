@@ -181,40 +181,6 @@ for fp in FACTS_DIR.iterdir():
         dim_links_dict = None
         soft_link_cols = None
 
-    try:
-        create_fact_table(table_id, fp, dim_links_dict, soft_link_cols)
-        print(f"Table {table_id} processed successfully")
-    except ForeignKeyViolation as fk_err:
-        print("FK error detected. Trying to fix with Claude.")
-        prompt = crud.prompt.render_prompt(
-            name="fk_violation_analysis",
-            table_id=table_id,
-            error_message=str(fk_err),
-            filter_rules_path=FK_FILTER_RULES_PATH,
-        )
-
-        subprocess.run(
-            [
-                "claude",
-                "-p",
-                prompt,
-                "--allowedTools",
-                "Bash Read Write Grep",
-                "--permission-mode",
-                "acceptEdits",
-            ],
-            check=True,
-        )
-
-        try:
-            create_fact_table(table_id, fp, dim_links_dict, soft_link_cols)
-            print(f"Table {table_id} processed successfully")
-        except Exception as e:
-            print("Claude failed to fix error. The error is:")
-            print(f"Error processing table {table_id}: {e}")
-            continue
-
-        continue
-    except Exception as e:
-        print(f"Error processing table {table_id}: {e}")
-        continue
+    # Try creating the fact table with both exact and approx links
+    create_fact_table(table_id, fp, dim_links_dict, soft_link_cols=None)
+    print(f"Table {table_id} processed successfully")

@@ -98,6 +98,7 @@ def tables_info_cmd(
         table_info, normalize_col_names=normalize_col_names
     )
     if column:
+        column = column.lower()
         values = show_column_values(table_info, column)
         typer.echo(values)
         return

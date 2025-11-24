@@ -71,11 +71,14 @@ def remove_total_rows(df: pd.DataFrame) -> pd.DataFrame:
 def process_alder_col(df: pd.DataFrame) -> pd.DataFrame:
     if "alder" in df.columns:
         if df["alder"].dtype == "object":
-            # Check if object do to upper open ended i.e. "99-"
-            if sum(["-" in v for v in df["alder"].unique()]) < 2:
-                df["alder"] = df["alder"].str.replace("-", "").astype(int)
-            else:
-                df["alder"] = df["alder"].map(to_int4range_text)
+            try:
+                # Check if object do to upper open ended i.e. "99-"
+                if sum(["-" in v for v in df["alder"].unique()]) < 2:
+                    df["alder"] = df["alder"].str.replace("-", "").astype(int)
+                else:
+                    df["alder"] = df["alder"].map(to_int4range_text)
+            except:
+                pass
         else:
             if df["alder"].max() > 1_000:
                 raise ValueError(

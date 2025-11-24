@@ -17,8 +17,9 @@ If it is a foreign key violation then:
 
 * Tables skill (facts + metadata): `python .claude/skills/tables/scripts/tables.py`
   * Preview processed fact table rows: `python .claude/skills/tables/scripts/tables.py view {{ fact_table_id }} --rows 20 --db-format`
-  * List column values extracted from metadata: `python .claude/skills/tables/scripts/tables.py info {{ fact_table_id }} --column {{ fact_column|upper }}`
-* Dimension helper CLI: `python varro/data/fact_col_to_dim_table/create_dimension_links.py`
+  * List column values extracted from metadata: `python .claude/skills/tables/scripts/tables.py info {{ fact_table_id }} --column {{ fact_column }}`
+* Dimension helper CLI: `python varro/data/fact_col_to_dim_table/dimension_links_cli.py`
+* Dimension helper CLI guide: `varro/data/fact_col_to_dim_table/create_dimension_links.md`
 
 ## Filter Rules Format
 
@@ -49,4 +50,4 @@ So if the error message is about a column named "omrade" the the column name in 
 
 Fact tables are stored as parquet files with the following structure: /mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet
 
-IMPORTANT: The program will automatically be rerun once the filter rules are updated. So once you have updated the filter rules you can stop the program. If you deem the error to not be fixable by udpdating the filter rule then likewise stop the program.
+IMPORTANT: The program will automatically be rerun once the filter rules are updated. So once you have updated the filter rules you can stop. If you deem the error to not be fixable by udpdating the filter rule then likewise stop your work. DO NOT ATTEMPT RESTART THE PROGRAM ETC.
