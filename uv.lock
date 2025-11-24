@@ -4639,6 +4639,7 @@ source = { editable = "." }
 dependencies = [
     { name = "chainlit" },
     { name = "httpx" },
+    { name = "huggingface-hub" },
     { name = "jinja2" },
     { name = "matplotlib" },
     { name = "networkx" },
@@ -4661,6 +4662,7 @@ dev = [
 requires-dist = [
     { name = "chainlit", specifier = ">=2.9.0" },
     { name = "httpx", specifier = ">=0.28.1" },
+    { name = "huggingface-hub", specifier = ">=1.0.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "networkx", specifier = ">=3.5" },

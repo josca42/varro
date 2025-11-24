@@ -1,8 +1,9 @@
 import networkx as nx
 from varro.config import DATA_DIR
+from pathlib import Path
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
-SUBJECTS_OVERVIEW_DIR = DATA_DIR / "metadata" / "subjects_overview"
+SUBJECTS_DATA_DIR = Path.home() / "subjects"
 
 
 def walk(node: int, path: list[str]) -> None:
@@ -23,12 +24,6 @@ def walk(node: int, path: list[str]) -> None:
 
 
 def dump_subjects_overview_md(path: list[str], tables: list[str]):
-    with open(DATA_DIR / "metadata" / "subjects_overview.md", "w") as f:
+    SUBJECTS_DATA_DIR / path / "subjects_overview.md"
+    with open(path, "w") as f:
         f.write(create_subjects_overview_md(path, tables))
-
-
-def create_subjects_overview_md(path: list[str], tables: list[str]) -> str:
-    return "\n".join([f"- {table}" for table in tables])
-
-
-dump_subjects_overview_md([], ["folk1a"])

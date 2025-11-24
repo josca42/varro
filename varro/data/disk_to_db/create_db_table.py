@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import psycopg
 from varro.db.db import POSTGRES_DSN
+
 # -------------------------- inference helpers --------------------------
 
 _RANGE_RE = re.compile(r"^\s*\[\s*-?\d+\s*,\s*(-?\d+)?\s*\)\s*$")
@@ -84,13 +85,6 @@ def idx_name(schema: str | None, table: str, col: str, prefix: str) -> str:
     return base[:63]
 
 
-def parse_dim_ref(ref: str) -> tuple[str | None, str]:
-    if "." in ref:
-        sch, tbl = ref.split(".", 1)
-        return (sch or None), tbl
-    return None, ref
-
-
 def sql_literal(s: str) -> str:
     return "'" + s.replace("'", "''") + "'"
 
@@ -144,81 +138,25 @@ def create_indexes_stmts(
     return stmts
 
 
-def create_dimension_links_stmts(
-    table: str,
-    schema: str | None,
-    col_types: dict[str, str],
-    dimension_links: dict[str, str] | None,
-    soft_cols: set[str] | None = None,
-    add_comments: bool = True,
-) -> tuple[list[str], list[str], list[str]]:
-    if not dimension_links:
-        return [], [], []
-    soft_cols = soft_cols or set()
-    fk_stmts, comment_stmts, fk_names = [], [], []
-    for col, ref in dimension_links.items():
-        dim_fq = fq_name("dim", ref)
-        if col_types.get(col, "") == "int4range":
-            if add_comments:
-                txt = f"Range column; conceptually maps to {dim_fq}."
-                comment_stmts.append(
-                    f"COMMENT ON COLUMN {fq_name(schema, table)}.{col} IS {sql_literal(txt)};"
-                )
-            continue
-        if col in soft_cols:
-            if add_comments:
-                txt = f"Soft link to {dim_fq}(kode); codes may not align exactly."
-                comment_stmts.append(
-                    f"COMMENT ON COLUMN {fq_name(schema, table)}.{col} IS {sql_literal(txt)};"
-                )
-            continue
-        fkname = idx_name(schema, f"{table}_{col}_{ref}", "kode", "fk")
-        fk_stmts.append(
-            f"ALTER TABLE {fq_name(schema, table)} "
-            f"ADD CONSTRAINT {fkname} FOREIGN KEY ({col}) "
-            f"REFERENCES {dim_fq} (kode) DEFERRABLE INITIALLY DEFERRED NOT VALID;"
-        )
-        fk_names.append(fkname)
-        if add_comments:
-            txt = f"Links to {dim_fq}(kode). Dimension: kode (key), niveau (hierarchy), titel (label)."
-            comment_stmts.append(
-                f"COMMENT ON COLUMN {fq_name(schema, table)}.{col} IS {sql_literal(txt)};"
-            )
-    return fk_stmts, comment_stmts, fk_names
-
-
 # -------------------------- public API: plans + runners --------------------------
 
 
 class DDLPlan(NamedTuple):
     create_sql: str  # CREATE TABLE ...
-    post_sql: str  # indexes + comments + FKs (joined)
+    post_sql: str  # indexes + comments (joined)
     post_statements: list[str]
-    fk_constraint_names: list[str]
 
 
 def make_fact_plan(
     df: pd.DataFrame,
     table_name: str,
-    dimension_links: dict[str, str] | None = None,
-    soft_dimension_columns: set[str] | None = None,
-    add_dimension_comments: bool = True,
 ) -> DDLPlan:
     schema, exclude_index_cols = "fact", ("indhold",)
     col_types = build_column_types(df)
     create_sql = create_table_stmt(table_name, schema, col_types, True)
     idxs = create_indexes_stmts(table_name, schema, col_types, exclude_index_cols)
-    fks, comments, fk_names = create_dimension_links_stmts(
-        table_name,
-        schema,
-        col_types,
-        dimension_links,
-        soft_dimension_columns,
-        add_dimension_comments,
-    )
-    post_statements = idxs + comments + fks
-    post_sql = "\n".join(post_statements)
-    return DDLPlan(create_sql, post_sql, post_statements, fk_names)
+    post_sql = "\n".join(idxs)
+    return DDLPlan(create_sql, post_sql, idxs)
 
 
 def make_dimension_plan(df: pd.DataFrame, table_name: str) -> DDLPlan:
@@ -247,7 +185,7 @@ def make_dimension_plan(df: pd.DataFrame, table_name: str) -> DDLPlan:
     ]
     post_statements = idxs + comments
     post_sql = "\n".join(post_statements)
-    return DDLPlan(create_sql, post_sql, post_statements, [])
+    return DDLPlan(create_sql, post_sql, post_statements)
 
 
 # -------------------------- COPY loader + executor --------------------------
@@ -279,25 +217,17 @@ def create_insert_then_post(
     plan: DDLPlan,
     table_name: str,
     schema: str | None,
-    validate_foreign_keys: bool = False,
 ) -> None:
     """
     1) CREATE TABLE
     2) COPY df
-    3) run post statements (indexes, comments, FKs)
-    4) optionally VALIDATE FKs (if any)
+    3) run post statements (indexes, comments)
     """
     with psycopg.connect(POSTGRES_DSN) as conn:
         with conn.cursor() as cur:
             cur.execute(plan.create_sql)
         copy_df_via_copy(conn, df, table_name, schema)
         execute_statements(conn, plan.post_statements)
-        if validate_foreign_keys and plan.fk_constraint_names:
-            stmts = [
-                f"ALTER TABLE {fq_name(schema, table_name)} VALIDATE CONSTRAINT {fk};"
-                for fk in plan.fk_constraint_names
-            ]
-            execute_statements(conn, stmts)
         # connection context manager commits on success
 
 
@@ -307,22 +237,16 @@ def create_insert_then_post(
 def emit_and_apply_fact(
     df: pd.DataFrame,
     table_name: str,
-    dimension_links: dict[str, str] | None = None,
-    soft_dimension_columns: set[str] | None = None,
 ) -> DDLPlan:
     plan = make_fact_plan(
         df=df,
         table_name=table_name,
-        dimension_links=dimension_links,
-        soft_dimension_columns=soft_dimension_columns,
-        add_dimension_comments=True,
     )
     create_insert_then_post(
         df=df,
         plan=plan,
         table_name=table_name,
         schema="fact",
-        validate_foreign_keys=True,
     )
     return plan
 
@@ -334,6 +258,5 @@ def emit_and_apply_dimension(df: pd.DataFrame, table_name: str) -> DDLPlan:
         plan=plan,
         table_name=table_name,
         schema="dim",
-        validate_foreign_keys=False,
     )
     return plan
