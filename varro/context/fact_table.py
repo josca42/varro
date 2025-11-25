@@ -3,7 +3,6 @@ import json
 from varro.config import DATA_DIR
 from varro.data.utils import (
     HEADER_VARS,
-    create_table_info_dict,
     normalize_column_name,
 )
 from varro.db.db import engine
@@ -62,6 +61,15 @@ def get_column_dtypes(table: str, schema: str = "fact"):
     return {row.column_name: row.data_type for row in rows}
 
 
+def get_raw_value_mappings(table: str):
+    table_info = load_table_info(table)
+    variables = table_info_variables_by_column(table_info)
+    mappings = get_value_mappings(
+        table=table, dim_links=[], variables=variables, skip_columns=set()
+    )
+    return mappings
+
+
 def get_fact_table_info(table: str, raw: bool = False) -> dict:
     table_info = load_table_info(table)
     if raw:
@@ -98,20 +106,27 @@ def get_value_mappings(
     table: str,
     dim_links: dict[str, str],
     variables: dict[str, dict],
+    skip_columns: set[str] = SKIP_VALUE_MAP_COLUMNS,
 ) -> dict[str, list[dict[str, str]]]:
-    skip_columns = SKIP_VALUE_MAP_COLUMNS | set(dim_links)
+    if skip_columns:
+        skip_columns = skip_columns | set(dim_links)
     columns = [col for col in variables if col not in skip_columns]
-    present_values = get_distinct_values(table, columns)
+    column_dtypes = get_column_dtypes(table)
     mappings = {}
     for col in columns:
-        present_ids = {str(v) for v in present_values.get(col, set())}
-        if not present_ids:
-            continue
-
+        dtype = column_dtypes.get(col)
         values = [
-            {"id": value["id"], "text": value["text"]}
+            {
+                "id": (
+                    int(value["id"])
+                    if dtype in {"integer", "smallint", "bigint"}
+                    else float(value["id"])
+                    if dtype in {"double precision", "numeric", "real"}
+                    else value["id"]
+                ),
+                "text": value["text"],
+            }
             for value in variables[col]["values"]
-            if str(value["id"]) in present_ids
         ]
         if values:
             mappings[col] = values
@@ -124,7 +139,7 @@ def load_table_info(table: str) -> dict:
         return pickle.load(f)
 
 
-def load_dim_links(table: str) -> dict[str, str]:
+def load_dim_links(table: str, exact: bool = False) -> dict[str, str]:
     with open(DIM_LINKS_DIR / f"{table.upper()}.json", "r") as f:
         dim_links = json.load(f)
     return {

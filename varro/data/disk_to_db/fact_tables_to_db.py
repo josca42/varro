@@ -18,11 +18,15 @@ def create_fact_table(table_id: str, fp: Path):
 
 
 for fp in FACTS_DIR.iterdir():
+    if fp.is_dir():
+        continue
+
     table_id = fp.stem
 
     if insp.has_table(table_id.lower(), schema="fact"):
         print(f"Table {table_id} already exists")
         continue
 
+    print(f"Processing table {table_id}")
     create_fact_table(table_id, fp)
     print(f"Table {table_id} processed successfully")

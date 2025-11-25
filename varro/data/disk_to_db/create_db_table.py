@@ -75,8 +75,14 @@ def infer_pg_type(colname: str, s: pd.Series) -> str:
 # -------------------------- naming & sql helpers --------------------------
 
 
+def quote_ident(ident: str) -> str:
+    return '"' + ident.replace('"', '""') + '"'
+
+
 def fq_name(schema: str | None, table: str) -> str:
-    return (schema + "." if schema else "") + table
+    if schema:
+        return f"{quote_ident(schema)}.{quote_ident(table)}"
+    return quote_ident(table)
 
 
 def idx_name(schema: str | None, table: str, col: str, prefix: str) -> str:
@@ -105,7 +111,7 @@ def create_table_stmt(
 ) -> str:
     cols = []
     for c in col_types:
-        line = f"{c} {col_types[c]}"
+        line = f"{quote_ident(c)} {col_types[c]}"
         if isinstance(primary_key, str) and c == primary_key:
             line += " PRIMARY KEY"
         cols.append(line)
@@ -114,7 +120,8 @@ def create_table_stmt(
         f"CREATE TABLE{ine} {fq_name(schema, table)} (\n  " + ",\n  ".join(cols)
     )
     if isinstance(primary_key, list):
-        create_table_stmt += f",\n  PRIMARY KEY ({', '.join(primary_key)})"
+        pk_cols = ", ".join(quote_ident(c) for c in primary_key)
+        create_table_stmt += f",\n  PRIMARY KEY ({pk_cols})"
 
     return create_table_stmt + "\n);"
 
@@ -133,7 +140,7 @@ def create_indexes_stmts(
         using = " USING gist" if pgtype == "int4range" else ""
         stmts.append(
             f"CREATE INDEX IF NOT EXISTS {idx_name(schema, table, col, 'idx')} "
-            f"ON {fq_name(schema, table)}{using} ({col});"
+            f"ON {fq_name(schema, table)}{using} ({quote_ident(col)});"
         )
     return stmts
 
@@ -175,12 +182,12 @@ def make_dimension_plan(df: pd.DataFrame, table_name: str) -> DDLPlan:
     )
     idxs = [
         f"CREATE INDEX IF NOT EXISTS {idx_name(schema, table_name, 'niveau', 'idx')} "
-        f"ON {fq_name(schema, table_name)} (niveau);"
+        f"ON {fq_name(schema, table_name)} ({quote_ident('niveau')});"
     ]
     comments = [
         f"COMMENT ON TABLE {fq_name(schema, table_name)} IS "
         f"{sql_literal('Static dimension: kode (key), niveau (hierarchy level), titel (label).')};",
-        f"COMMENT ON COLUMN {fq_name(schema, table_name)}.niveau IS "
+        f"COMMENT ON COLUMN {fq_name(schema, table_name)}.{quote_ident('niveau')} IS "
         f"{sql_literal('1 = broadest; higher numbers = deeper levels.')};",
     ]
     post_statements = idxs + comments
@@ -194,7 +201,7 @@ def make_dimension_plan(df: pd.DataFrame, table_name: str) -> DDLPlan:
 def copy_df_via_copy(
     conn: psycopg.Connection, df: pd.DataFrame, table: str, schema: str | None = None
 ) -> None:
-    cols = list(df.columns)
+    cols = [quote_ident(c) for c in df.columns]
     buf = io.StringIO()
     df.to_csv(buf, index=False, header=False, na_rep="\\N")
     buf.seek(0)
