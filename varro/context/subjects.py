@@ -8,12 +8,17 @@ from varro.context.fact_table import (
     get_raw_value_mappings,
 )
 import pandas as pd
+from typing import Callable
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
 SUBJECTS_DATA_DIR = Path.home() / "subjects"
 
 
-def walk(node: int, path: list[str]) -> None:
+def create_subjects_data():
+    walk(0, [], create_subject_data)
+
+
+def walk(node: int, path: list[str], apply_function: Callable) -> None:
     data = G.nodes[node]
     # extend the path with this node's description
     path = path + [data["description"]]
@@ -23,11 +28,11 @@ def walk(node: int, path: list[str]) -> None:
 
     # leaf with tables -> call your function
     if not children and data.get("tables"):
-        create_subject_data(path, data["tables"])
+        apply_function(path, data["tables"])
 
     # DFS into children
     for child in children:
-        walk(child, path)
+        walk(child, path, apply_function)
 
 
 def create_subject_data(path: list[str], tables: list[str]):
