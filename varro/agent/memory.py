@@ -14,12 +14,8 @@ from typing import Dict, Any, Optional, List, Literal
 import pandas as pd
 from varro.agent.jupyter_kernel import JupyterCodeExecutor
 from varro.db.models.user import User
-
-from varro.db.crud.memory import CrudMemory
-from varro.db.db import engine
-from pathlib import Path, PurePosixPath
-from collections import defaultdict
-from varro.db import crud
+from pathlib import Path
+import shutil
 
 
 @dataclass
@@ -29,7 +25,6 @@ class SessionStore:
     user: User
     jupyter: JupyterCodeExecutor | None = None
     memory: Memory | None = None
-    dashboard_state: Dict[str, Any] | None = None
     figs: Dict[str, Any] = field(default_factory=dict)
     dfs: Dict[str, pd.DataFrame] = field(default_factory=dict)
     dfs_added_to_notebook: List[str] = field(default_factory=list)
@@ -42,94 +37,68 @@ class SessionStore:
 
 
 class Memory(BetaAbstractMemoryTool):
-    def __init__(self, user_id: int):
+    def __init__(self, user_id: int, base_dir: str = "/var/memories"):
         super().__init__()
-        self.crud = CrudMemory(engine, user_id)
-        self.user_id = user_id
-        self.has_pension_plans = crud.pension_plan.exists(user_id)
+        self.root = Path(base_dir) / str(user_id)
+        self.root.mkdir(parents=True, exist_ok=True)
+
+    def _resolve(self, virtual_path: str) -> Path:
+        relative = virtual_path.removeprefix("/memories").lstrip("/")
+        real_path = (self.root / relative).resolve()
+        if not real_path.is_relative_to(self.root.resolve()):
+            raise PermissionError(f"Access denied: {virtual_path}")
+        return real_path
 
     def view(self, command: BetaMemoryTool20250818ViewCommand) -> str:
-        path = command.path
-        if Path(path).suffix:
-            mf = self.crud.get_by_path(path)
-            if not mf:
-                return f"File not found: {path}"
-            text = mf.file_text
-            if command.view_range and len(command.view_range) == 2:
-                start, end = command.view_range
-                lines = text.splitlines(keepends=True)
-                text = "".join(lines[start - 1 : end])
-            return text
+        path = self._resolve(command.path)
+        if path.is_dir():
+            entries = sorted(path.iterdir())
+            return (
+                "\n".join(f"- {e.name}{'/' if e.is_dir() else ''}" for e in entries)
+                or "(empty)"
+            )
 
-        # Else treat as directory
-        entries = self.crud.list_paths_under_prefix(path)
-        if not entries:
-            return f"Not found: {path}"
-
-        groups = defaultdict(list)
-        for p in entries:
-            pp = PurePosixPath(p)
-            groups[str(pp.parent)].append(pp.name)
-
-        blocks = []
-        for folder in sorted(groups):
-            lines = "\n".join(f"- {name}" for name in sorted(groups[folder]))
-            blocks.append(f"Directory: {folder}\n{lines}")
-        return "\n\n".join(blocks)
+        content = path.read_text()
+        if command.view_range:
+            lines = content.splitlines(keepends=True)
+            start, end = command.view_range
+            return "".join(lines[start - 1 : end])
+        return content
 
     def create(self, command: BetaMemoryTool20250818CreateCommand) -> str:
-        if command.path.startswith("/memories/wiki"):
-            return "You only have read access to the /memories/wiki directory"
-        self.crud.upsert_file(command.path, command.file_text)
-        return f"File created successfully at {command.path}"
+        path = self._resolve(command.path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(command.file_text or "")
+        return f"Created {command.path}"
 
     def str_replace(self, command: BetaMemoryTool20250818StrReplaceCommand) -> str:
-        if command.path.startswith("/memories/wiki"):
-            return "You only have read access to the /memories/wiki directory"
-        path = command.path
-        mf = self.crud.get_by_path(path)
-        if not mf:
-            return f"File not found: {path}"
+        path = self._resolve(command.path)
+        content = path.read_text()
         old, new = command.old_str or "", command.new_str or ""
-        updated_text = (mf.file_text or "").replace(old, new)
-        self.crud.set_text(path, updated_text)
-        return f"File {path} has been edited"
+        if content.count(old) != 1:
+            raise ValueError(
+                f"String must appear exactly once (found {content.count(old)})"
+            )
+        path.write_text(content.replace(old, new, 1))
+        return f"Replaced in {command.path}"
 
     def insert(self, command: BetaMemoryTool20250818InsertCommand) -> str:
-        if command.path.startswith("/memories/wiki"):
-            return "You only have read access to the /memories/wiki directory"
-        mf = self.crud.get_by_path(command.path)
-        if not mf:
-            return f"File not found: {command.path}"
-        line_no, insert_text = command.insert_line, command.insert_text
-        lines = mf.file_text.splitlines(keepends=True)
-        new_text = "".join(lines[: line_no - 1] + [insert_text] + lines[line_no - 1 :])
-        self.crud.set_text(command.path, new_text)
-        return f"Text inserted at line {line_no} in {command.path}"
+        path = self._resolve(command.path)
+        lines = path.read_text().splitlines(keepends=True)
+        text = command.insert_text or ""
+        if not text.endswith("\n"):
+            text += "\n"
+        lines.insert(command.insert_line - 1, text)
+        path.write_text("".join(lines))
+        return f"Inserted at line {command.insert_line}"
 
     def delete(self, command: BetaMemoryTool20250818DeleteCommand) -> str:
-        if command.path.startswith("/memories/wiki"):
-            return "You only have read access to the /memories/wiki directory"
-        n = self.crud.delete_file(command.path)
-        return (
-            f"File deleted: {command.path}" if n else f"File not found: {command.path}"
-        )
+        path = self._resolve(command.path)
+        shutil.rmtree(path) if path.is_dir() else path.unlink()
+        return f"Deleted {command.path}"
 
     def rename(self, command: BetaMemoryTool20250818RenameCommand) -> str:
-        old, new = command.old_path, command.new_path
-        if old.startswith("/memories/wiki") or new.startswith("/memories/wiki"):
-            return "You only have read access to the /memories/wiki directory"
-
-        ok = self.crud.rename_file(old, new)
-        return f"Renamed {old} to {new}" if ok else f"File not found: {old}"
-
-    def append_pension_plans_entry(self, path: str, entries: list[str]) -> list[str]:
-        if path in "/memories/user/":
-            user_has_pension_plans = crud.pension_plan.exists(self.user_id)
-            if user_has_pension_plans:
-                entries.append("/memories/user/pension_plans.xml")
-                return entries
-            else:
-                return entries
-
-        return entries
+        old, new = self._resolve(command.old_path), self._resolve(command.new_path)
+        new.parent.mkdir(parents=True, exist_ok=True)
+        old.rename(new)
+        return f"Renamed {command.old_path} → {command.new_path}"

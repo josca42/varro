@@ -51,7 +51,7 @@ class JupyterCodeExecutor:
         self,
         work_dir: Path,
         kernel_name: str = "python3",
-        timeout: int = 3 * 60,
+        timeout: int = 10 * 60,
     ) -> None:
         if timeout < 1:
             raise ValueError("timeout must be >= 1 second")

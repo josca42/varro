@@ -10,9 +10,12 @@ from varro.context.fact_table import (
 from varro.context.dim_table import get_short_dim_descrs_md
 import pandas as pd
 from typing import Callable
+from varro.db.db import engine
+from sqlalchemy import inspect
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
 SUBJECTS_DATA_DIR = Path.home() / "varro" / "docs" / "fact_tables"
+insp = inspect(engine)
 
 
 def create_subjects_data():
@@ -47,6 +50,10 @@ def create_subject_data(path: list[str], tables: list[str]):
     tables_dir.mkdir(parents=True, exist_ok=True)
     for table in tables:
         table_id = table.lower()
+        if not insp.has_table(table_id, schema="fact"):
+            print(f"Table {table_id} not found in database")
+            continue
+
         table_overview_md = create_table_overview_md(table_id)
         dump_markdown_to_file(tables_dir / f"{table_id}.md", table_overview_md)
 
@@ -58,7 +65,12 @@ def create_subject_data(path: list[str], tables: list[str]):
 def create_subject_overview_md(tables: list[str]):
     table_infos, dim_tables = [], set()
     for table in tables:
-        table_info, dim_tables_linked = get_fact_table_info(table.lower())
+        table_id = table.lower()
+        if not insp.has_table(table_id, schema="fact"):
+            print(f"Skipping {table_id} (not in database)")
+            continue
+
+        table_info, dim_tables_linked = get_fact_table_info(table_id)
         table_infos.append(format_fact_table_info(table_info))
         dim_tables.update(dim_tables_linked)
 

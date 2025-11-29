@@ -1,6 +1,7 @@
 import json
 from varro.config import DATA_DIR
 from rapidfuzz import process
+import pandas as pd
 
 DIM_LINKS_DIR = DATA_DIR / "dimension_links"
 
@@ -21,6 +22,45 @@ def normalize_fact_col_name(name: str) -> str:
     return name.lower().replace("å", "a").replace("ø", "o").replace("æ", "ae")
 
 
-# def fuzzy_match(name: str, options: list[str]) -> str:
+def fuzzy_match(fp: str, query: str, limit: int = 5) -> str:
+    df = pd.read_parquet(fp)
+    search_results = process.extract(query, df["text"], limit=limit)
+    matches = []
+    for choice, similarity, index in search_results:
+        matches.append(
+            {
+                "id": df.iloc[index]["id"],
+                "label": choice,
+            }
+        )
+    return matches
 
-#     search_results = process.extract(query, law_titles, limit=limit, score_cutoff=80)
+
+FACT_TABLES_NOT_IN_DB = [
+    "fam44ba",
+    "kas302",
+    "kas310",
+    "lons20",
+    "nasd21",
+    "vnasfk",
+    "vnksfk",
+    "bbm",
+    "vuhm",
+    "kn8m",
+    "dnruupi",
+    "dnvpdkr2",
+    "barsel05",
+    "barsel24",
+    "und3",
+    "hfudd11",
+    "hfudd21",
+    "uddall10",
+    "inst10",
+    "kveu20",
+    "afg5",
+    "dnpud",
+    "dnruddks",
+    "dnifhvem",
+    "dnifinve",
+    "aftryk2",
+]
