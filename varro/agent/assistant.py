@@ -57,12 +57,15 @@ agent = Agent(
 )
 
 
-# @agent.tool()
-# async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
-#     if ctx.deps.memory is None:
-#         ctx.deps.memory = Memory(ctx.deps.user.id)
+@agent.tool()
+async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
+    if ctx.deps.memory is None:
+        ctx.deps.memory = Memory(ctx.deps.user.id)
 
-#     return ctx.deps.memory.call(command)
+    try:
+        return ctx.deps.memory.call(command)
+    except Exception as e:
+        return f"Error: {e}"
 
 
 @agent.tool(docstring_format="google")
