@@ -1,5 +1,6 @@
 import json
 from varro.config import DATA_DIR
+from rapidfuzz import process
 
 DIM_LINKS_DIR = DATA_DIR / "dimension_links"
 
@@ -18,3 +19,8 @@ def load_dimension_links(table_id: str) -> dict[str, str] | None:
 
 def normalize_fact_col_name(name: str) -> str:
     return name.lower().replace("å", "a").replace("ø", "o").replace("æ", "ae")
+
+
+# def fuzzy_match(name: str, options: list[str]) -> str:
+
+#     search_results = process.extract(query, law_titles, limit=limit, score_cutoff=80)

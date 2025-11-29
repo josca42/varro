@@ -37,10 +37,19 @@ def get_niveau_levels(table: str, column: str, dim_table: str) -> list[int]:
 
 
 def get_tid_range(table: str) -> tuple:
-    query = f"""
-    SELECT min(tid) AS min_tid, max(tid) AS max_tid
-    FROM fact.{table}
-    """
+    column_dtypes = get_column_dtypes(table)
+    tid_type = column_dtypes.get("tid", "")
+
+    if "range" in tid_type.lower():
+        query = f"""
+        SELECT min(lower(tid)) AS min_tid, max(upper(tid)) AS max_tid
+        FROM fact.{table}
+        """
+    else:
+        query = f"""
+        SELECT min(tid) AS min_tid, max(tid) AS max_tid
+        FROM fact.{table}
+        """
 
     with engine.connect() as conn:
         min_tid, max_tid = conn.exec_driver_sql(query).one()
@@ -83,6 +92,7 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
     info["columns"] = list(variables.keys())
     info["dimensions"] = {}
 
+    dim_tables_linked = []
     mappings = get_value_mappings(table=table, dim_links=dim_links, variables=variables)
     for col, values in mappings.items():
         info["dimensions"][col] = {"values": values}
@@ -92,6 +102,7 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
             "dimension_table": dim_table,
             "levels": get_niveau_levels(table, col, dim_table),
         }
+        dim_tables_linked.append(dim_table)
 
     if "tid" in variables:
         min_tid, max_tid = get_tid_range(table)
@@ -99,7 +110,7 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
             "range": {"min": str(min_tid), "max": str(max_tid)}
         }
 
-    return info
+    return info, dim_tables_linked
 
 
 def get_value_mappings(
@@ -115,19 +126,18 @@ def get_value_mappings(
     mappings = {}
     for col in columns:
         dtype = column_dtypes.get(col)
-        values = [
-            {
-                "id": (
-                    int(value["id"])
-                    if dtype in {"integer", "smallint", "bigint"}
-                    else float(value["id"])
-                    if dtype in {"double precision", "numeric", "real"}
-                    else value["id"]
-                ),
-                "text": value["text"],
-            }
-            for value in variables[col]["values"]
-        ]
+        values = []
+        try:
+            for value in variables[col]["values"]:
+                if dtype in {"integer", "smallint", "bigint"}:
+                    id_value = int(value["id"])
+                elif dtype in {"double precision", "numeric", "real"}:
+                    id_value = float(value["id"])
+                else:
+                    id_value = value["id"]
+                values.append({"id": id_value, "text": value["text"]})
+        except (ValueError, TypeError):
+            values = variables[col]["values"]
         if values:
             mappings[col] = values
 
