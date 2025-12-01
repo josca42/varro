@@ -37,7 +37,7 @@ class SessionStore:
 
 
 class Memory(BetaAbstractMemoryTool):
-    def __init__(self, user_id: int, base_dir: str = "/var/memories"):
+    def __init__(self, user_id: int, base_dir: str = "/root/varro/docs"):
         super().__init__()
         self.root = Path(base_dir) / str(user_id)
         self.root.mkdir(parents=True, exist_ok=True)

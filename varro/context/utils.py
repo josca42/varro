@@ -1,5 +1,6 @@
 import json
 from varro.config import DATA_DIR
+from varro.data.utils import df_preview
 from rapidfuzz import process
 import pandas as pd
 
@@ -34,6 +35,11 @@ def fuzzy_match(fp: str, query: str, limit: int = 5) -> str:
             }
         )
     return matches
+
+
+def view_column_values(fp, limit: int = 20) -> str:
+    df = pd.read_parquet(fp)
+    return df_preview(df, max_rows=limit)
 
 
 FACT_TABLES_NOT_IN_DB = [

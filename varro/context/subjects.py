@@ -44,7 +44,7 @@ def create_subject_data(path: list[str], tables: list[str]):
     subject_dir.mkdir(parents=True, exist_ok=True)
 
     subject_overview_md = create_subject_overview_md(tables)
-    dump_markdown_to_file(subject_dir / "subjects_overview.md", subject_overview_md)
+    dump_markdown_to_file(subject_dir / "subject_overview.md", subject_overview_md)
 
     tables_dir = subject_dir / "tables"
     tables_dir.mkdir(parents=True, exist_ok=True)

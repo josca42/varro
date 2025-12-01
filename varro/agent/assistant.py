@@ -165,7 +165,12 @@ async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
     return ToolReturn(return_value=out_str, content=outputs)
 
 
-def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str):
+def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = None):
     with engine.connect() as conn:
         df = pd.read_sql(query, conn)
-    return df_preview(df, max_rows=30, name=query)
+    if df_name:
+        ctx.deps.dfs[df_name] = df
+        max_rows = 20 if len(df) < 21 else 5
+        return f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
+    else:
+        return df_preview(df, max_rows=30)
