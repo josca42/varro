@@ -196,7 +196,7 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
         return df_preview(df, max_rows=30)
 
 
-@agent.tool(docstring_format="google")
+@agent.tool_plain(docstring_format="google")
 def view_column_values(
     table: str, column: str, fuzzy_match_str: str | None = None, n: int | None = 5
 ):

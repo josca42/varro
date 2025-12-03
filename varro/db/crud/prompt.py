@@ -7,7 +7,7 @@ class CrudPrompt:
     def __init__(self, prompt_dir: Path):
         self.prompt_dir = prompt_dir
         self.env = Environment(
-            loader=FileSystemLoader(prompt_dir),
+            loader=FileSystemLoader([p for p in prompt_dir.iterdir() if p.is_dir()]),
             auto_reload=False,
         )
 
