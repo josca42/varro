@@ -3,6 +3,7 @@ from varro.config import DATA_DIR
 from varro.data.utils import df_preview
 from rapidfuzz import process
 import pandas as pd
+from pathlib import Path
 
 DIM_LINKS_DIR = DATA_DIR / "dimension_links"
 
@@ -23,8 +24,7 @@ def normalize_fact_col_name(name: str) -> str:
     return name.lower().replace("å", "a").replace("ø", "o").replace("æ", "ae")
 
 
-def fuzzy_match(fp: str, query: str, limit: int = 5) -> str:
-    df = pd.read_parquet(fp)
+def fuzzy_match(query: str, df: pd.DataFrame, limit: int = 5) -> str:
     search_results = process.extract(query, df["text"], limit=limit)
     matches = []
     for choice, similarity, index in search_results:
@@ -34,12 +34,7 @@ def fuzzy_match(fp: str, query: str, limit: int = 5) -> str:
                 "label": choice,
             }
         )
-    return matches
-
-
-def view_column_values(fp, limit: int = 20) -> str:
-    df = pd.read_parquet(fp)
-    return df_preview(df, max_rows=limit)
+    return df_preview(pd.DataFrame(matches), max_row=limit)
 
 
 FACT_TABLES_NOT_IN_DB = [

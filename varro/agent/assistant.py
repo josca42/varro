@@ -15,18 +15,23 @@ from pydantic_ai import (
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
+from varro.context.utils import fuzzy_match
 from varro.agent.memory import SessionStore
 from pydantic_ai.builtin_tools import MemoryTool
 from pathlib import Path
 import logfire
-from varro.db import crud
 from varro.agent.memory import Memory
 from varro.agent.jupyter_kernel import JupyterCodeExecutor
 from varro.agent.playwright_render import html_to_png
 from varro.db.db import engine
+from varro.config import COLUMN_VALUES_DIR
+from varro.db import crud
 
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
+
+DIM_TABLES_DOCS_DIR = Path("/root/varro/docs/dim_tables")
+DIM_TABLES = [md_file.stem for md_file in DIM_TABLES_DOCS_DIR.glob("*.md")]
 
 
 sonnet_model = AnthropicModel("claude-sonnet-4-5")
@@ -55,6 +60,13 @@ agent = Agent(
         ),
     ],
 )
+
+
+@agent.instructions
+async def get_system_prompt(ctx: RunContext[SessionStore]) -> str:
+    return crud.prompt.render_prompt(
+        name="rigsstatistiker", SESSION_STORE=ctx.deps.data_in_store()
+    )
 
 
 @agent.tool()
@@ -165,7 +177,15 @@ async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
     return ToolReturn(return_value=out_str, content=outputs)
 
 
+@agent.tool(docstring_format="google")
 def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = None):
+    """
+    Execute a SQL query against the PostgreSQL database containing the dimension and fact tables. If df_name is provided then the result is stored in the <session_store> with the name specified by df_name.
+
+    Args:
+        query: The SQL query to execute.
+        df_name: The name of the dataframe containing the data from the query.
+    """
     with engine.connect() as conn:
         df = pd.read_sql(query, conn)
     if df_name:
@@ -174,3 +194,26 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
         return f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
     else:
         return df_preview(df, max_rows=30)
+
+
+@agent.tool(docstring_format="google")
+def view_column_values(
+    table: str, column: str, fuzzy_match_str: str | None = None, n: int | None = 5
+):
+    """
+    View the unique values for a column in a dimension or fact table. If fuzzy_match_str is provided then the unique values are fuzzy matched against the fuzzy_match_str and the n best matches are returned. If no fuzzy_match_str is provided then the first n unique values are returned.
+
+    Args:
+        table: The name of the table.
+        column: The name of the column.
+        fuzzy_match_str: A string to fuzzy match against the unique values.
+        n: The maximum number of unique values to return.
+    """
+    if table in DIM_TABLES:
+        df = pd.read_parquet(COLUMN_VALUES_DIR / f"{table}.parquet")
+    else:
+        df = pd.read_parquet(COLUMN_VALUES_DIR / f"{table}/{column}.parquet")
+    if fuzzy_match_str:
+        return fuzzy_match(fuzzy_match_str, df, n)
+    else:
+        return df_preview(df, max_rows=n)

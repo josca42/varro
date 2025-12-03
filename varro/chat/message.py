@@ -18,11 +18,8 @@ from pydantic_ai.messages import (
     ToolCallPart,
     BuiltinToolCallPart,
 )
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from varro.agent.memory import SessionStore
-    from varro.agent.assistant import agent
+from varro.agent.memory import SessionStore
+from varro.agent.assistant import agent
 
 
 async def assistant_msg(msg_content: str):
@@ -158,12 +155,10 @@ class PlaceholderParser:
 # ToolStepBuilder
 # ---------------------------------------------------------------------------
 TOOL_NAME2TITLE = {
-    "get_portfolio_details": "henter data",
-    "get_portfolio_returns": "henter data",
-    "get_user_portfolio_projections": "henter data",
+    "sql_query": "henter data",
+    "view_column_values": "henter data",
     "memory": "konsulterer hukommelse",
     "jupyter_notebook": "beregner",
-    "set_dashboard_state": "opdaterer dashboard",
     "web_search": "søger på internettet",
 }
 

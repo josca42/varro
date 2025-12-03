@@ -1,15 +1,13 @@
 import chainlit as cl
 from varro.agent.memory import SessionStore
 from varro.chat.message import assistant_msg
-from varro.db import crud
+from varro.db import crud, models
 
 
 # ────────────────────────────  Chat lifecycle  ───────────────────── #
 @cl.on_chat_start
 async def start():
-    email = cl.user_session.get("user").identifier
-    user = crud.user.get_with_plans(email=email)
-
+    user = models.User(id=1, email="test@test.com")
     cl.user_session.set("message_history", [])
     cl.user_session.set("session_store", SessionStore(user=user))
 

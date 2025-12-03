@@ -1,0 +1,35 @@
+/* Footer credit */
+a[href*="github.com/Chainlit/chainlit"] {
+    display: none !important;
+}
+
+/* Header “Readme” tab */
+button[data-testid="readme-button"],
+a[title="Readme"] {
+    display: none !important;
+}
+
+/* Theme toggle (sun / moon icon) */
+button[id="theme-toggle"] {
+    display: none !important;
+}
+
+button[id="readme-button"] {
+    display: none !important;
+}
+
+button[id="user-nav-button"] {
+    display: none !important;
+}
+
+/* Hide the welcome-screen logo */
+[data-testid="welcome-logo"],
+img[alt="Chainlit logo"],
+svg[aria-label="ChainlitLogo"] {
+    display: none !important;
+}
+
+
+.watermark {
+    display: none !important;
+}

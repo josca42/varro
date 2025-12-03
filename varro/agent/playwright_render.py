@@ -1,5 +1,6 @@
 import asyncio
 from playwright.async_api import async_playwright, Browser
+from playwright.async_api import Error
 
 __all__ = ["start_browser", "stop_browser", "html_to_png"]
 
@@ -57,7 +58,8 @@ async def stop_browser() -> None:
 
 async def html_to_png(html: str, *, width: int = 600, height: int = 400) -> bytes:
     """
-    Render an arbitrary HTML string to PNG bytes using the global browser.
+    Render a Plotly HTML string to PNG bytes.
+    - Waits until Plotly's graph SVG/canvas is present
     """
     if _browser is None:  # safety net (should be started already)
         await start_browser()
@@ -65,27 +67,23 @@ async def html_to_png(html: str, *, width: int = 600, height: int = 400) -> byte
     page = await _browser.new_page(  # type: ignore[arg-type]
         viewport={"width": width, "height": height}
     )
-    # wait_until="networkidle" ⇒ Plotly JS fully loaded before screenshot
 
-    await page.set_content(html, wait_until="networkidle")
-    png_bytes = await page.screenshot(type="png")
-    await page.close()
-    return png_bytes
+    try:
+        # Just load the HTML
+        await page.set_content(html)
 
+        # Wait until the Plotly graph actually rendered something:
+        # either an SVG with class .main-svg or a canvas inside the plot container.
+        await page.wait_for_selector(
+            ".plotly-graph-div .main-svg, .plotly-graph-div canvas",
+            timeout=10_000,  # ms
+            state="visible",
+        )
 
-async def test_webgl():
-    await start_browser()
-    context = await _browser.new_context()
-    page = await context.new_page()
-    info = await page.evaluate("""
-    () => {
-    const gl = document.createElement('canvas').getContext('webgl');
-    return gl ? gl.getParameter(gl.VERSION) : 'No WebGL';
-    }
-    """)
-    print(info)
-    await stop_browser()
+        # Optional tiny extra delay if you ever see partial renders:
+        # await page.wait_for_timeout(100)
 
-
-if __name__ == "__main__":
-    asyncio.run(test_webgl())
+        png_bytes = await page.screenshot(type="png")
+        return png_bytes
+    finally:
+        await page.close()

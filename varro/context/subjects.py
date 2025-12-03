@@ -12,6 +12,7 @@ import pandas as pd
 from typing import Callable
 from varro.db.db import engine
 from sqlalchemy import inspect
+from varro.config import COLUMN_VALUES_DIR
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
 SUBJECTS_DATA_DIR = Path.home() / "varro" / "docs" / "fact_tables"
@@ -59,7 +60,7 @@ def create_subject_data(path: list[str], tables: list[str]):
 
         table_dir = tables_dir / table_id
         table_dir.mkdir(parents=True, exist_ok=True)
-        dump_unique_col_vals_and_titles_to_parquet(table_dir, table_id)
+        dump_unique_col_vals_and_titles_to_parquet(table_id)
 
 
 def create_subject_overview_md(tables: list[str]):
@@ -89,8 +90,10 @@ def create_table_overview_md(table: str):
     return format_fact_table_overview(table_info)
 
 
-def dump_unique_col_vals_and_titles_to_parquet(table_dir: Path, table: str):
+def dump_unique_col_vals_and_titles_to_parquet(table: str):
     table_info = get_raw_value_mappings(table)
+    table_dir = COLUMN_VALUES_DIR / table
+    table_dir.mkdir(parents=True, exist_ok=True)
     for col, values in table_info.items():
         pd.DataFrame(values).to_parquet(table_dir / f"{col}.parquet")
 

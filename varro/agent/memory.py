@@ -17,6 +17,9 @@ from varro.db.models.user import User
 from pathlib import Path
 import shutil
 
+MEMORY_DIR = Path("/mnt/HC_Volume_103849439/memories")
+DOCS_DIR = Path("/root/varro/docs")
+
 
 @dataclass
 class SessionStore:
@@ -37,17 +40,26 @@ class SessionStore:
 
 
 class Memory(BetaAbstractMemoryTool):
-    def __init__(self, user_id: int, base_dir: str = "/root/varro/docs"):
+    def __init__(self, user_id: int):
         super().__init__()
-        self.root = Path(base_dir) / str(user_id)
+        self.root = MEMORY_DIR / str(user_id)
         self.root.mkdir(parents=True, exist_ok=True)
 
     def _resolve(self, virtual_path: str) -> Path:
+        if virtual_path.startswith("/memories/docs"):
+            relative = virtual_path.removeprefix("/memories/docs").lstrip("/")
+            real_path = (DOCS_DIR / relative).resolve()
+            if not real_path.is_relative_to(DOCS_DIR.resolve()):
+                raise PermissionError(f"Access denied: {virtual_path}")
+            return real_path
         relative = virtual_path.removeprefix("/memories").lstrip("/")
         real_path = (self.root / relative).resolve()
         if not real_path.is_relative_to(self.root.resolve()):
             raise PermissionError(f"Access denied: {virtual_path}")
         return real_path
+
+    def _is_docs_path(self, path: Path) -> bool:
+        return path.resolve().is_relative_to(DOCS_DIR.resolve())
 
     def view(self, command: BetaMemoryTool20250818ViewCommand) -> str:
         path = self._resolve(command.path)
@@ -67,12 +79,16 @@ class Memory(BetaAbstractMemoryTool):
 
     def create(self, command: BetaMemoryTool20250818CreateCommand) -> str:
         path = self._resolve(command.path)
+        if self._is_docs_path(path):
+            raise PermissionError("Write operations not allowed in /memories/docs")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(command.file_text or "")
         return f"Created {command.path}"
 
     def str_replace(self, command: BetaMemoryTool20250818StrReplaceCommand) -> str:
         path = self._resolve(command.path)
+        if self._is_docs_path(path):
+            raise PermissionError("Write operations not allowed in /memories/docs")
         content = path.read_text()
         old, new = command.old_str or "", command.new_str or ""
         if content.count(old) != 1:
@@ -84,6 +100,8 @@ class Memory(BetaAbstractMemoryTool):
 
     def insert(self, command: BetaMemoryTool20250818InsertCommand) -> str:
         path = self._resolve(command.path)
+        if self._is_docs_path(path):
+            raise PermissionError("Write operations not allowed in /memories/docs")
         lines = path.read_text().splitlines(keepends=True)
         text = command.insert_text or ""
         if not text.endswith("\n"):
@@ -94,11 +112,15 @@ class Memory(BetaAbstractMemoryTool):
 
     def delete(self, command: BetaMemoryTool20250818DeleteCommand) -> str:
         path = self._resolve(command.path)
+        if self._is_docs_path(path):
+            raise PermissionError("Write operations not allowed in /memories/docs")
         shutil.rmtree(path) if path.is_dir() else path.unlink()
         return f"Deleted {command.path}"
 
     def rename(self, command: BetaMemoryTool20250818RenameCommand) -> str:
         old, new = self._resolve(command.old_path), self._resolve(command.new_path)
+        if self._is_docs_path(old) or self._is_docs_path(new):
+            raise PermissionError("Write operations not allowed in /memories/docs")
         new.parent.mkdir(parents=True, exist_ok=True)
         old.rename(new)
         return f"Renamed {command.old_path} → {command.new_path}"

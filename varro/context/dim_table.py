@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 import pandas as pd
 from varro.db.db import engine
+from varro.config import COLUMN_VALUES_DIR
 
 DIM_TABLE_DESCR_DIR = Path("/root/varro/agents/tasks/dim_table_descr")
 DIM_TABLES_DOCS_DIR = Path("/root/varro/docs/dim_tables")
@@ -61,7 +62,7 @@ def dump_dim_table_values_to_parquet(table_name: str):
     with engine.connect() as conn:
         df = pd.read_sql_query(query, conn)
 
-    output_file = DIM_TABLES_UNIQUE_VALUES_DIR / f"{table_name}.parquet"
+    output_file = COLUMN_VALUES_DIR / f"{table_name}.parquet"
     df.to_parquet(output_file, index=False)
     print(f"Saved {len(df)} rows to {output_file}")
 
@@ -77,5 +78,5 @@ Use sql skill to get dim schema tables. If you start reaching the limit of your 
 All the markdown docs describing the dimension tables should be in danish."""
 
 if __name__ == "__main__":
-    copy_dim_table_docs()
+    # copy_dim_table_docs()
     dump_dim_table_unique_values()
