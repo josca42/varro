@@ -12,10 +12,9 @@ import pandas as pd
 from typing import Callable
 from varro.db.db import engine
 from sqlalchemy import inspect
-from varro.config import COLUMN_VALUES_DIR
+from varro.config import COLUMN_VALUES_DIR, TABLES_DOCS_DIR, SUBJECTS_DOCS_DIR
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
-SUBJECTS_DATA_DIR = Path.home() / "varro" / "docs" / "fact_tables"
 insp = inspect(engine)
 
 
@@ -41,29 +40,24 @@ def walk(node: int, path: list[str], apply_function: Callable) -> None:
 
 
 def create_subject_data(path: list[str], tables: list[str]):
-    subject_dir = SUBJECTS_DATA_DIR.joinpath(*[x for x in path if x != "dst"])
+    subject_dir = SUBJECTS_DOCS_DIR.joinpath(*[x for x in path if x != "dst"])
     subject_dir.mkdir(parents=True, exist_ok=True)
 
-    subject_overview_md = create_subject_overview_md(tables)
-    dump_markdown_to_file(subject_dir / "subject_overview.md", subject_overview_md)
+    subject_readme = create_subject_readme(tables)
+    dump_markdown_to_file(subject_dir / f"{leaf_name}.md", subject_readme)
 
-    tables_dir = subject_dir / "tables"
-    tables_dir.mkdir(parents=True, exist_ok=True)
     for table in tables:
         table_id = table.lower()
         if not insp.has_table(table_id, schema="fact"):
             print(f"Table {table_id} not found in database")
             continue
 
-        table_overview_md = create_table_overview_md(table_id)
-        dump_markdown_to_file(tables_dir / f"{table_id}.md", table_overview_md)
-
-        table_dir = tables_dir / table_id
-        table_dir.mkdir(parents=True, exist_ok=True)
+        table_overview_md = create_table_readme(table_id)
+        dump_markdown_to_file(TABLES_DOCS_DIR / f"{table_id}.md", table_overview_md)
         dump_unique_col_vals_and_titles_to_parquet(table_id)
 
 
-def create_subject_overview_md(tables: list[str]):
+def create_subject_readme(tables: list[str]):
     table_infos, dim_tables = [], set()
     for table in tables:
         table_id = table.lower()
@@ -85,7 +79,7 @@ def create_subject_overview_md(tables: list[str]):
 </fact tables>"""
 
 
-def create_table_overview_md(table: str):
+def create_table_readme(table: str):
     table_info, _ = get_fact_table_info(table)
     return format_fact_table_overview(table_info)
 

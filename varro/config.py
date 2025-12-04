@@ -5,4 +5,7 @@ load_dotenv()
 settings = dotenv_values()
 
 DATA_DIR = Path(settings["DATA_DIR"])
-COLUMN_VALUES_DIR = Path.home() / "column_values"
+DOCS_DIR = Path.home() / "docs"
+COLUMN_VALUES_DIR = DOCS_DIR / "column_values"
+SUBJECTS_DOCS_DIR = DOCS_DIR / "subjects"
+TABLES_DOCS_DIR = DOCS_DIR / "tables"
