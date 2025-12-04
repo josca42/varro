@@ -22,8 +22,7 @@
             "form": {
                 "email": {
                     "label": "Email address",
-                    "required": "email is a required field",
-                    "placeholder": "me@example.com"
+                    "required": "email is a required field"
                 },
                 "password": {
                     "label": "Password",
@@ -65,11 +64,6 @@
                 "attachFiles": "Attach files"
             }
         },
-        "commands": {
-            "button": "Tools",
-            "changeTool": "Change Tool",
-            "availableTools": "Available Tools"
-        },
         "speech": {
             "start": "Start recording",
             "stop": "Stop recording",
@@ -82,16 +76,12 @@
             "errors": {
                 "failed": "Failed to upload",
                 "cancelled": "Cancelled upload of"
-            },
-            "actions": {
-                "cancelUpload": "Cancel upload",
-                "removeAttachment": "Remove attachment"
             }
         },
         "messages": {
             "status": {
-                "using": "Using",
-                "used": "Used"
+                "using": "",
+                "used": ""
             },
             "actions": {
                 "copy": {
@@ -105,8 +95,7 @@
                 "edit": "Edit feedback",
                 "dialog": {
                     "title": "Add a comment",
-                    "submit": "Submit feedback",
-                    "yourFeedback": "Your feedback..."
+                    "submit": "Submit feedback"
                 },
                 "status": {
                     "updating": "Updating",
@@ -120,10 +109,9 @@
             "show": "Show history"
         },
         "settings": {
-            "title": "Settings panel",
-            "customize": "Customize your chat settings here"
+            "title": "Settings panel"
         },
-        "watermark": "LLMs can make mistakes. Check important info."
+        "watermark": "Built with"
     },
     "threadHistory": {
         "sidebar": {
@@ -148,23 +136,9 @@
             "untitled": "Untitled Conversation",
             "menu": {
                 "rename": "Rename",
-                "share": "Share",
                 "delete": "Delete"
             },
             "actions": {
-                "share": {
-                    "title": "Share link to chat",
-                    "button": "Share",
-                    "status": {
-                        "copied": "Link copied",
-                        "created": "Share link created!",
-                        "unshared": "Sharing disabled for this thread"
-                    },
-                    "error": {
-                        "create": "Failed to create share link",
-                        "unshare": "Failed to unshare thread"
-                    }
-                },
                 "delete": {
                     "title": "Confirm deletion",
                     "description": "This will delete the thread as well as its messages and elements. This action cannot be undone",
@@ -189,12 +163,8 @@
     "navigation": {
         "header": {
             "chat": "Chat",
-            "readme": "Readme",
-            "theme": {
-                "light": "Light Theme",
-                "dark": "Dark Theme",
-                "system": "Follow System"
-            }
+            "readme": "",
+            "theme": {}
         },
         "newChat": {
             "button": "New Chat",
@@ -236,10 +206,5 @@
         "security": "Security",
         "beta": "Beta",
         "best-practice": "Best Practice"
-    },
-    "components": {
-        "MultiSelectInput": {
-            "placeholder": "Select..."
-        }
     }
 }

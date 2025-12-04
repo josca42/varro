@@ -1,6 +1,5 @@
 from pathlib import Path
-from varro.config import SUBJECTS_DOCS_DIR
-import difflib
+from varro.config import TABLES_DOCS_DIR, SUBJECTS_DOCS_DIR
 
 
 def generate_hierarchy(docs_dir: Path = SUBJECTS_DOCS_DIR) -> str:
@@ -24,7 +23,7 @@ def generate_hierarchy(docs_dir: Path = SUBJECTS_DOCS_DIR) -> str:
             leaves = sorted(
                 d.name
                 for d in mid.iterdir()
-                if d.is_dir() and (d / "subject_overview.md").exists()
+                if d.is_dir() and (d / "README.md").exists()
             )
             if leaves:
                 leaves_str = ", ".join(leaves)
@@ -35,66 +34,63 @@ def generate_hierarchy(docs_dir: Path = SUBJECTS_DOCS_DIR) -> str:
     return "\n".join(lines).rstrip()
 
 
-def find(query: str = "", limit: int = 10) -> list[str]:
+def subject_overview_tool(leaf: str) -> str:
     """
-    Find leaf subjects matching query.
+    Get the README for a leaf subject showing available tables.
 
     Args:
-        query: Search term (matches against path segments)
-        limit: Max results to return
+        leaf: Full path "arbejde_og_indkomst/indkomst_og_løn/løn"
+              or unique leaf name "løn"
 
     Returns:
-        List of matching paths like "borgere/befolkning/befolkningstal"
+        Content of the subject's README.md
+
+    Raises:
+        FileNotFoundError: No matching subject
+        ValueError: Ambiguous leaf name
     """
-    all_paths = _all_leaves()
+    leaf = leaf.strip("/").lower()
 
-    if not query:
-        return all_paths[:limit]
+    # Try as full path first
+    full_path = SUBJECTS_DOCS_DIR / leaf / "README.md"
+    if full_path.exists():
+        return full_path.read_text()
 
-    query = query.lower().strip("/")
+    # Try as leaf name
+    matches = list(SUBJECTS_DOCS_DIR.glob(f"**/{leaf}/README.md"))
 
-    # Exact segment match first
-    exact = [p for p in all_paths if query in p.lower()]
-    if exact:
-        return exact[:limit]
-
-    # Fuzzy fallback
-    close = difflib.get_close_matches(query, all_paths, n=limit, cutoff=0.4)
-    return close
-
-
-def overview(path: str) -> str:
-    """
-    Get subject_overview.md content for a leaf subject.
-
-    Args:
-        path: Full path like "borgere/befolkning/befolkningstal"
-              or unique leaf name like "befolkningstal"
-
-    Returns:
-        Content of subject_overview.md
-    """
-    path = path.strip("/").lower()
-
-    # Try as full path
-    full = SUBJECTS_DOCS_DIR / path / "subject_overview.md"
-    if full.exists():
-        return full.read_text()
-
-    # Try as leaf name (search)
-    matches = list(SUBJECTS_DOCS_DIR.glob(f"**/{path}/subject_overview.md"))
     if len(matches) == 1:
         return matches[0].read_text()
     elif len(matches) > 1:
         paths = sorted(str(m.parent.relative_to(SUBJECTS_DOCS_DIR)) for m in matches)
-        raise ValueError(f"Ambiguous. Matches: {paths}")
+        raise ValueError(f"Ambiguous: {leaf!r} matches {paths}")
 
-    raise FileNotFoundError(f"No subject found: {path}")
+    raise FileNotFoundError(f"Subject not found: {leaf}")
 
 
-def _all_leaves() -> list[str]:
-    """Get all leaf subject paths."""
-    return sorted(
-        str(p.parent.relative_to(SUBJECTS_DOCS_DIR))
-        for p in SUBJECTS_DOCS_DIR.glob("**/subject_overview.md")
-    )
+def table_docs_tool(table_id: str) -> str:
+    """
+    Get documentation for any table (fact or dimension).
+
+    Args:
+        table_id: Table identifier like "lon10", "nuts",
+                  or with schema prefix "fact.lon10", "dim.nuts"
+
+    Returns:
+        Content of the table's markdown documentation
+
+    Raises:
+        FileNotFoundError: Table docs don't exist
+    """
+    table_id = table_id.strip().lower()
+
+    # Strip schema prefix if present
+    if "." in table_id:
+        table_id = table_id.split(".")[-1]
+
+    path = TABLES_DOCS_DIR / f"{table_id}.md"
+
+    if not path.exists():
+        raise FileNotFoundError(f"No docs for table: {table_id}")
+
+    return path.read_text()

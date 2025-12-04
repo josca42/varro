@@ -44,7 +44,7 @@ def create_subject_data(path: list[str], tables: list[str]):
     subject_dir.mkdir(parents=True, exist_ok=True)
 
     subject_readme = create_subject_readme(tables)
-    dump_markdown_to_file(subject_dir / f"{leaf_name}.md", subject_readme)
+    dump_markdown_to_file(subject_dir / "README.md", subject_readme)
 
     for table in tables:
         table_id = table.lower()

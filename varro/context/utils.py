@@ -24,17 +24,30 @@ def normalize_fact_col_name(name: str) -> str:
     return name.lower().replace("å", "a").replace("ø", "o").replace("æ", "ae")
 
 
-def fuzzy_match(query: str, df: pd.DataFrame, limit: int = 5) -> str:
-    search_results = process.extract(query, df["text"], limit=limit)
+def fuzzy_match(
+    query: str, df: pd.DataFrame, limit: int = 5, schema: str = "fact", name: str = "df"
+) -> str:
+    if schema == "fact":
+        col = "text"
+        id_col = "id"
+        label_name = "label"
+    elif schema == "dim":
+        col = "titel"
+        id_col = "kode"
+        label_name = "titel"
+    else:
+        raise ValueError(f"Invalid schema: {schema}")
+
+    search_results = process.extract(query, df[col], limit=limit)
     matches = []
     for choice, similarity, index in search_results:
         matches.append(
             {
-                "id": df.iloc[index]["id"],
-                "label": choice,
+                id_col: df.iloc[index][id_col],
+                label_name: choice,
             }
         )
-    return df_preview(pd.DataFrame(matches), max_row=limit)
+    return df_preview(pd.DataFrame(matches), max_rows=limit, name=name)
 
 
 FACT_TABLES_NOT_IN_DB = [

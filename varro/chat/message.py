@@ -157,7 +157,8 @@ class PlaceholderParser:
 TOOL_NAME2TITLE = {
     "sql_query": "henter data",
     "view_column_values": "henter data",
-    "memory": "konsulterer hukommelse",
+    "subject_overview": "konsulterer hukommelse",
+    "table_docs": "konsulterer hukommelse",
     "jupyter_notebook": "beregner",
     "web_search": "søger på internettet",
 }

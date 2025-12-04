@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 import pandas as pd
 from varro.db.db import engine
-from varro.config import COLUMN_VALUES_DIR
+from varro.config import COLUMN_VALUES_DIR, TABLES_DOCS_DIR
 
 DIM_TABLE_DESCR_DIR = Path("/root/varro/agents/tasks/dim_table_descr")
 DIM_TABLES_DOCS_DIR = Path("/root/varro/docs/dim_tables")
@@ -29,10 +29,7 @@ def get_short_dim_descrs_md(dim_tables: set[str]):
 
 def copy_dim_table_docs():
     source_dir = DIM_TABLE_DESCR_DIR
-    dest_dir = Path("/root/varro/docs/dim_tables")
-
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
+    dest_dir = TABLES_DOCS_DIR
     for md_file in source_dir.glob("*.md"):
         if "_short" not in md_file.stem:
             shutil.copy2(md_file, dest_dir / md_file.name)
@@ -78,5 +75,5 @@ Use sql skill to get dim schema tables. If you start reaching the limit of your 
 All the markdown docs describing the dimension tables should be in danish."""
 
 if __name__ == "__main__":
-    # copy_dim_table_docs()
+    copy_dim_table_docs()
     dump_dim_table_unique_values()
