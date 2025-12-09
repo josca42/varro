@@ -11,6 +11,7 @@ from pydantic_ai import (
     BinaryContent,
     WebSearchTool,
     WebSearchUserLocation,
+    ModelRetry,
 )
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
@@ -29,6 +30,7 @@ from varro.context.tools import (
     subject_overview_tool,
     table_docs_tool,
 )
+from sqlalchemy import text
 
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
@@ -155,8 +157,11 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
         query: The SQL query to execute.
         df_name: The name of the dataframe containing the data from the query.
     """
-    with engine.connect() as conn:
-        df = pd.read_sql(query, conn)
+    try:
+        with engine.connect() as conn:
+            df = pd.read_sql(text(query), conn)
+    except Exception as e:
+        raise ModelRetry(e)
     if df_name:
         ctx.deps.dfs[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
