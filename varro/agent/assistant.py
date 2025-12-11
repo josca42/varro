@@ -22,6 +22,7 @@ from pathlib import Path
 import logfire
 from varro.agent.jupyter_kernel import JupyterCodeExecutor
 from varro.agent.playwright_render import html_to_png
+from varro.agent.utils import get_dim_tables
 from varro.db.db import engine
 from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
@@ -35,8 +36,7 @@ from sqlalchemy import text
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
 
-DIM_TABLES_DOCS_DIR = Path("/root/varro/docs/dim_tables")
-DIM_TABLES = [md_file.stem for md_file in DIM_TABLES_DOCS_DIR.glob("*.md")]
+DIM_TABLES = get_dim_tables()
 
 
 sonnet_model = AnthropicModel("claude-sonnet-4-5")
@@ -99,7 +99,12 @@ def subject_overview(leaf: str):
         FileNotFoundError: No matching subject
         ValueError: Ambiguous leaf name
     """
-    return subject_overview_tool(leaf)
+    try:
+        return subject_overview_tool(leaf)
+    except FileNotFoundError as e:
+        raise ModelRetry(
+            f"No README.md found for subject: {leaf}. Could it be a root or mid subject?"
+        )
 
 
 @agent.tool_plain(docstring_format="google")
@@ -117,7 +122,10 @@ def table_docs(table: str):
     Raises:
         FileNotFoundError: Table docs don't exist
     """
-    return table_docs_tool(table)
+    try:
+        return table_docs_tool(table)
+    except FileNotFoundError as e:
+        raise ModelRetry(f"No table docs found for table: {table}.")
 
 
 @agent.tool_plain(docstring_format="google")
