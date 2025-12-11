@@ -4,8 +4,6 @@ This project aims to create building blocks that make it straightforward to let 
 
 ## Code
 
-For a quick code walkthrough see this video
-
 #### /data
 1. All public tables from denmarks statistics along with table descriptions and subject hierachies are downloaded to disk. /data/statbank_to_disk/*
 2. Claude code then analyses the different fact tables and creates links between columns in fact tables and dimension tables from https://www.dst.dk/da/Statistik/dokumentation/nomenklaturer.  /data/fact_col_to_dim_table
