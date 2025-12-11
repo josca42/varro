@@ -1,6 +1,6 @@
 # Varro
 
-This project aims to create building blocks that make it straightforward to let an AI reason about data from denmarks statistics. An project overview is given in this [video](https://www.youtube.com/watch?v=RnVnrH4BBsI)
+This project aims to create building blocks that make it straightforward to let an AI reason about data from denmarks statistics. A project overview is given in this [video](https://www.youtube.com/watch?v=RnVnrH4BBsI)
 
 ## Code
 
