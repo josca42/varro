@@ -40,7 +40,8 @@ The chat-ui is specified in ui_chat/app.py
 
 Todays large organisations are riddled with stringent rules and bureaucracy thet helps make processes more scalable. Ideally everyone would like a simpler system, where an agent made informed decisions on a case by case basis. That is how things used to be. Fewer rules and more agency. AI gives us the possibility of creating a scalable version of what we used to have. A personal connection inside organisations that helps us make the right decisions. 
 
-This project is a "soft API" to denmark statistics that allows for more human ways of interacting with data about Denmark. Giving you the agency to explore the truth about subjects you care about. Whether that be immmigration, your municipality's finances or ..?
+This project is an attempt at creating a personal connection inside Denmarks Statistics. Giving you the agency to explore the truth about subjects you care about. Whether that be immmigration, your municipality's finances or housing prices. 
+It's a also a sandbox for experimenting with getting an AI to reason about public administrative data in order to one day make informed decisions on a case by case basis.
 
 ### Informing the narrative upstream
 
