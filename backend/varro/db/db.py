@@ -9,3 +9,6 @@ ASYNC_DSN = f"postgresql+asyncpg://{settings['DBUSER']}:{settings['DBPASS']}@loc
 CHAINLIT_DSN = f"postgresql+asyncpg://{settings['DBUSER']}:{settings['DBPASS']}@localhost:5432/chainlit"
 
 engine = create_engine(POSTGRES_SQLALCHEMY_URI)
+
+
+POSTGRES_DSN = "postgresql://postgres:dme4yzx0a710xy5@localhost:5432/neocortex"

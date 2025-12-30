@@ -2,7 +2,7 @@
 
 This project aims to create building blocks that make it straightforward to let an AI reason about data from denmarks statistics. A project overview is given in this [video](https://www.youtube.com/watch?v=RnVnrH4BBsI)
 
-## Code
+## Backend Code
 
 #### /data
 1. All public tables from denmarks statistics along with table descriptions and subject hierachies are downloaded to disk. /data/statbank_to_disk/*
@@ -24,25 +24,3 @@ For more in depth analysis the agent has access to a stateful jupyter notebook t
 #### /chat
 The agent can be accessed through a standard chat interface using chainlit. For nicer tool calling ui and display of inline plots and dataframes then some custom message processing has been added in /chat/message.py .
 The chat-ui is specified in ui_chat/app.py
-
-## Roadmap
-
-- Create chatgpt plugin
-- Metabase integration and new UI
-- Better context
-- Better agent
-
-## Why
-
-### More agency and less bureaucracy
-
-> AI is a solution to the increasing complexity of the modern world causing the rise of bureaucracy and information overload. - Rohit Krishnan
-
-Todays large organisations are riddled with stringent rules and bureaucracy thet helps make processes more scalable. Ideally everyone would like a simpler system, where an agent made informed decisions on a case by case basis. That is how things used to be. Fewer rules and more agency. AI gives us the possibility of creating a scalable version of what we used to have. A personal connection inside organisations that helps us make the right decisions. 
-
-This project is an attempt at creating a personal connection inside Denmarks Statistics. Giving you the agency to explore the truth about subjects you care about. Whether that be immmigration, your municipality's finances or housing prices. 
-It's a also a sandbox for experimenting with getting an AI to reason about public administrative data in order to one day make informed decisions on a case by case basis.
-
-### Informing the narrative upstream
-
-...

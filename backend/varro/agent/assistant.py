@@ -17,10 +17,10 @@ from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
-from varro.agent.memory import SessionStore
+from varro.agent.memory import Memory, SessionStore
+from varro.evidence import EvidenceManager
 from pathlib import Path
 import logfire
-from varro.agent.jupyter_kernel import JupyterCodeExecutor
 from varro.agent.playwright_render import html_to_png
 from varro.agent.utils import get_dim_tables
 from varro.db.db import engine
@@ -32,6 +32,9 @@ from varro.context.tools import (
     table_docs_tool,
 )
 from sqlalchemy import text
+import matplotlib.pyplot as plt
+import io
+from pydantic_ai.builtin_tools import MemoryTool
 
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
@@ -50,6 +53,7 @@ agent = Agent(
     model_settings=sonnet_settings,
     deps_type=SessionStore,
     builtin_tools=[
+        MemoryTool(),
         WebSearchTool(
             search_context_size="medium",
             user_location=WebSearchUserLocation(
@@ -81,6 +85,14 @@ def get_prompts(prompts):
     prompts["CURRENT_DATE"] = datetime.now().strftime("%Y-%m-%d")
     prompts["SUBJECT_HIERARCHY"] = generate_hierarchy()
     return prompts
+
+
+@agent.tool()
+async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
+    if ctx.deps.memory is None:
+        ctx.deps.memory = Memory(ctx.deps.user.id)
+
+    return ctx.deps.memory.call(command)
 
 
 @agent.tool_plain(docstring_format="google")
@@ -171,7 +183,7 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
     except Exception as e:
         raise ModelRetry(e)
     if df_name:
-        ctx.deps.dfs[df_name] = df
+        ctx.deps.shell.user_ns[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
         return f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
     else:
@@ -205,71 +217,95 @@ async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
     Args:
         code (str): The Python code to execute.
     """
+    res = ctx.deps.shell.run_cell(code=code)
+    if res.error_before_exec:
+        return ModelRetry(repr(res.error_before_exec))
+    if res.error_in_exec:
+        return ModelRetry(repr(res.error_in_exec))
 
-    def print_output(x: str) -> str:
-        return "<printed output>\n" + x + "\n</printed output>"
+    if not res.result and not res.outputs:
+        return res.stdout
 
-    # Start kernel first time the tool is used
-    if ctx.deps.jupyter is None:
-        executor = JupyterCodeExecutor(
-            work_dir=Path(f"/home/jonathan/data/{ctx.deps.user.id}")
-        )
-        executor.start()
-        ctx.deps.jupyter = executor  # persist for session reuse
+    raw_outputs = [res.result] + res.outputs if res.result else res.outputs
 
-    # Make sure all dataframes are added to the notebook
-    for name, df in ctx.deps.dfs.items():
-        if name not in ctx.deps.dfs_added_to_notebook:
-            ctx.deps.jupyter.put_df(name, df)
-            ctx.deps.dfs_added_to_notebook.append(name)
+    processed = []
+    for output in raw_outputs:
+        converted = await convert_output(output)
+        if converted is not None:
+            processed.append(converted)
 
-    # Execute the code
-    jupyter_output = ctx.deps.jupyter.execute(code=code)
-    if jupyter_output.exit_code != 0:
-        return jupyter_output.prints
+    return ToolReturn(return_value=res.stdout, content=processed)
 
-    out_str = print_output(jupyter_output.prints) if jupyter_output.prints else ""
-    if not jupyter_output.objects:
-        return out_str
 
-    rendered_output = ""
-    outputs = []
-    for obj_name in jupyter_output.objects:
-        obj_path = ctx.deps.jupyter.output_file_map[obj_name]
-        try:
-            obj, obj_type = ctx.deps.jupyter._load_output(obj_path)
-        except Exception as e:
-            print(f"Error loading output {obj_name} from {obj_path}: {e}")
-            continue
+@agent.tool(docstring_format="google")
+async def create_dashboard(ctx: RunContext[SessionStore], name: str) -> str:
+    """
+    Create an Evidence dashboard and start the dev server.
 
-        rendered_output += f"{obj_name}: {obj_type}\n"
-        if obj_type == "matplotlib figure":
-            ctx.deps.figs[obj_name] = obj
-            outputs.append(
-                BinaryContent(
-                    identifier=obj_name,
-                    data=obj,
-                    media_type="image/png",
-                )
+    After calling this, use the memory tool to write markdown pages:
+    - /memories/d/dashboard/pages/index.md (main page)
+    - /memories/d/dashboard/pages/other.md (additional pages)
+
+    Evidence markdown syntax:
+    - SQL queries: ```sql query_name SELECT ... ```
+    - Components reference queries: <LineChart data={query_name} x="col" y="val" />
+
+    Common components:
+    - <LineChart data={query} x="date" y="value" />
+    - <BarChart data={query} x="category" y="value" />
+    - <BigValue data={query} value="total" />
+    - <DataTable data={query} />
+
+    SQL runs against fact.* and dim.* schemas.
+
+    Args:
+        name: Name for the dashboard.
+
+    Returns:
+        Instructions for writing dashboard content.
+    """
+    evidence = EvidenceManager(user_id=ctx.deps.user.id)
+    port = await evidence.start_server_async(name=name)
+    ctx.deps.evidence = evidence
+
+    # Send port marker for frontend to detect
+    await cl.Message(content=f"<!--DASHBOARD_PORT:{port}-->").send()
+
+    return f"Dashboard started on port {port}. Use memory tool to write pages to /memories/d/dashboard/pages/index.md"
+
+
+async def convert_output(output) -> Any | None:
+    """Convert a cell output to a format suitable for ToolReturn content."""
+    if isinstance(output, pd.DataFrame):
+        return df_preview(output, max_rows=30)
+    if isinstance(output, go.Figure):
+        png_bytes = await plotly_figure_to_png(output)
+        return BinaryContent(data=png_bytes, media_type="image/png")
+    if isinstance(output, plt.Figure):
+        png_bytes = matplotlib_figure_to_png(output)
+        return BinaryContent(data=png_bytes, media_type="image/png")
+
+    if hasattr(output, "data"):
+        data = output.data
+        if "image/png" in data:
+            return BinaryContent(data=data["image/png"], media_type="image/png")
+        if "application/vnd.plotly.v1+json" in data:
+            png_bytes = await plotly_figure_to_png(
+                go.Figure(data["application/vnd.plotly.v1+json"])
             )
-        elif obj_type == "plotly figure":
-            ctx.deps.figs[obj_name] = go.Figure(obj)
-            html_str = pio.to_html(obj, full_html=True, include_plotlyjs="cdn")
-            png_bytes = await html_to_png(html_str, width=600, height=600)
-            outputs.append(
-                BinaryContent(
-                    identifier=obj_name, data=png_bytes, media_type="image/png"
-                )
-            )
-        elif obj_type == "pandas DataFrame":
-            ctx.deps.dfs[obj_name] = obj
-            outputs.append(df_preview(obj, max_rows=30, name=obj_name))
-        else:
-            raise ValueError(f"Unsupported object type: {obj_type}")
+            return BinaryContent(data=png_bytes, media_type="image/png")
+        return None
 
-    out_str += (
-        "\n<rendered output and cell output>\n"
-        + rendered_output
-        + "\n</rendered output and cell output>"
-    )
-    return ToolReturn(return_value=out_str, content=outputs)
+    return output
+
+
+def matplotlib_figure_to_png(fig: plt.Figure) -> bytes:
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    return buf.getvalue()
+
+
+async def plotly_figure_to_png(fig: go.Figure) -> bytes:
+    html_str = pio.to_html(fig, full_html=True, include_plotlyjs="cdn")
+    return await html_to_png(html_str, width=600, height=600)

@@ -20,7 +20,9 @@ class CrudUser(CrudBase[User]):
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
-    def create_with_password(self, email: str, password: str, name: str | None = None) -> User:
+    def create_with_password(
+        self, email: str, password: str, name: str | None = None
+    ) -> User:
         password_hash = self.hash_password(password)
         new_user = User(email=email, password_hash=password_hash, name=name)
         return self.create(new_user)

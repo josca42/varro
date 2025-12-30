@@ -13,7 +13,9 @@ async def start():
     cl_user = cl.user_session.get("user")
     db_user = crud.user.get_by_email(cl_user.identifier)
     if not db_user:
-        db_user = crud.user.create(models.User(email=cl_user.identifier, name=cl_user.identifier))
+        db_user = crud.user.create(
+            models.User(email=cl_user.identifier, name=cl_user.identifier)
+        )
     cl.user_session.set("message_history", [])
     cl.user_session.set("session_store", SessionStore(user=db_user))
 
@@ -40,14 +42,9 @@ async def assistant_handler(msg: cl.Message):
 
 @cl.on_chat_end
 async def on_chat_end():
-    # Gracefully stop the kernel if it exists
-    store: SessionStore = cl.user_session.get("session_store")
-    if store and getattr(store, "jupyter", None):
-        try:
-            store.jupyter.stop()
-
-        except Exception:
-            pass
+    # Gracefully stop resources
+    store = cl.user_session.get("session_store")
+    store.cleanup()
 
 
 if __name__ == "__main__":
