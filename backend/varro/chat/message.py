@@ -18,7 +18,6 @@ from pydantic_ai.messages import (
     ToolCallPart,
     BuiltinToolCallPart,
 )
-from varro.agent.memory import SessionStore
 from varro.agent.assistant import agent
 
 
@@ -27,7 +26,7 @@ async def assistant_msg(msg_content: str):
         cl.user_session.get("message_history", [])
     )
     store = cl.user_session.get("session_store")
-    handler = MessageStreamHandler(store)
+    handler = MessageStreamHandler(store.shell.user_ns)
 
     async with agent.iter(
         msg_content,
@@ -161,6 +160,7 @@ TOOL_NAME2TITLE = {
     "table_docs": "konsulterer hukommelse",
     "jupyter_notebook": "beregner",
     "web_search": "søger på internettet",
+    "memory": "konsulterer hukommelse",
 }
 
 
@@ -208,8 +208,8 @@ class MessageStreamHandler:
     """
 
     # ------------------------------------------------------------------ init
-    def __init__(self, store: "SessionStore") -> None:
-        self._store = store
+    def __init__(self, user_ns: dict) -> None:
+        self._user_ns = user_ns
 
         self._placeholder_parser: PlaceholderParser = PlaceholderParser()
         self._container_step: cl.Step | None = None
@@ -344,11 +344,11 @@ class MessageStreamHandler:
             await self._response_msg.update()
 
         if atype == "df":
-            obj = self._store.dfs.get(akey)
+            obj = self._user_ns.get(akey)
             df = obj.reset_index() if not isinstance(obj.index, pd.RangeIndex) else obj
             element = cl.Dataframe(name=akey, data=df.round(4), display="inline")
         elif atype == "fig":
-            obj = self._store.figs.get(akey)
+            obj = self._user_ns.get(akey)
             element = cl.Plotly(name=akey, figure=obj, display="inline")
         else:
             raise ValueError(f"Invalid object type: {atype}")

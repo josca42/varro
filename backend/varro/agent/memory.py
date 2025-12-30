@@ -25,7 +25,7 @@ class SessionStore:
     """Stores objects and jupyter kernel"""
 
     user: User
-    jupyter: TerminalInteractiveShell | None = None
+    shell: TerminalInteractiveShell | None = None
     evidence: "EvidenceManager" | None = None
     memory: Memory | None = None
     cached_prompts: Dict[str, str] = field(default_factory=dict)
@@ -38,7 +38,7 @@ class SessionStore:
         self.evidence = None
 
     def cleanup(self):
-        self.shell.reset(new=False)
+        self.shell.reset(new_session=False)
         self.shell.history_manager.end_session()
         if self.evidence:
             self.evidence.stop()

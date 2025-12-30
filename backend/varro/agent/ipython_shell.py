@@ -18,7 +18,6 @@ def run_cell(self, cell, timeout=None):
         with capture_output() as io:
             result = self.orig_run(cell)
         result.stdout = io.stdout
-        result.outputs = io.outputs
         return result
     except TimeoutError as e:
         result = self.ExecutionResult(error_before_exec=None, error_in_exec=e)

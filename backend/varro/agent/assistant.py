@@ -77,7 +77,6 @@ async def get_system_prompt(ctx: RunContext[SessionStore]) -> str:
         prompts = get_prompts(prompts)
         ctx.deps.cached_prompts = prompts
 
-    prompts["SESSION_STORE"] = ctx.deps.data_in_store()
     return crud.prompt.render_prompt(name="rigsstatistiker", **prompts)
 
 
@@ -191,7 +190,9 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
 
 
 @agent.tool(docstring_format="google")
-async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
+async def jupyter_notebook(
+    ctx: RunContext[SessionStore], code: str, show: list[str] = []
+):
     """
     Stateful Jupyter notebook environment. Each message with python code will be executed as a new cell in the notebook.
     All printed output in the notebook cell will be included in the response. Likewise if a figure is shown - fig.show() - or displayed - display(fig) - it will be included in the response. And if the cell output is a dataframe it will be included in the response.
@@ -217,24 +218,21 @@ async def jupyter_notebook(ctx: RunContext[SessionStore], code: str):
     Args:
         code (str): The Python code to execute.
     """
-    res = ctx.deps.shell.run_cell(code=code)
+    res = ctx.deps.shell.run_cell(code)
     if res.error_before_exec:
-        return ModelRetry(repr(res.error_before_exec))
+        raise ModelRetry(repr(res.error_before_exec))
     if res.error_in_exec:
-        return ModelRetry(repr(res.error_in_exec))
+        raise ModelRetry(repr(res.error_in_exec))
 
-    if not res.result and not res.outputs:
+    if not show:
         return res.stdout
 
-    raw_outputs = [res.result] + res.outputs if res.result else res.outputs
+    elements_rendered = []
+    for element in show:
+        rendered = await show_element(element)
+        elements_rendered.append(rendered)
 
-    processed = []
-    for output in raw_outputs:
-        converted = await convert_output(output)
-        if converted is not None:
-            processed.append(converted)
-
-    return ToolReturn(return_value=res.stdout, content=processed)
+    return ToolReturn(return_value=res.stdout, content=elements_rendered)
 
 
 @agent.tool(docstring_format="google")
@@ -274,29 +272,18 @@ async def create_dashboard(ctx: RunContext[SessionStore], name: str) -> str:
     return f"Dashboard started on port {port}. Use memory tool to write pages to /memories/d/dashboard/pages/index.md"
 
 
-async def convert_output(output) -> Any | None:
+async def show_element(element) -> Any | None:
     """Convert a cell output to a format suitable for ToolReturn content."""
-    if isinstance(output, pd.DataFrame):
-        return df_preview(output, max_rows=30)
-    if isinstance(output, go.Figure):
-        png_bytes = await plotly_figure_to_png(output)
+    if isinstance(element, pd.DataFrame):
+        return df_preview(element, max_rows=30)
+    if isinstance(element, go.Figure):
+        png_bytes = await plotly_figure_to_png(element)
         return BinaryContent(data=png_bytes, media_type="image/png")
-    if isinstance(output, plt.Figure):
-        png_bytes = matplotlib_figure_to_png(output)
+    if isinstance(element, plt.Figure):
+        png_bytes = matplotlib_figure_to_png(element)
         return BinaryContent(data=png_bytes, media_type="image/png")
-
-    if hasattr(output, "data"):
-        data = output.data
-        if "image/png" in data:
-            return BinaryContent(data=data["image/png"], media_type="image/png")
-        if "application/vnd.plotly.v1+json" in data:
-            png_bytes = await plotly_figure_to_png(
-                go.Figure(data["application/vnd.plotly.v1+json"])
-            )
-            return BinaryContent(data=png_bytes, media_type="image/png")
-        return None
-
-    return output
+    else:
+        raise ValueError(f"Invalid output type: {type(element)}")
 
 
 def matplotlib_figure_to_png(fig: plt.Figure) -> bytes:
