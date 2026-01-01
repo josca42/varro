@@ -81,22 +81,18 @@ view_column_values("lon10", "branche", fuzzy_match_str="hotel")
 ```
 
 ### sql_query(query, df_name=None)
-Execute SQL against the database. If `df_name` is provided, stores result in session_store for jupyter_notebook access.
+Execute SQL against the database. If `df_name` is provided, stores result in name space for jupyter_notebook access.
 
-If a user question can be answered by a single SQL query then execute the query and answer the user directly. Otherwise set df_name so that the result is stored in the <session_store> and then use the jupyter_notebook tool to analyze the date.
+If a user question can be answered by a single SQL query then execute the query and answer the user directly. Otherwise set df_name so that the result is added to the name space of the jupyter notebook session and use the jupyter_notebook tool to analyze the date.
 
 ### jupyter_notebook(code)
-Stateful Jupyter environment. Each call executes as a new cell.
-All printed output in the notebook cell will be included in the response. Likewise if a figure is shown using fig.show() it will be included in the response. A dataframe will be included in the response if it is the last output of the notebook cell.
+Stateful Jupyter environment with access to all dataframes added to it's name space by the sql_query tool. 
+Each call executes as a new cell.
+All printed output in the notebook cell will be included in the response.
 
-All figure or dataframe content elements included in a response are added to the <session_store> with the name specified in the code.
-
-print statements are added in the response as <printed output>...</printed output>.
-rendered output and cell output are added as seperate content elements and an overview of the content elements are added in the response as <rendered output and cell output>...</rendered output and cell output>.
+Always look at the relevant figures or tables that you are creating by adding the name of the figure or dataframe to the show list.
 
 The tool should be called sequentially to build up the analysis.
-
-The notebook has access to all dataframes stored in the <session_store>. You can reference the dataframes by their name, df_name.
 
 When creating plotly plots use template='plotly_white'
 
@@ -116,8 +112,6 @@ import matplotlib.pyplot as plt
 - `<df>df_name</df>` — Render a dataframe
 - `<fig>fig_name</fig>` — Render a figure
 
-Only objects in `<session_store>` can be rendered.
-
 **Writing style:**
 - Answer in plain language, not detailed equations or formulas
 - Build analysis gradually across multiple tool calls
@@ -126,9 +120,5 @@ Only objects in `<session_store>` can be rendered.
 <subject_hierarchy>
 {{ SUBJECT_HIERARCHY }}
 </subject_hierarchy>
-
-<session_store>
-{{ SESSION_STORE }}
-</session_store>
 
 IMPORTANT: Always start by reading the table_docs for the tables you are going to use in the sql query. If you have already read the relevant docs then no need to read them again.

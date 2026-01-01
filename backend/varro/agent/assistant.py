@@ -35,6 +35,7 @@ from sqlalchemy import text
 import matplotlib.pyplot as plt
 import io
 from pydantic_ai.builtin_tools import MemoryTool
+from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
 
 logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
@@ -194,15 +195,12 @@ async def jupyter_notebook(
     ctx: RunContext[SessionStore], code: str, show: list[str] = []
 ):
     """
-    Stateful Jupyter notebook environment. Each message with python code will be executed as a new cell in the notebook.
-    All printed output in the notebook cell will be included in the response. Likewise if a figure is shown - fig.show() - or displayed - display(fig) - it will be included in the response. And if the cell output is a dataframe it will be included in the response.
+    Stateful Jupyter notebook environment. Each call executes as a new cell.
+    All printed output in the notebook cell will be included in the response.
 
-    All figure or dataframe content elements included in a response are added to the <session_store> with the name specified in the code.
+    To see figures and dataframes in the response then add the name of the figure or dataframe to the show list.
 
-    print statements are added in the response as <printed output>...</printed output>.
-    rendered output and cell output are added as seperate content elements and an overview of the content elements are added in the response as <rendered output and cell output>...</rendered output and cell output>.
-
-    The tool should be called sequentially to build up the analysis.
+    The notebook has access to all dataframes added to it's name space by the sql_query tool. You can reference the dataframes by their name, df_name.
 
     The notebook is initialized by running the following code in the first cell.
     ```python
@@ -213,11 +211,13 @@ async def jupyter_notebook(
     import matplotlib.pyplot as plt
     ```
 
-    IMPORTANT: Only the figure you call show() on will be added to the <session_store>. If you want to rename a figure then rename the figure and call show() on the renamed figure.
-
     Args:
         code (str): The Python code to execute.
     """
+    if not ctx.deps.shell_imports:
+        ctx.deps.shell.run_cell(JUPYTER_INITIAL_IMPORTS)
+        ctx.deps.shell_imports = True
+
     res = ctx.deps.shell.run_cell(code)
     if res.error_before_exec:
         raise ModelRetry(repr(res.error_before_exec))

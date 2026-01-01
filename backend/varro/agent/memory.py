@@ -29,6 +29,7 @@ class SessionStore:
     evidence: "EvidenceManager" | None = None
     memory: Memory | None = None
     cached_prompts: Dict[str, str] = field(default_factory=dict)
+    shell_imports: bool = False
 
     def __init__(self, user: User):
         self.user = user
@@ -36,6 +37,7 @@ class SessionStore:
         self.cached_prompts = {}
         self.shell = get_shell()
         self.evidence = None
+        self.shell_imports = False
 
     def cleanup(self):
         self.shell.reset(new_session=False)

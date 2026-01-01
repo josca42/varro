@@ -4,6 +4,14 @@ from IPython.utils.capture import capture_output
 
 TerminalInteractiveShell.orig_run = TerminalInteractiveShell.run_cell
 
+JUPYTER_INITIAL_IMPORTS = """
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+"""
+
 
 def run_cell(self, cell, timeout=None):
     "Wrapper for original `run_cell` which adds timeout, memory limit, and output capture"
