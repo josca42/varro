@@ -161,6 +161,7 @@ TOOL_NAME2TITLE = {
     "jupyter_notebook": "beregner",
     "web_search": "søger på internettet",
     "memory": "konsulterer hukommelse",
+    "show_dashboard": "beregner",
 }
 
 

@@ -13,75 +13,63 @@ PORT_RANGE_END = 4000
 
 
 class EvidenceManager:
-    """Manages an Evidence dashboard for a single session."""
+    """Manages Evidence dashboards for a user session."""
 
-    _used_ports: set[int] = set()  # Class-level port tracking across all instances
+    _used_ports: set[int] = set()  # Class-level port tracking
 
     def __init__(self, user_id: int):
         self.user_id = user_id
         self.port: Optional[int] = None
         self.process: Optional[subprocess.Popen] = None
+        self.current: Optional[str] = None  # Currently served dashboard name
 
-    @property
-    def dashboard_path(self) -> Path:
-        return EVIDENCE_USERS_DIR / str(self.user_id) / "dashboard"
+    def dashboard_path(self, name: str) -> Path:
+        return EVIDENCE_USERS_DIR / str(self.user_id) / name
 
-    @property
-    def pages_path(self) -> Path:
-        return self.dashboard_path / "pages"
+    def pages_path(self, name: str) -> Path:
+        return self.dashboard_path(name) / "pages"
 
-    def start_server(self, name: str = "Untitled Dashboard") -> int:
+    async def serve(self, name: str) -> int:
         """
-        Create dashboard from template, start dev server, return port.
+        Serve a dashboard. Stops any running server first.
 
         Args:
-            name: Name for the dashboard
+            name: Dashboard identifier (e.g., "arbejdsmarked-2024")
 
         Returns:
             Port number the dev server is running on
         """
-        self._setup_dashboard()
+        self.stop()
+        self.current = name
+
+        path = self.dashboard_path(name)
+        self._setup_dashboard(path)
+
         self.port = self._find_free_port()
         EvidenceManager._used_ports.add(self.port)
 
         self.process = subprocess.Popen(
             ["npm", "run", "dev", "--", "--port", str(self.port)],
-            cwd=self.dashboard_path,
+            cwd=path,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
 
+        await self._wait_for_server(self.port)
         return self.port
 
-    async def start_server_async(self, name: str = "Untitled Dashboard") -> int:
-        """
-        Async version that waits for the server to be ready.
-
-        Args:
-            name: Name for the dashboard
-
-        Returns:
-            Port number the dev server is running on
-        """
-        port = self.start_server(name)
-        await self._wait_for_server(port)
-        return port
-
-    def _setup_dashboard(self):
-        """Copy template and setup dashboard directory, or reuse existing."""
-        if self.dashboard_path.exists():
-            # Reuse existing dashboard
+    def _setup_dashboard(self, path: Path):
+        """Copy template if dashboard doesn't exist."""
+        if path.exists():
             return
 
-        # Copy template (excluding node_modules)
         shutil.copytree(
             EVIDENCE_TEMPLATE,
-            self.dashboard_path,
+            path,
             ignore=shutil.ignore_patterns("node_modules"),
         )
 
-        # Create symlink for node_modules
-        node_modules_link = self.dashboard_path / "node_modules"
+        node_modules_link = path / "node_modules"
         node_modules_link.symlink_to(EVIDENCE_TEMPLATE / "node_modules")
 
     def _find_free_port(self) -> int:

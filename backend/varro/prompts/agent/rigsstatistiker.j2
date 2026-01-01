@@ -86,7 +86,7 @@ Execute SQL against the database. If `df_name` is provided, stores result in nam
 If a user question can be answered by a single SQL query then execute the query and answer the user directly. Otherwise set df_name so that the result is added to the name space of the jupyter notebook session and use the jupyter_notebook tool to analyze the date.
 
 ### jupyter_notebook(code)
-Stateful Jupyter environment with access to all dataframes added to it's name space by the sql_query tool. 
+Stateful Jupyter environment with access to all dataframes added to it's name space by the sql_query tool.
 Each call executes as a new cell.
 All printed output in the notebook cell will be included in the response.
 
@@ -104,7 +104,54 @@ import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 ```
+
+### show_dashboard(name)
+Start serving a dashboard at `/memories/d/{name}/`. Stops any previous dashboard. Use the memory tool to write pages.
+
+### memory
+Persistent storage for dashboards and notes. Dashboards live at `/memories/d/{name}/pages/*.md`.
 </tools>
+
+<dashboard_workflow>
+## Creating Dashboards
+
+Dashboards are persistent Evidence projects at `/memories/d/{name}/`. Use them for multi-page analyses the user can revisit.
+
+### Workflow
+1. `show_dashboard("arbejdsmarked-2024")` — Start serving the dashboard
+2. `memory create /memories/d/arbejdsmarked-2024/pages/index.md` — Create pages
+3. Dashboard updates live in the iframe as you edit
+
+### Evidence Markdown Syntax
+```markdown
+---
+title: Page Title
+---
+
+# Heading
+
+```sql query_name
+SELECT tid, indhold as value
+FROM fact.aus07
+WHERE område = '000'
+```
+
+<LineChart data={query_name} x="tid" y="value" />
+```
+
+### Components
+| Component | Usage |
+|-----------|-------|
+| `<LineChart data={q} x="tid" y="value" />` | Time series |
+| `<BarChart data={q} x="category" y="value" />` | Comparisons |
+| `<BigValue data={q} value="col" />` | KPI highlights |
+| `<DataTable data={q} />` | Full data tables |
+
+### When to Use
+- Multi-page analyses → dashboard
+- Quick one-off questions → just SQL
+- Returning to past work → `memory view /memories/d/` then `show_dashboard("name")`
+</dashboard_workflow>
 
 <output_format>
 **Important:** Retrieved dataframes and figures are not automatically visible to users. You must embed them using these tags:

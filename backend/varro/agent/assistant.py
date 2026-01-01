@@ -181,7 +181,7 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
         with engine.connect() as conn:
             df = pd.read_sql(text(query), conn)
     except Exception as e:
-        raise ModelRetry(e)
+        raise ModelRetry(str(e))
     if df_name:
         ctx.deps.shell.user_ns[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
@@ -228,7 +228,8 @@ async def jupyter_notebook(
         return res.stdout
 
     elements_rendered = []
-    for element in show:
+    for name in show:
+        element = ctx.deps.shell.user_ns.get(name)
         rendered = await show_element(element)
         elements_rendered.append(rendered)
 
@@ -236,40 +237,26 @@ async def jupyter_notebook(
 
 
 @agent.tool(docstring_format="google")
-async def create_dashboard(ctx: RunContext[SessionStore], name: str) -> str:
+async def show_dashboard(ctx: RunContext[SessionStore], name: str) -> str:
     """
-    Create an Evidence dashboard and start the dev server.
+    Show a dashboard in the iframe. Stops any previous dashboard first.
 
-    After calling this, use the memory tool to write markdown pages:
-    - /memories/d/dashboard/pages/index.md (main page)
-    - /memories/d/dashboard/pages/other.md (additional pages)
-
-    Evidence markdown syntax:
-    - SQL queries: ```sql query_name SELECT ... ```
-    - Components reference queries: <LineChart data={query_name} x="col" y="val" />
-
-    Common components:
-    - <LineChart data={query} x="date" y="value" />
-    - <BarChart data={query} x="category" y="value" />
-    - <BigValue data={query} value="total" />
-    - <DataTable data={query} />
-
-    SQL runs against fact.* and dim.* schemas.
+    Use memory tool to create/edit pages at /memories/d/{name}/pages/*.md
 
     Args:
-        name: Name for the dashboard.
+        name: Dashboard identifier (e.g., "arbejdsmarked-2024")
 
     Returns:
-        Instructions for writing dashboard content.
+        Confirmation with port number.
     """
-    evidence = EvidenceManager(user_id=ctx.deps.user.id)
-    port = await evidence.start_server_async(name=name)
-    ctx.deps.evidence = evidence
+    if not ctx.deps.evidence:
+        ctx.deps.evidence = EvidenceManager(user_id=ctx.deps.user.id)
 
-    # Send port marker for frontend to detect
+    port = await ctx.deps.evidence.serve(name)
+
     await cl.Message(content=f"<!--DASHBOARD_PORT:{port}-->").send()
 
-    return f"Dashboard started on port {port}. Use memory tool to write pages to /memories/d/dashboard/pages/index.md"
+    return f"Dashboard '{name}' running on port {port}. Write pages to /memories/d/{name}/pages/"
 
 
 async def show_element(element) -> Any | None:
