@@ -1,3 +1,4 @@
+import os
 import chainlit as cl
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Union
@@ -254,9 +255,10 @@ async def show_dashboard(ctx: RunContext[SessionStore], name: str) -> str:
 
     port = await ctx.deps.evidence.serve(name)
 
-    await cl.Message(content=f"<!--DASHBOARD_PORT:{port}-->").send()
+    host = os.environ.get("DASHBOARD_HOST", "localhost")
+    await cl.Message(content=f"<!--DASHBOARD:{host}:{port}-->").send()
 
-    return f"Dashboard '{name}' running on port {port}. Write pages to /memories/d/{name}/pages/"
+    return f"Dashboard '{name}' running on {host}:{port}. Write pages to /memories/d/{name}/pages/"
 
 
 async def show_element(element) -> Any | None:

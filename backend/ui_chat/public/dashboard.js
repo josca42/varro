@@ -1,20 +1,22 @@
 // Custom JavaScript for Varro dashboard integration
-// This script detects dashboard port markers and forwards to parent window
+// This script detects dashboard markers and forwards host+port to parent window
 
 (function() {
-  const MARKER_PATTERN = /<!--DASHBOARD_PORT:(\d+)-->/;
-  let lastPort = null;
+  const MARKER_PATTERN = /<!--DASHBOARD:([^:]+):(\d+)-->/;
+  let lastKey = null;
 
-  function checkForPortMarker(node) {
+  function checkForDashboardMarker(node) {
     if (!node || !node.textContent) return;
 
     const match = node.textContent.match(MARKER_PATTERN);
-    if (match && match[1]) {
-      const port = parseInt(match[1], 10);
-      if (port && port !== lastPort && window.parent !== window) {
-        lastPort = port;
-        window.parent.postMessage({ type: 'DASHBOARD_PORT', port: port }, '*');
-        console.log('[Varro] Dashboard port sent to parent:', port);
+    if (match && match[1] && match[2]) {
+      const host = match[1];
+      const port = parseInt(match[2], 10);
+      const key = `${host}:${port}`;
+      if (port && key !== lastKey && window.parent !== window) {
+        lastKey = key;
+        window.parent.postMessage({ type: 'DASHBOARD_PORT', host: host, port: port }, '*');
+        console.log('[Varro] Dashboard sent to parent:', host, port);
       }
     }
   }
@@ -25,20 +27,20 @@
       // Check added nodes
       mutation.addedNodes.forEach(function(node) {
         if (node.nodeType === 1) {
-          checkForPortMarker(node);
+          checkForDashboardMarker(node);
           // Also check child elements
           if (node.querySelectorAll) {
-            node.querySelectorAll('*').forEach(checkForPortMarker);
+            node.querySelectorAll('*').forEach(checkForDashboardMarker);
           }
         } else if (node.nodeType === 3) {
           // Text node
-          checkForPortMarker(node.parentElement);
+          checkForDashboardMarker(node.parentElement);
         }
       });
 
       // Check if text content changed
       if (mutation.type === 'characterData') {
-        checkForPortMarker(mutation.target.parentElement);
+        checkForDashboardMarker(mutation.target.parentElement);
       }
     });
   });
@@ -52,7 +54,7 @@
     });
 
     // Also check existing content
-    document.querySelectorAll('*').forEach(checkForPortMarker);
+    document.querySelectorAll('*').forEach(checkForDashboardMarker);
   }
 
   if (document.readyState === 'loading') {

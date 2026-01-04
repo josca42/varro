@@ -45,11 +45,14 @@ class EvidenceManager:
         path = self.dashboard_path(name)
         self._setup_dashboard(path)
 
+        # Generate source manifest before starting dev server
+        await self._run_sources(path)
+
         self.port = self._find_free_port()
         EvidenceManager._used_ports.add(self.port)
 
         self.process = subprocess.Popen(
-            ["npm", "run", "dev", "--", "--port", str(self.port)],
+            ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", str(self.port)],
             cwd=path,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -59,18 +62,43 @@ class EvidenceManager:
         return self.port
 
     def _setup_dashboard(self, path: Path):
-        """Copy template if dashboard doesn't exist."""
-        if path.exists():
-            return
+        """Ensure dashboard has all required files. Idempotent."""
+        path.mkdir(parents=True, exist_ok=True)
 
-        shutil.copytree(
-            EVIDENCE_TEMPLATE,
-            path,
-            ignore=shutil.ignore_patterns("node_modules"),
+        # Files to copy (if missing)
+        for filename in ["package.json", "package-lock.json", "evidence.config.yaml"]:
+            dest = path / filename
+            if not dest.exists():
+                shutil.copy(EVIDENCE_TEMPLATE / filename, dest)
+
+        # Symlink node_modules (if missing)
+        node_modules = path / "node_modules"
+        if not node_modules.exists():
+            node_modules.symlink_to(EVIDENCE_TEMPLATE / "node_modules")
+
+        # Create pages dir with default index
+        pages_dir = path / "pages"
+        pages_dir.mkdir(exist_ok=True)
+        index_file = pages_dir / "index.md"
+        if not index_file.exists():
+            index_file.write_text("---\ntitle: Dashboard\n---\n\n# Dashboard\n")
+
+        # Copy sources if missing
+        sources_dir = path / "sources"
+        if not sources_dir.exists():
+            shutil.copytree(EVIDENCE_TEMPLATE / "sources", sources_dir)
+
+    async def _run_sources(self, path: Path):
+        """Run npm run sources to generate source manifest."""
+        proc = await asyncio.create_subprocess_exec(
+            "npm", "run", "sources",
+            cwd=path,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
-
-        node_modules_link = path / "node_modules"
-        node_modules_link.symlink_to(EVIDENCE_TEMPLATE / "node_modules")
+        _, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError(f"npm run sources failed: {stderr.decode()}")
 
     def _find_free_port(self) -> int:
         """Find an available port in the configured range."""
@@ -86,6 +114,11 @@ class EvidenceManager:
         """Wait for the Evidence dev server to respond."""
         start = asyncio.get_event_loop().time()
         while asyncio.get_event_loop().time() - start < timeout:
+            # Check if process died
+            if self.process and self.process.poll() is not None:
+                stderr = self.process.stderr.read().decode() if self.process.stderr else ""
+                raise RuntimeError(f"Evidence server exited with code {self.process.returncode}: {stderr}")
+
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f"http://localhost:{port}") as resp:
@@ -94,9 +127,12 @@ class EvidenceManager:
             except Exception:
                 pass
             await asyncio.sleep(1)
-        raise TimeoutError(
-            f"Evidence server on port {port} did not start in {timeout}s"
-        )
+
+        # Timeout - try to get any error output
+        stderr = ""
+        if self.process and self.process.stderr:
+            stderr = self.process.stderr.read().decode()
+        raise TimeoutError(f"Evidence server on port {port} did not start in {timeout}s. stderr: {stderr}")
 
     def stop(self):
         """Stop the dev server and cleanup resources."""

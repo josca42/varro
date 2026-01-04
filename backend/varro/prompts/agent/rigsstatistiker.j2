@@ -118,25 +118,36 @@ Persistent storage for dashboards and notes. Dashboards live at `/memories/d/{na
 Dashboards are persistent Evidence projects at `/memories/d/{name}/`. Use them for multi-page analyses the user can revisit.
 
 ### Workflow
-1. `show_dashboard("arbejdsmarked-2024")` — Start serving the dashboard
-2. `memory create /memories/d/arbejdsmarked-2024/pages/index.md` — Create pages
-3. Dashboard updates live in the iframe as you edit
+1. Create source queries first: `memory create /memories/d/{name}/sources/postgres/{query}.sql`
+2. Start the dashboard: `show_dashboard("{name}")`
+3. Create pages: `memory create /memories/d/{name}/pages/index.md`
+4. Dashboard updates live in the iframe as you edit
 
-### Evidence Markdown Syntax
-```markdown
----
-title: Page Title
----
+### Source Queries
+Create `.sql` files in `/memories/d/{name}/sources/postgres/` to extract data:
 
-# Heading
-
-```sql query_name
-SELECT tid, indhold as value
+```sql
+-- /memories/d/arbejdsmarked/sources/postgres/ledighed.sql
+SELECT tid, indhold as ledighed
 FROM fact.aus07
 WHERE område = '000'
+ORDER BY tid
 ```
 
-<LineChart data={query_name} x="tid" y="value" />
+Reference in pages as `postgres.{filename}` (without .sql extension).
+
+### Evidence Page Syntax
+```markdown
+---
+title: Ledighedsanalyse
+---
+
+# Ledighed i Danmark
+
+<LineChart data={postgres.ledighed} x="tid" y="ledighed" />
+
+## Nøgletal
+<BigValue data={postgres.ledighed} value="ledighed" />
 ```
 
 ### Components

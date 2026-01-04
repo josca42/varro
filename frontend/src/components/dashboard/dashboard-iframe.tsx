@@ -4,18 +4,18 @@ import { useDashboardPort } from "@/hooks/use-dashboard-port";
 import { DashboardPlaceholder } from "./dashboard-placeholder";
 
 export function DashboardIframe() {
-  const port = useDashboardPort();
+  const dashboard = useDashboardPort();
 
-  if (!port) {
+  if (!dashboard) {
     return <DashboardPlaceholder />;
   }
 
   return (
     <iframe
-      src={`http://localhost:${port}`}
+      src={`http://${dashboard.host}:${dashboard.port}`}
       className="w-full h-full border-0"
       title="Evidence Dashboard"
-      key={port}
+      key={`${dashboard.host}:${dashboard.port}`}
     />
   );
 }
