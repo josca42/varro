@@ -13,3 +13,5 @@ wheels/
 /notebooks
 /agents
 /docs
+/evidence-template/node_modules/
+.evidence/

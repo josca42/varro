@@ -7,7 +7,7 @@ from typing import Optional
 from varro.config import EVIDENCE_USERS_DIR
 import aiohttp
 
-EVIDENCE_TEMPLATE = Path("/app/evidence-template")
+EVIDENCE_TEMPLATE = Path(__file__).parent.parent.parent.parent / "evidence-template"
 PORT_RANGE_START = 3001
 PORT_RANGE_END = 4000
 
