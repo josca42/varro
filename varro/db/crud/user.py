@@ -9,7 +9,7 @@ from argon2.exceptions import VerifyMismatchError
 hasher = PasswordHasher()
 
 
-class User(CrudBase[User]):
+class CrudUser(CrudBase[User]):
     def get_by_email(self, email: str) -> Optional[User]:
         with Session(self.engine) as session:
             stmt = select(User).where(User.email == email)
@@ -57,4 +57,4 @@ class User(CrudBase[User]):
         return db_user
 
 
-user = User(User, engine)
+user = CrudUser(User, engine)

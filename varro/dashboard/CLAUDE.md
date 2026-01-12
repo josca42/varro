@@ -2,6 +2,8 @@
 
 Markdown-driven dashboards with HTMX lazy loading.
 
+For detailed specs see: agent/specs/dashboard_spec.md
+
 ## Architecture
 
 ```
