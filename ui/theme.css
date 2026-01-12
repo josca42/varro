@@ -1,0 +1,163 @@
+/* ui/theme.css
+
+Project theme layer (Warmink) for Tailwind Browser + DaisyUI CDN.
+
+This file is intentionally plain CSS (no @plugin / @apply) so it works without a build step.
+
+Conventions:
+- Use DaisyUI v5 theme variables: --color-*
+- Use `data-theme="warmink"` / `data-theme="warmink-dark"`
+- Use Inter for sans typography
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ----------------------------------------------------------------------------
+   Warmink theme (light)
+   ------------------------------------------------------------------------- */
+
+[data-theme="warmink"] {
+  color-scheme: light;
+
+  /* Base: warm paper */
+  --color-base-100: oklch(98.5% 0.005 85);
+  --color-base-200: oklch(96% 0.008 85);
+  --color-base-300: oklch(93% 0.01 85);
+  --color-base-content: oklch(15% 0.01 85);
+
+  /* Brand: shadcn-esque neutral primary (ink) */
+  --color-primary: oklch(20% 0.005 85);
+  --color-primary-content: oklch(98% 0.005 85);
+
+  /* Secondary/accent: subtle warm grays */
+  --color-secondary: oklch(55% 0.01 85);
+  --color-secondary-content: oklch(98% 0.005 85);
+
+  --color-accent: oklch(35% 0.01 85);
+  --color-accent-content: oklch(98% 0.005 85);
+
+  --color-neutral: oklch(25% 0.008 85);
+  --color-neutral-content: oklch(98% 0.005 85);
+
+  /* Semantics */
+  --color-info: oklch(60% 0.15 240);
+  --color-info-content: oklch(98% 0.01 240);
+
+  --color-success: oklch(55% 0.15 145);
+  --color-success-content: oklch(98% 0.01 145);
+
+  --color-warning: oklch(75% 0.15 85);
+  --color-warning-content: oklch(20% 0.02 85);
+
+  --color-error: oklch(55% 0.2 25);
+  --color-error-content: oklch(98% 0.01 25);
+
+  /* Shape / density */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+
+  /* Visual style: keep it flat like shadcn */
+  --depth: 0;
+  --noise: 0;
+
+  /* Optional component vars */
+  --card-p: 1rem;            /* card padding */
+  --card-fs: 0.875rem;       /* card font size */
+  --cardtitle-fs: 0.95rem;   /* card title font size */
+}
+
+/* ----------------------------------------------------------------------------
+   Warmink theme (dark)
+   ------------------------------------------------------------------------- */
+
+[data-theme="warmink-dark"] {
+  color-scheme: dark;
+
+  --color-base-100: oklch(18% 0.01 85);
+  --color-base-200: oklch(22% 0.012 85);
+  --color-base-300: oklch(26% 0.014 85);
+  --color-base-content: oklch(92% 0.005 85);
+
+  --color-primary: oklch(92% 0.005 85);
+  --color-primary-content: oklch(18% 0.01 85);
+
+  --color-secondary: oklch(70% 0.01 85);
+  --color-secondary-content: oklch(18% 0.01 85);
+
+  --color-accent: oklch(78% 0.01 85);
+  --color-accent-content: oklch(18% 0.01 85);
+
+  --color-neutral: oklch(40% 0.01 85);
+  --color-neutral-content: oklch(92% 0.005 85);
+
+  --color-info: oklch(70% 0.14 240);
+  --color-info-content: oklch(18% 0.01 85);
+
+  --color-success: oklch(66% 0.14 145);
+  --color-success-content: oklch(18% 0.01 85);
+
+  --color-warning: oklch(80% 0.12 85);
+  --color-warning-content: oklch(18% 0.01 85);
+
+  --color-error: oklch(70% 0.16 25);
+  --color-error-content: oklch(18% 0.01 85);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+
+  --card-p: 1rem;
+  --card-fs: 0.875rem;
+  --cardtitle-fs: 0.95rem;
+}
+
+/* ----------------------------------------------------------------------------
+   Global styling
+   ------------------------------------------------------------------------- */
+
+html {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Better font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth theme transitions (kept subtle) */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease;
+  transition-duration: 150ms;
+}
+
+/* Focus ring closer to shadcn */
+:focus-visible {
+  outline: 2px solid oklch(from var(--color-primary) l c h / 0.55);
+  outline-offset: 2px;
+}
+
+/* Restore heading sizes stripped by Tailwind preflight (runtime Tailwind) */
+/* Using !important to override runtime-injected preflight rules. */
+h1 { font-size: 2rem !important; font-weight: 700 !important; margin-bottom: 1rem; }
+h2 { font-size: 1.5rem !important; font-weight: 600 !important; margin-bottom: 0.75rem; }
+h3 { font-size: 1.25rem !important; font-weight: 600 !important; margin-bottom: 0.5rem; }
+h4 { font-size: 1.125rem !important; font-weight: 600 !important; margin-bottom: 0.5rem; }
+h5 { font-size: 1rem !important; font-weight: 600 !important; margin-bottom: 0.25rem; }
+h6 { font-size: 0.875rem !important; font-weight: 600 !important; margin-bottom: 0.25rem; }
+
+/* Optional utilities */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -1,3 +1,0 @@
-# Dashboard
-
-Waiting for data analysis...
