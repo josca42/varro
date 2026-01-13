@@ -15,8 +15,8 @@ WHERE f.kon = 'TOT'
   AND f.alder = 'IALT'
   AND f.civilstand = 'TOT'
   AND ((:region IS NULL AND f.omrade = 0) OR (:region IS NOT NULL AND n.titel = :region))
-  AND (:period_from IS NULL OR f.tid >= :period_from::date)
-  AND (:period_to IS NULL OR f.tid <= :period_to::date)
+  AND (:period_from IS NULL OR f.tid >= :period_from)
+  AND (:period_to IS NULL OR f.tid <= :period_to)
 ORDER BY f.tid;
 
 -- @query: population_by_region

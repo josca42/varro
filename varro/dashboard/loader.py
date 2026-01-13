@@ -58,8 +58,11 @@ def parse_queries(sql: str) -> dict[str, str]:
 
 
 def extract_params(query: str) -> set[str]:
-    """Extract :param_name from a SQL query."""
-    return set(re.findall(r":(\w+)", query))
+    """Extract :param_name from a SQL query.
+
+    Uses negative lookbehind to avoid matching PostgreSQL :: cast syntax.
+    """
+    return set(re.findall(r"(?<!:):(\w+)", query))
 
 
 def load_dashboard(folder: Path) -> Dashboard:

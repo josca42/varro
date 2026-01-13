@@ -1,6 +1,6 @@
 """Danish population dashboard outputs."""
 
-from dashboard import output, Metric
+from varro.dashboard import output, Metric
 import plotly.express as px
 
 

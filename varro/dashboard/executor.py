@@ -9,7 +9,7 @@ import inspect
 from typing import Any, Literal
 
 import pandas as pd
-from sqlalchemy import text
+from sqlalchemy import text, bindparam, String, Date
 from sqlalchemy.engine import Engine
 
 from .loader import Dashboard, extract_params
@@ -19,11 +19,19 @@ from .models import Metric
 OutputType = Literal["figure", "table", "metric"]
 
 
+def _infer_param_type(name: str):
+    """Infer SQLAlchemy type from parameter name."""
+    if "date" in name or "from" in name or "to" in name:
+        return Date
+    return String
+
+
 def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.DataFrame:
     """Execute a SQL query with filter parameters.
 
     Only binds parameters that exist in the query.
     'all' values are converted to None (for IS NULL pattern).
+    Uses typed bindparams so PostgreSQL can handle NULL values.
     """
     params_needed = extract_params(query)
 
@@ -33,8 +41,13 @@ def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.Dat
         value = filters.get(param)
         bound[param] = None if value == "all" or value is None else value
 
+    # Create typed bindparams for NULL handling
+    stmt = text(query)
+    for param in params_needed:
+        stmt = stmt.bindparams(bindparam(param, type_=_infer_param_type(param)))
+
     with engine.connect() as conn:
-        return pd.read_sql(text(query), conn, params=bound)
+        return pd.read_sql(stmt, conn, params=bound)
 
 
 def execute_options_query(
