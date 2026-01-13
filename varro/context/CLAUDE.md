@@ -1,3 +1,13 @@
-1. Dimension table README.md's are created from the documentation page on dst.dk and the values in the table. /context/dim_table.py
-2. For fact tables the table info exposed by the dst api is to create a fact table README.md. /context/*.py
-3. The subject hierarcy along with fact table info is used to create subject README.md /context/*.py
+# Context Generation
+
+Generates README.md documentation for Denmark Statistics tables.
+
+## Modules
+
+| File | Purpose |
+|------|---------|
+| `dim_table.py` | Create README.md for dimension tables from dst.dk docs + table values |
+| `fact_table.py` | Create README.md for fact tables from DST API metadata |
+| `subjects.py` | Create README.md for subject hierarchy with linked fact tables |
+| `tools.py` | Agent tools for accessing context |
+| `utils.py` | Utility functions (fuzzy matching) |

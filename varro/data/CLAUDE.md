@@ -1,3 +1,9 @@
-1. All public tables from denmarks statistics along with table descriptions and subject hierachies are downloaded to disk. /data/statbank_to_disk/*
-2. Claude code then analyses the different fact tables and creates links between columns in fact tables and dimension tables from https://www.dst.dk/da/Statistik/dokumentation/nomenklaturer.  /data/fact_col_to_dim_table
-3. All fact tables and dimension tables are processed and copied into a postgres database. /data/disk_to_db
+# Data Pipeline
+
+Downloads and processes Denmark Statistics data into PostgreSQL.
+
+## Process
+
+1. **statbank_to_disk/**: Download all public tables from dst.dk with descriptions and subject hierarchies
+2. **fact_col_to_dim_table/**: Analyze fact tables and create links to dimension tables from dst.dk nomenclature documentation
+3. **disk_to_db/**: Process and load all tables into PostgreSQL database
