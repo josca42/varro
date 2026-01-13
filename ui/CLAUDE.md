@@ -17,13 +17,20 @@ ui/
 ├── daisy.py         # Low-level DaisyUI primitives (escape hatch)
 ├── theme.css        # Warmink theme (light/dark)
 ├── components/      # Opinionated, reusable components
+│   ├── alert.py     # Alert
+│   ├── badge.py     # Badge
 │   ├── button.py    # Button, IconButton
 │   ├── card.py      # Card, CardHeader, CardTitle, CardContent, CardFooter, CardSimple
-│   ├── input.py     # Input, Select
-│   ├── textarea.py  # Textarea
+│   ├── checkbox.py  # Checkbox
 │   ├── field.py     # Field, FieldLabel, FieldError, FormField
+│   ├── form.py      # Form
+│   ├── grid.py      # Grid
+│   ├── input.py     # Input, Select
+│   ├── prose.py     # Prose, MarkdownProse
 │   ├── separator.py # Separator
-│   └── prose.py     # Prose, MarkdownProse
+│   ├── stack.py     # Stack, HStack, VStack
+│   ├── stat.py      # Stat, StatSkeleton
+│   └── textarea.py  # Textarea
 └── app/             # App-specific compositions (demo/reference)
     ├── navbar.py    # Navbar
     ├── chat.py      # UserMessage, AssistantMessage, ChatInput

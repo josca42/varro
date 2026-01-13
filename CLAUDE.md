@@ -10,13 +10,14 @@ stack: fasthtml, daisy-ui, alpine.js, HTMX
 
 stack: fasthtml, HTMX
 
-**varo**: The library varro implements the main functionality. 
-- /agent: An AI agent is implemented using pydantic-ai and given acces to various tools
-- /chat: Placeholder folder for ui functionality related to having a chat between the AI agent and the user.
+**varro**: The library varro implements the main functionality.
+- /agent: An AI agent is implemented using pydantic-ai and given access to various tools
 - /context: Table metadata from denmark statistics is used to create a README.md for the different tables and groups of tables.
-- /dashboard: Implementing a custom markdown to html parser that allows creating dashboards from some sql queries, python code for tables and plotly plots and a dashboard markdown file. queries, plot and table code and the dashboard.md is used to create an interactive dashboard using fashtml and htmx.
+- /dashboard: Implementing a custom markdown to html parser that allows creating dashboards from some sql queries, python code for tables and plotly plots and a dashboard markdown file. queries, plot and table code and the dashboard.md is used to create an interactive dashboard using fasthtml and htmx.
 - /data: Code for downloading tables and metadata from denmarks statistics to disk and then adding the data to a local postgres db.
 - /db: database connection strings and table models and crud methods implemented using SQLModel.
+- /prompts: Jinja2 templates for system prompts used by the AI agent and data cleaning processes.
+- /config.py: Central configuration for data directories and paths.
 
 stack: pandas, pydantic-ai, SQLModel, SQLAlchemy, plotly, fasthtml, HTMX, mistletoe, postgres
 
