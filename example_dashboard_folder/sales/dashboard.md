@@ -1,4 +1,4 @@
-# Sales Dashboard
+# Danish Population Dashboard
 
 ::: filters
 {% select name="region" label="Region" options="query:regions" default="all" /%}
@@ -6,17 +6,18 @@
 :::
 
 ::: grid cols=2
-{% metric name="total_revenue" /%}
-{% metric name="total_orders" /%}
+{% metric name="total_population" /%}
+{% metric name="quarters_shown" /%}
 :::
 
 ::: tabs
 ::: tab name="Trend"
-{% figure name="revenue_trend" /%}
+{% figure name="population_trend_chart" /%}
 :::
-::: tab name="Products"
-{% table name="top_products_table" /%}
+::: tab name="Regions"
+{% table name="region_table" /%}
+:::
+::: tab name="Age Groups"
+{% figure name="age_chart" /%}
 :::
 :::
-
-
