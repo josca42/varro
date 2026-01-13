@@ -48,8 +48,12 @@ def parse_filters_from_request(
                 default_from = ""
                 default_to = ""
 
-            filters[f"{name}_from"] = req.query_params.get(f"{name}_from", default_from) or None
-            filters[f"{name}_to"] = req.query_params.get(f"{name}_to", default_to) or None
+            filters[f"{name}_from"] = (
+                req.query_params.get(f"{name}_from", default_from) or None
+            )
+            filters[f"{name}_to"] = (
+                req.query_params.get(f"{name}_to", default_to) or None
+            )
 
         elif f.type == "checkbox":
             default_str = f.attrs.get("default", "false")

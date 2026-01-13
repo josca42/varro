@@ -1,6 +1,6 @@
 This project aims to create the danish AI state statistician. An expert AI analyst that help users understand data about denmark.
 
-## The project consists of 3 parts:
+# The project consists of 3 parts:
 
 **ui**: A ui library in the ui/ folder. The ui library is structured to follow the code style and organisation of shadcn-ui, where larger app components are in ui/app and more specific components are in ui/components. Custom css is in ui/theme.css.
 
@@ -21,7 +21,7 @@ stack: fasthtml, HTMX
 
 stack: pandas, pydantic-ai, SQLModel, SQLAlchemy, plotly, fasthtml, HTMX, mistletoe, postgres
 
-## Docs
+# Docs
 
 I have gathered a set of useful docs
 
@@ -29,3 +29,9 @@ fasthtml: agent/docs/fasthtml.txt, agent/docs/fasthtml_best_practices.md
 daisy-ui: agent/docs/daisy-ui.txt
 alpine.js: agent/docs/alpine_js/*
 url-design: agent/docs/url_design.txt
+
+
+# Code style
+When writing code then only include essential comments. Otherwise leave comments out.
+
+Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
