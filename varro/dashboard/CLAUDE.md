@@ -3,6 +3,7 @@
 Markdown-driven dashboards with HTMX lazy loading.
 
 For detailed specs see: agent/specs/dashboard_spec.md
+Always consult the specs before making updates to dashboard functionality
 
 ## Architecture
 
@@ -69,3 +70,7 @@ Return types: `Metric`, `pd.DataFrame` (table), or Plotly figure.
 - Params extracted via `:param_name` regex
 - `filters["region"]` bound to `:region` if query uses it
 - `"all"` values converted to `None` for `IS NULL OR` patterns
+
+# UI
+
+The dashboard should always import UI components from the ui library. If a new component is needed then it is added to the ui library and then imported from there.

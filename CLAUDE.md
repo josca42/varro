@@ -1,72 +1,30 @@
-## Backend
+This project aims to create the danish AI state statistician. An expert AI analyst that help users understand data about denmark.
 
-Chainlit chat UI + Pydantic-AI agent for Danish Statistics data analysis.
+## The project consists of 3 parts:
 
-## Commands
+**ui**: A ui library in the ui/ folder. The ui library is structured to follow the code style and organisation of shadcn-ui, where larger app components are in ui/app and more specific components are in ui/components. Custom css is in ui/theme.css.
 
-```bash
-chainlit run ui_chat/app.py --port 8026   # Start chat UI
-python scripts/setup_auth.py --email x --password y  # Create user
-alembic upgrade head   # Run migrations
-uv sync               # Install dependencies
-```
+stack: fasthtml, daisy-ui, alpine.js, HTMX
 
-## Architecture
+**app**: The web app in the app/ folder. The app should use ui components from the ui library and if a new component is needed in the app then that component is added to the ui library and then imported into the app code. 
 
-```
-ui_chat/
-  app.py              # Chainlit lifecycle (on_chat_start, on_message, on_chat_end)
-  public/dashboard.js # Detects <!--DASHBOARD_PORT:xxx--> and posts to parent iframe
+stack: fasthtml, HTMX
 
-varro/
-  agent/
-    assistant.py      # Pydantic-AI agent (Claude Sonnet 4.5 + extended thinking)
-    memory.py         # SessionStore (user state, IPython shell, Evidence manager)
-    ipython_shell.py  # IPython wrapper with timeout
+**varo**: The library varro implements the main functionality. 
+- /agent: An AI agent is implemented using pydantic-ai and given acces to various tools
+- /chat: Placeholder folder for ui functionality related to having a chat between the AI agent and the user.
+- /context: Table metadata from denmark statistics is used to create a README.md for the different tables and groups of tables.
+- /dashboard: Implementing a custom markdown to html parser that allows creating dashboards from some sql queries, python code for tables and plotly plots and a dashboard markdown file. queries, plot and table code and the dashboard.md is used to create an interactive dashboard using fashtml and htmx.
+- /data: Code for downloading tables and metadata from denmarks statistics to disk and then adding the data to a local postgres db.
+- /db: database connection strings and table models and crud methods implemented using SQLModel.
 
-  chat/
-    message.py        # MessageStreamHandler (streaming to Chainlit UI)
+stack: pandas, pydantic-ai, SQLModel, SQLAlchemy, plotly, fasthtml, HTMX, mistletoe, postgres
 
-  context/
-    tools.py          # subject_overview, table_docs tools
+## Docs
 
-  db/
-    models/user.py    # User model
-    crud/             # CRUD operations
+I have gathered a set of useful docs
 
-  evidence/
-    manager.py        # EvidenceManager (dashboard lifecycle, dev server)
-
-  prompts/
-    agent/rigsstatistiker.j2  # System prompt
-```
-
-## Agent Tools
-
-| Tool | Purpose |
-|------|---------|
-| `memory` | File-based persistent storage (also Evidence pages) |
-| `subject_overview` | Get tables in a subject |
-| `table_docs` | Get table schema/docs |
-| `view_column_values` | Inspect column values with fuzzy match |
-| `sql_query` | Execute SQL, optionally store result |
-| `jupyter_notebook` | Stateful Python environment |
-| `create_dashboard` | Start Evidence dashboard server |
-
-## Evidence Dashboard Flow
-
-1. AI calls `create_dashboard(name)` → starts Evidence dev server on dynamic port
-2. Port sent via `<!--DASHBOARD_PORT:xxx-->` marker → custom JS posts to parent
-3. AI uses `memory` tool to write `/memories/d/dashboard/pages/index.md`
-4. Evidence HMR updates dashboard automatically
-5. On chat end, `SessionStore.cleanup()` stops Evidence server
-
-## Database
-
-- **neocortex**: `fact.*` and `dim.*` schemas (statistics data)
-- **chainlit**: Session/message storage
-
-## Config
-
-- `.env`: `DATA_DIR`, `DBUSER`, `DBPASS`
-- `~/docs/`: `column_values/`, `subjects/`, `tables/`
+fasthtml: agent/docs/fasthtml.txt, agent/docs/fasthtml_best_practices.md
+daisy-ui: agent/docs/daisy-ui.txt
+alpine.js: agent/docs/alpine_js/*
+url-design: agent/docs/url_design.txt

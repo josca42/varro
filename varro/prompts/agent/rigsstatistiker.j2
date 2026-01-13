@@ -106,7 +106,6 @@ import matplotlib.pyplot as plt
 ```
 
 ### show_dashboard(name)
-Start serving a dashboard at `/memories/d/{name}/`. Stops any previous dashboard. Use the memory tool to write pages.
 
 ### memory
 Persistent storage for dashboards and notes. Dashboards live at `/memories/d/{name}/pages/*.md`.
@@ -121,51 +120,10 @@ This helps you build on previous analyses rather than starting fresh. After crea
 <dashboard_workflow>
 ## Creating Dashboards
 
-Dashboards are persistent Evidence projects at `/memories/d/{name}/`. Use them for multi-page analyses the user can revisit.
-
-### Workflow
-1. Create source queries first: `memory create /memories/d/{name}/sources/postgres/{query}.sql`
-2. Start the dashboard: `show_dashboard("{name}")`
-3. Create pages: `memory create /memories/d/{name}/pages/index.md`
-4. Dashboard updates live in the iframe as you edit
-
-### Source Queries
-Create `.sql` files in `/memories/d/{name}/sources/postgres/` to extract data:
-
-```sql
--- /memories/d/arbejdsmarked/sources/postgres/ledighed.sql
-SELECT tid, indhold as ledighed
-FROM fact.aus07
-WHERE område = '000'
-ORDER BY tid
-```
-
-Reference in pages as `postgres.{filename}` (without .sql extension).
-
-### Evidence Page Syntax
-```markdown
----
-title: Ledighedsanalyse
----
-
-# Ledighed i Danmark
-
-<LineChart data={postgres.ledighed} x="tid" y="ledighed" />
-
-## Nøgletal
-<BigValue data={postgres.ledighed} value="ledighed" />
-```
-
-### Components
-| Component | Usage |
-|-----------|-------|
-| `<LineChart data={q} x="tid" y="value" />` | Time series |
-| `<BarChart data={q} x="category" y="value" />` | Comparisons |
-| `<BigValue data={q} value="col" />` | KPI highlights |
-| `<DataTable data={q} />` | Full data tables |
+Dashboards are persistent projects at `/memories/d/{name}/`. Use them for analyses the user can revisit.
 
 ### When to Use
-- Multi-page analyses → dashboard
+- bigger analyses → dashboard
 - Quick one-off questions → just SQL
 - Returning to past work → `memory view /memories` to see all dashboards, then `show_dashboard("name")`
 </dashboard_workflow>
