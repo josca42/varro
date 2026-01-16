@@ -11,9 +11,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from .models import get_outputs
-from .filters import Filter, validate_options_queries
-from .parser import ASTNode, parse_dashboard_md, extract_filters
+from varro.dashboard.models import get_outputs
+from varro.dashboard.filters import Filter, validate_options_queries
+from varro.dashboard.parser import ASTNode, parse_dashboard_md, extract_filters
 
 
 @dataclass
@@ -116,11 +116,3 @@ def load_dashboards(dashboards_dir: str | Path) -> dict[str, Dashboard]:
 
     return dashboards
 
-
-__all__ = [
-    "Dashboard",
-    "load_queries",
-    "extract_params",
-    "load_dashboard",
-    "load_dashboards",
-]

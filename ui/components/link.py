@@ -9,7 +9,7 @@ from typing import Literal, Optional
 
 from fasthtml.common import A
 
-from ..core import cn
+from ui.core import cn
 
 
 LinkColor = Optional[
@@ -53,5 +53,3 @@ def Link(
         **kw,
     )
 
-
-__all__ = ["Link", "LinkColor"]

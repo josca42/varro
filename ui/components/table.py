@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Literal
 
 from fasthtml.common import Div, FT, Table, Thead, Tbody, Tr, Th, Td
 
-from ..core import cn
+from ui.core import cn
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -72,5 +72,3 @@ def DataTable(
         **kw,
     )
 
-
-__all__ = ["DataTable", "TableVariant", "TableSize"]

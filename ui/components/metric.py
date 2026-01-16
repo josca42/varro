@@ -9,8 +9,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import Div, FT, Span
 
-from ..core import cn
-from ..utils import abbrev, format_value
+from ui.core import cn
+from ui.utils import abbrev, format_value
 
 MetricFormat = Literal["number", "currency", "percent"]
 
@@ -58,5 +58,3 @@ def MetricValue(
         **kw,
     )
 
-
-__all__ = ["MetricValue", "MetricFormat"]

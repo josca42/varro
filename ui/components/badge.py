@@ -12,8 +12,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Badge as DaisyBadge
+from ui.core import cn
+from ui.daisy import Badge as DaisyBadge
 
 
 BadgeVariant = Literal[
@@ -94,5 +94,3 @@ def Badge(
         **kw,
     )
 
-
-__all__ = ["Badge", "BadgeVariant", "BadgeSize", "BadgeColor"]

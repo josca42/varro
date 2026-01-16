@@ -21,9 +21,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .models import Metric, output
-from .loader import load_dashboards, load_dashboard, Dashboard
-from .routes import ar as dashboard_routes, configure as configure_dashboards
+from varro.dashboard.models import Metric, output
+from varro.dashboard.loader import load_dashboards, Dashboard
+from varro.dashboard.routes import ar as dashboard_routes, configure as configure_dashboards
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
@@ -44,19 +44,8 @@ def mount_dashboards(
     Returns:
         Dict mapping dashboard names to Dashboard objects
     """
-    from .routes import mount_dashboard_routes
+    from varro.dashboard.routes import mount_dashboard_routes
 
     dashboards = load_dashboards(dashboards_dir)
     mount_dashboard_routes(app, dashboards, engine)
     return dashboards
-
-
-__all__ = [
-    "Metric",
-    "output",
-    "mount_dashboards",
-    "Dashboard",
-    "load_dashboard",
-    "dashboard_routes",
-    "configure_dashboards",
-]

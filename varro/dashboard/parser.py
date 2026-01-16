@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Union
 
-from .filters import Filter, filter_from_component
+from varro.dashboard.filters import Filter, filter_from_component
 
 
 @dataclass
@@ -144,13 +144,3 @@ def extract_filters(ast: list[ASTNode]) -> list[Filter]:
     walk(ast)
     return filters
 
-
-__all__ = [
-    "ASTNode",
-    "ContainerNode",
-    "ComponentNode",
-    "MarkdownNode",
-    "parse_dashboard_md",
-    "parse_attrs",
-    "extract_filters",
-]

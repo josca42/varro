@@ -9,9 +9,8 @@ from typing import Optional, Sequence
 
 from fasthtml.common import Div, FT, Label, Option, Span
 
-from ..core import cn
-from .input import Input, Select
-from .checkbox import Checkbox
+from ui.core import cn
+from ui.components import Input, Select, Checkbox
 
 
 def SelectFilter(
@@ -131,5 +130,3 @@ def CheckboxFilter(
         data_slot="checkbox-filter",
     )
 
-
-__all__ = ["SelectFilter", "DateRangeFilter", "CheckboxFilter"]

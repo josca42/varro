@@ -6,15 +6,15 @@ These are not general-purpose components; they implement the look and structure
 used in `main.py`.
 """
 
-from .navbar import Navbar
-from .chat import (
+from ui.app.navbar import Navbar
+from ui.app.chat import (
     UserMessage,
     AssistantMessage,
     ThinkingSteps,
     EditsIndicator,
     ChatInput,
 )
-from .auth import (
+from ui.app.auth import (
     AuthPage,
     AuthFormCard,
     AuthSimpleCard,

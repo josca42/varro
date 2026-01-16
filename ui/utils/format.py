@@ -32,5 +32,3 @@ def format_value(value: float | int | str, fmt: str) -> str:
         return f"{value:.1%}"
     return abbrev(value)
 
-
-__all__ = ["abbrev", "format_value"]

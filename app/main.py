@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fasthtml.common import Script, RedirectResponse
 
-from ui import daisy_app
+from ui.core import daisy_app
 from varro.dashboard import dashboard_routes, configure_dashboards
 from varro.db.db import engine
 

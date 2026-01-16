@@ -10,7 +10,7 @@ import resend
 from fasthtml.common import APIRouter, RedirectResponse
 from fasthtml.oauth import GoogleAppClient, redir_url
 
-from ui import (
+from ui.app import (
     AuthFormCard,
     AuthSimpleCard,
     AuthNotices,
@@ -21,9 +21,8 @@ from ui import (
     AuthVerificationResendForm,
     AuthPasswordResetForm,
     AuthPasswordResetConfirmForm,
-    Link,
-    LinkButton,
 )
+from ui.components import Link, LinkButton
 
 from varro.config import settings
 from varro.db.crud.user import user as user_crud
@@ -310,14 +309,22 @@ def verify_email(token: str | None = None):
         return AuthSimpleCard(
             "Email verification",
             *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
-            LinkButton("Resend verification", href=verify_email_resend, variant="outline"),
+            LinkButton(
+                "Resend verification",
+                href=verify_email_resend,
+                variant="outline",
+            ),
         )
     db_user = user_crud.get_by_id(payload.get("uid"))
     if not db_user or db_user.email != payload.get("email"):
         return AuthSimpleCard(
             "Email verification",
             *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
-            LinkButton("Resend verification", href=verify_email_resend, variant="outline"),
+            LinkButton(
+                "Resend verification",
+                href=verify_email_resend,
+                variant="outline",
+            ),
         )
     if not db_user.is_active:
         db_user.is_active = True
@@ -386,7 +393,11 @@ def password_reset_confirm(
         return AuthSimpleCard(
             "Reset password",
             *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
-            LinkButton("Request a new reset link", href=password_reset, variant="outline"),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     error_msg, info_msg = auth_notices(error, None)
     links = AuthLinks(Link("Back to sign in", href=login))
@@ -407,7 +418,11 @@ def password_reset_confirm_post(
         return AuthSimpleCard(
             "Reset password",
             *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
-            LinkButton("Request a new reset link", href=password_reset, variant="outline"),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     if not password:
         return RedirectResponse(
@@ -419,14 +434,22 @@ def password_reset_confirm_post(
         return AuthSimpleCard(
             "Reset password",
             *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
-            LinkButton("Request a new reset link", href=password_reset, variant="outline"),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     db_user = user_crud.get_by_id(payload.get("uid"))
     if not db_user or db_user.email != payload.get("email"):
         return AuthSimpleCard(
             "Reset password",
             *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
-            LinkButton("Request a new reset link", href=password_reset, variant="outline"),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     db_user.password_hash = user_crud.hash_password(password)
     user_crud.update(db_user)

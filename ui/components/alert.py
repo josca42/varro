@@ -12,8 +12,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Alert as DaisyAlert
+from ui.core import cn
+from ui.daisy import Alert as DaisyAlert
 
 
 AlertVariant = Literal[
@@ -69,5 +69,3 @@ def Alert(
 # Alias for dashboard markdown compatibility
 Callout = Alert
 
-
-__all__ = ["Alert", "Callout", "AlertVariant"]

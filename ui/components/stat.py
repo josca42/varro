@@ -11,7 +11,7 @@ from typing import Optional
 
 from fasthtml.common import Div, FT, Span
 
-from ..core import cn
+from ui.core import cn
 
 
 def Stat(
@@ -90,5 +90,3 @@ def StatSkeleton(
         ),
     )
 
-
-__all__ = ["Stat", "StatSkeleton"]

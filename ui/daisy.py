@@ -14,7 +14,7 @@ Conventions:
 
 from __future__ import annotations
 
-from .core import mk_compfn
+from ui.core import mk_compfn
 
 # -----------------------------------------------------------------------------
 # Actions
@@ -96,52 +96,3 @@ mk_compfn("chat-header", tag="Div", name="ChatHeader", slot="chat-header")
 mk_compfn("chat-footer", tag="Div", name="ChatFooter", slot="chat-footer")
 mk_compfn("chat-bubble", tag="Div", name="ChatBubble", slot="chat-bubble")
 
-
-__all__ = [
-    # Actions
-    "Btn",
-    "LinkBtn",
-    "Badge",
-    "Kbd",
-    "Dropdown",
-    "DropdownContent",
-    # Cards
-    "CardRoot",
-    "CardBody",
-    "CardTitle",
-    "CardActions",
-    # Feedback
-    "Alert",
-    "Loading",
-    "Skeleton",
-    "Divider",
-    # Forms
-    "Input",
-    "Select",
-    "Textarea",
-    "Checkbox",
-    "Radio",
-    "Toggle",
-    "ThemeController",
-    # Modal
-    "Modal",
-    "ModalBox",
-    "ModalAction",
-    "ModalBackdrop",
-    # Navigation
-    "Navbar",
-    "NavbarStart",
-    "NavbarCenter",
-    "NavbarEnd",
-    "Tabs",
-    "Tab",
-    "TabContent",
-    "Join",
-    "JoinItem",
-    # Chat
-    "Chat",
-    "ChatImage",
-    "ChatHeader",
-    "ChatFooter",
-    "ChatBubble",
-]

@@ -15,8 +15,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Divider
+from ui.core import cn
+from ui.daisy import Divider
 
 
 SeparatorOrientation = Literal["horizontal", "vertical"]
@@ -62,5 +62,3 @@ def Separator(
         **kw,
     )
 
-
-__all__ = ["Separator", "SeparatorOrientation", "SeparatorColor"]

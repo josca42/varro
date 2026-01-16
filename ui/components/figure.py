@@ -9,7 +9,7 @@ from typing import Any
 
 from fasthtml.common import Div, FT, NotStr, Span
 
-from ..core import cn
+from ui.core import cn
 
 
 def Figure(
@@ -55,5 +55,3 @@ def FigureSkeleton(
         **kw,
     )
 
-
-__all__ = ["Figure", "FigureSkeleton"]

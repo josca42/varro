@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Navbar as DaisyNavbar, NavbarStart, NavbarCenter, NavbarEnd
-from ..components.button import Button
+from ui.core import cn
+from ui.components import Button
+from ui.daisy import Navbar as DaisyNavbar, NavbarStart, NavbarCenter, NavbarEnd
 
 
 def Navbar(
@@ -80,5 +80,3 @@ def Navbar(
         **kw,
     )
 
-
-__all__ = ["Navbar"]

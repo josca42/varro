@@ -12,15 +12,15 @@ from urllib.parse import urlencode
 from fasthtml.common import APIRouter, Div, Response
 from sqlalchemy.engine import Engine
 
-from .loader import Dashboard, load_dashboard
-from .executor import execute_output, execute_options_query
-from .components import (
+from varro.dashboard.loader import Dashboard, load_dashboard
+from varro.dashboard.executor import execute_output, execute_options_query
+from varro.dashboard.components import (
     render_shell,
     render_metric_card,
     render_table,
     render_figure,
 )
-from .filters import Filter, SelectFilter
+from varro.dashboard.filters import Filter, SelectFilter
 
 # Module-level configuration
 _dashboards_dir: Path | None = None
@@ -159,10 +159,3 @@ def render_metric_endpoint(name: str, output_name: str, req):
     except Exception:
         return Div("Error loading metric", cls="text-error text-center p-4")
 
-
-__all__ = [
-    "ar",
-    "configure",
-    "parse_filters_from_request",
-    "build_filter_url",
-]

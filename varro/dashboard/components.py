@@ -16,7 +16,7 @@ from fasthtml.common import (
 )
 import mistletoe
 
-from ui import (
+from ui.components import (
     Card,
     CardBody,
     Grid,
@@ -26,19 +26,17 @@ from ui import (
     SelectFilter,
     DateRangeFilter,
     CheckboxFilter,
-    format_value,
-    abbrev,
 )
 
-from .models import Metric
-from .filters import (
+from varro.dashboard.models import Metric
+from varro.dashboard.filters import (
     Filter,
     SelectFilter as SelectFilterDef,
     DateRangeFilter as DateRangeFilterDef,
     CheckboxFilter as CheckboxFilterDef,
 )
-from .parser import ASTNode, ContainerNode, ComponentNode, MarkdownNode
-from .loader import Dashboard
+from varro.dashboard.parser import ASTNode, ContainerNode, ComponentNode, MarkdownNode
+from varro.dashboard.loader import Dashboard
 
 
 def render_filter(
@@ -150,7 +148,7 @@ def render_ast(
     filters: dict[str, Any],
     options: dict[str, list[str]],
 ) -> list[Any]:
-    """Render AST nodes to FastHTML components."""
+    """Render AST nodes to FastHTML """
     result = []
 
     for node in nodes:
@@ -215,16 +213,3 @@ def render_shell(
     """Render the full dashboard shell."""
     content = render_ast(dash.ast, dash, filters, options)
     return Div(*content, cls="p-6", data_slot="dashboard-shell")
-
-
-__all__ = [
-    "render_shell",
-    "render_ast",
-    "render_metric_card",
-    "render_table",
-    "render_figure",
-    "render_placeholder",
-    "render_filter",
-    "format_value",
-    "abbrev",
-]

@@ -25,8 +25,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import (
+from ui.core import cn
+from ui.daisy import (
     CardRoot as DaisyCardRoot,
     CardBody as DaisyCardBody,
     CardTitle as DaisyCardTitle,
@@ -201,17 +201,3 @@ def CardSimple(
         **kw,
     )
 
-
-__all__ = [
-    "Card",
-    "CardBody",
-    "CardHeader",
-    "CardTitle",
-    "CardDescription",
-    "CardContent",
-    "CardFooter",
-    "CardActions",
-    "CardSimple",
-    "CardVariant",
-    "CardSize",
-]

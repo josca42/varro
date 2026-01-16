@@ -12,8 +12,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Checkbox as DaisyCheckbox
+from ui.core import cn
+from ui.daisy import Checkbox as DaisyCheckbox
 
 
 CheckboxSize = Literal[
@@ -93,5 +93,3 @@ def Checkbox(
 
     return checkbox
 
-
-__all__ = ["Checkbox", "CheckboxSize", "CheckboxColor"]

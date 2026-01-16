@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from fasthtml.common import *
 
-from ..core import cn
+from ui.core import cn
 
 
 def Prose(*c, cls: str = "", **kw):
@@ -37,5 +37,3 @@ def MarkdownProse(content, cls: str = "", **kw):
         **kw,
     )
 
-
-__all__ = ["Prose", "MarkdownProse"]

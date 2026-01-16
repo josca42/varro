@@ -9,7 +9,7 @@ from typing import Literal, Union
 
 from fasthtml.common import Div, FT
 
-from ..core import cn
+from ui.core import cn
 
 
 StackDirection = Literal["vertical", "horizontal", "row", "col"]
@@ -63,5 +63,3 @@ def VStack(*c, gap: Union[int, str] = 2, **kw) -> FT:
     """Vertical stack (shorthand for Stack with direction='vertical')."""
     return Stack(*c, direction="vertical", gap=gap, **kw)
 
-
-__all__ = ["Stack", "HStack", "VStack", "StackDirection"]
