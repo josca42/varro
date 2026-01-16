@@ -1,6 +1,6 @@
 """dashboard.loader
 
-Load dashboard folders and parse queries.sql.
+Load dashboard folders and queries from queries/ folder.
 """
 
 from __future__ import annotations
@@ -27,28 +27,23 @@ class Dashboard:
     filters: list[Filter] = field(default_factory=list)
 
 
-def parse_queries(sql: str) -> dict[str, str]:
-    """Parse queries.sql into named queries.
+def load_queries(folder: Path) -> dict[str, str]:
+    """Load queries from a queries/ folder.
 
-    Format:
-        -- @query: query_name
-        SELECT ...
+    Each .sql file becomes a named query.
+    Filename (without extension) is the query name.
     """
+    queries_dir = folder / "queries"
+    if not queries_dir.exists() or not queries_dir.is_dir():
+        raise ValueError(f"Missing queries/ folder in {folder}")
+
     queries: dict[str, str] = {}
-    current: str | None = None
-    lines: list[str] = []
+    for sql_file in queries_dir.glob("*.sql"):
+        name = sql_file.stem
+        queries[name] = sql_file.read_text().strip()
 
-    for line in sql.split("\n"):
-        if match := re.match(r"--\s*@query:\s*(\w+)", line):
-            if current:
-                queries[current] = "\n".join(lines).strip()
-            current = match.group(1)
-            lines = []
-        elif current is not None:
-            lines.append(line)
-
-    if current:
-        queries[current] = "\n".join(lines).strip()
+    if not queries:
+        raise ValueError(f"No .sql files in {queries_dir}")
 
     return queries
 
@@ -64,21 +59,23 @@ def extract_params(query: str) -> set[str]:
 def load_dashboard(folder: Path) -> Dashboard:
     """Load a dashboard from a folder.
 
-    Requires: queries.sql, outputs.py, dashboard.md
+    Requires: queries/, outputs.py, dashboard.md
     """
     name = folder.name
 
     # Validate required files
-    queries_file = folder / "queries.sql"
+    queries_dir = folder / "queries"
     outputs_file = folder / "outputs.py"
     md_file = folder / "dashboard.md"
 
-    for f in [queries_file, outputs_file, md_file]:
+    if not queries_dir.exists() or not queries_dir.is_dir():
+        raise ValueError(f"Missing queries/ folder in {folder}")
+    for f in [outputs_file, md_file]:
         if not f.exists():
             raise ValueError(f"Missing {f.name} in {folder}")
 
-    # Parse queries
-    queries = parse_queries(queries_file.read_text())
+    # Load queries from folder
+    queries = load_queries(folder)
 
     # Import outputs module
     spec = importlib.util.spec_from_file_location(
@@ -122,7 +119,7 @@ def load_dashboards(dashboards_dir: str | Path) -> dict[str, Dashboard]:
 
 __all__ = [
     "Dashboard",
-    "parse_queries",
+    "load_queries",
     "extract_params",
     "load_dashboard",
     "load_dashboards",
