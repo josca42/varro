@@ -117,7 +117,7 @@ def render_tabs(
     tab_buttons = []
     tab_contents = []
 
-    for i, tab in enumerate[ContainerNode](tab_nodes):
+    for i, tab in enumerate(tab_nodes):
         name = tab.attrs.get("name", f"Tab {i + 1}")
         tab_buttons.append(
             Button(

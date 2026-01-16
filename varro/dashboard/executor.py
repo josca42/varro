@@ -67,17 +67,6 @@ def execute_options_query(
     return [str(x) for x in rows]
 
 
-def detect_output_type(result: Any) -> OutputType:
-    """Detect the type of an output result."""
-    if isinstance(result, pd.DataFrame):
-        return "table"
-    if isinstance(result, Metric):
-        return "metric"
-    if hasattr(result, "to_html"):  # Plotly figure
-        return "figure"
-    raise ValueError(f"Unknown output type: {type(result)}")
-
-
 def execute_output(
     dash: Dashboard,
     output_name: str,
@@ -101,9 +90,7 @@ def execute_output(
             kwargs["filters"] = filters
         elif param in dash.queries:
             kwargs[param] = execute_query(dash.queries[param], filters, engine)
-
-    result = fn(**kwargs)
-    return detect_output_type(result), result
+    return fn(**kwargs)
 
 
 __all__ = [

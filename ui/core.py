@@ -95,7 +95,7 @@ css_content = (here / "theme.css").read_text(encoding="utf-8")
 theme_css = Style(css_content)
 
 # All headers
-ui_hdrs = (*daisy_link, tw_scr, plotly_hdr, *alpine_hdrs, theme_css)
+ui_hdrs = (daisy_link, tw_scr, plotly_hdr, *alpine_hdrs, theme_css)
 
 
 def daisy_app(*args, **kwargs):
