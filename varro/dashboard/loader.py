@@ -12,12 +12,8 @@ from pathlib import Path
 from typing import Callable
 
 from .models import get_outputs
-from .parser import (
-    ASTNode,
-    ComponentNode,
-    parse_dashboard_md,
-    extract_filter_defs,
-)
+from .filters import Filter, validate_options_queries
+from .parser import ASTNode, parse_dashboard_md, extract_filters
 
 
 @dataclass
@@ -28,7 +24,7 @@ class Dashboard:
     queries: dict[str, str]
     outputs: dict[str, Callable]
     ast: list[ASTNode]
-    filter_defs: list[ComponentNode] = field(default_factory=list)
+    filters: list[Filter] = field(default_factory=list)
 
 
 def parse_queries(sql: str) -> dict[str, str]:
@@ -96,14 +92,15 @@ def load_dashboard(folder: Path) -> Dashboard:
 
     # Parse markdown
     ast = parse_dashboard_md(md_file.read_text())
-    filter_defs = extract_filter_defs(ast)
+    filters = extract_filters(ast)
+    validate_options_queries(filters, queries)
 
     return Dashboard(
         name=name,
         queries=queries,
         outputs=outputs,
         ast=ast,
-        filter_defs=filter_defs,
+        filters=filters,
     )
 
 

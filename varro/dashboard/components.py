@@ -6,8 +6,6 @@ Render dashboard components to FastHTML.
 from __future__ import annotations
 
 from typing import Any
-from varro.dashboard.parser import ContainerNode
-
 import pandas as pd
 from fasthtml.common import (
     Div,
@@ -33,38 +31,39 @@ from ui import (
 )
 
 from .models import Metric
+from .filters import (
+    Filter,
+    SelectFilter as SelectFilterDef,
+    DateRangeFilter as DateRangeFilterDef,
+    CheckboxFilter as CheckboxFilterDef,
+)
 from .parser import ASTNode, ContainerNode, ComponentNode, MarkdownNode
 from .loader import Dashboard
 
 
 def render_filter(
-    filter_def: ComponentNode,
+    f: Filter,
     options: dict[str, list[str]],
     filters: dict[str, Any],
 ) -> Any:
     """Render a single filter based on its type."""
-    name = filter_def.attrs.get("name", "")
-    label = filter_def.attrs.get("label", name)
-    filter_type = filter_def.type
+    name = f.name
+    label = f.label or name
 
-    if filter_type == "select":
+    if isinstance(f, SelectFilterDef):
         opts = options.get(name, [])
-        current = filters.get(name, filter_def.attrs.get("default", "all"))
+        current = filters.get(name, f.default)
         return SelectFilter(name, label=label, options=opts, value=current)
 
-    if filter_type == "daterange":
+    if isinstance(f, DateRangeFilterDef):
         current_from = filters.get(f"{name}_from")
         current_to = filters.get(f"{name}_to")
         return DateRangeFilter(
             name, label=label, from_value=current_from, to_value=current_to
         )
 
-    if filter_type == "checkbox":
-        default_str = filter_def.attrs.get("default", "false")
-        default = default_str.lower() == "true"
-        current = filters.get(name, default)
-        if isinstance(current, str):
-            current = current.lower() == "true"
+    if isinstance(f, CheckboxFilterDef):
+        current = filters.get(name, f.default)
         return CheckboxFilter(name, label=label, checked=current)
 
     return None
@@ -167,9 +166,9 @@ def render_ast(
         elif isinstance(node, ContainerNode):
             if node.type == "filters":
                 filter_elements = []
-                for child in node.children:
-                    if isinstance(child, ComponentNode):
-                        el = render_filter(child, options, filters)
+                for f in node.children:
+                    if isinstance(f, Filter):
+                        el = render_filter(f, options, filters)
                         if el:
                             filter_elements.append(el)
 

@@ -14,6 +14,7 @@ from sqlalchemy.engine import Engine
 
 from .loader import Dashboard, extract_params
 from .models import Metric
+from .filters import SelectFilter
 
 
 OutputType = Literal["figure", "table", "metric"]
@@ -51,20 +52,15 @@ def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.Dat
 
 
 def execute_options_query(
-    dash: Dashboard, filter_def: Any, engine: Engine
+    dash: Dashboard, f: SelectFilter, engine: Engine
 ) -> list[str]:
     """Execute an options query for a select filter.
 
     Returns a list of option values from the first column.
     """
-    options = filter_def.attrs.get("options", "").strip()
-    if not options.startswith("query:"):
+    if not f.options_query:
         return []
-
-    name = options.removeprefix("query:")
-    query = dash.queries.get(name)
-    if not query:
-        return []
+    query = dash.queries[f.options_query]
 
     with engine.connect() as conn:
         rows = conn.execute(text(query)).scalars().all()  # first column only
