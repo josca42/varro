@@ -9,16 +9,20 @@ A framework for creating data dashboards using extended Markdown, with SQL queri
 ```
 dashboards/
 ├── sales/
-│   ├── queries.sql      # Named SQL queries
+│   ├── queries/         # Folder with SQL queries (one file per query)
+│   │   ├── regions.sql
+│   │   ├── monthly_revenue.sql
+│   │   └── top_products.sql
 │   ├── outputs.py       # @output functions returning figures, tables, metrics
 │   └── dashboard.md     # Layout and component references
 ├── inventory/
-│   ├── queries.sql
+│   ├── queries/
+│   │   └── ...
 │   ├── outputs.py
 │   └── dashboard.md
 ```
 
-App scans `dashboards/` at startup. Each subfolder containing `dashboard.md` becomes a route at `/dash/{folder_name}`. **All three files are required**—missing files cause an error.
+App scans `dashboards/` at startup. Each subfolder containing `dashboard.md` becomes a route at `/dash/{folder_name}`. **All three items are required** (`queries/` folder, `outputs.py`, `dashboard.md`)—missing items cause an error.
 
 Database connection is global, configured in `db.py`. **PostgreSQL is assumed.**
 
@@ -26,22 +30,23 @@ The framework is a **separate installable package** (`dashboard/`) that the main
 
 ---
 
-## 1. queries.sql
+## 1. queries/ folder
 
-Named SQL queries with filter parameters.
+SQL queries organized as individual files in a `queries/` folder.
 
-### Syntax
+### Structure
 
-```sql
--- @query: query_name
-SELECT ...
-FROM ...
-WHERE (:filter_name IS NULL OR column = :filter_name)
+```
+queries/
+├── regions.sql           # Query name: "regions"
+├── monthly_revenue.sql   # Query name: "monthly_revenue"
+└── top_products.sql      # Query name: "top_products"
 ```
 
 ### Rules
 
-- Each query starts with `-- @query: name` comment
+- Each `.sql` file contains a single query
+- Filename (without extension) becomes the query name
 - Single SELECT statement (CTEs allowed, multi-statement not allowed)
 - Filter parameters use `:param_name` syntax
 - Use `(:param IS NULL OR column = :param)` pattern for optional filters
@@ -53,11 +58,13 @@ WHERE (:filter_name IS NULL OR column = :filter_name)
 
 ### Example
 
+**queries/regions.sql**
 ```sql
--- @query: regions
 SELECT DISTINCT region FROM sales ORDER BY region;
+```
 
--- @query: monthly_revenue
+**queries/monthly_revenue.sql**
+```sql
 SELECT
     date_trunc('month', date) as month,
     sum(revenue) as revenue
@@ -67,8 +74,10 @@ WHERE (:region IS NULL OR region = :region)
   AND (:period_to IS NULL OR date <= :period_to)
 GROUP BY 1
 ORDER BY 1;
+```
 
--- @query: top_products
+**queries/top_products.sql**
+```sql
 SELECT
     product_name,
     sum(revenue) as revenue,
@@ -573,8 +582,8 @@ def execute_query(query: str, params: dict) -> pd.DataFrame:
 
 ### Dashboard Load
 
-1. Load dashboard folder (`queries.sql`, `outputs.py`, `dashboard.md`)—error if missing
-2. Parse `queries.sql` → dict of named query strings
+1. Load dashboard folder (`queries/` folder, `outputs.py`, `dashboard.md`)—error if missing
+2. Load queries from `queries/` folder → dict of named query strings (filename = query name)
 3. Import `outputs.py` → dict of `@output` functions with their dependencies
 4. Parse `dashboard.md` (mistletoe with custom extensions):
    - Extract filter definitions (including `options="query:..."` references)
@@ -596,13 +605,15 @@ def execute_query(query: str, params: dict) -> pd.DataFrame:
 
 ## 13. Complete Example
 
-### dashboards/sales/queries.sql
+### dashboards/sales/queries/regions.sql
 
 ```sql
--- @query: regions
 SELECT DISTINCT region FROM sales ORDER BY region;
+```
 
--- @query: monthly_revenue
+### dashboards/sales/queries/monthly_revenue.sql
+
+```sql
 SELECT
     date_trunc('month', date) as month,
     sum(revenue) as revenue
@@ -612,8 +623,11 @@ WHERE (:region IS NULL OR region = :region)
   AND (:period_to IS NULL OR date <= :period_to)
 GROUP BY 1
 ORDER BY 1;
+```
 
--- @query: top_products
+### dashboards/sales/queries/top_products.sql
+
+```sql
 SELECT
     product_name,
     sum(revenue) as revenue,
@@ -686,7 +700,7 @@ def top_products_table(top_products, filters):
 
 | Module | Responsibility |
 |--------|----------------|
-| `dashboard/loader.py` | Load dashboard folder, parse queries.sql, import outputs.py |
+| `dashboard/loader.py` | Load dashboard folder, load queries from queries/ folder, import outputs.py |
 | `dashboard/parser.py` | Mistletoe extension for `:::` containers and `{% %}` tags |
 | `dashboard/executor.py` | Execute queries, call @output functions, detect return types |
 | `dashboard/routes.py` | FastHTML routes for shell, filters, figure/table/metric endpoints |
