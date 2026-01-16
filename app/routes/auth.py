@@ -29,7 +29,7 @@ from varro.config import settings
 from varro.db.crud.user import user as user_crud
 from varro.db.models.user import User
 
-GOOGLE_SCOPE = "openid email profile"
+GOOGLE_SCOPE = "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
 VERIFY_TTL_SECONDS = 60 * 60 * 24
 RESET_TTL_SECONDS = 60 * 60
 

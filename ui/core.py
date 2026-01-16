@@ -13,19 +13,14 @@ Runtime notes:
 """
 
 from __future__ import annotations
-
 import inspect
 from pathlib import Path
 from typing import Optional
 
 from fasthtml.common import *
 import fasthtml.components as fh
+from importlib import resources as importlib_resources
 
-try:
-    # Python 3.9+
-    from importlib import resources as importlib_resources
-except Exception:  # pragma: no cover
-    import importlib_resources  # type: ignore
 
 # -----------------------------------------------------------------------------
 # Opinionated tokens
@@ -55,7 +50,11 @@ _neg_twu_pfxs = set(
 
 def _is_neg_twu(x: str) -> bool:
     """Check if string is a negative Tailwind utility (e.g., -mt-4)."""
-    return x.startswith("-") and len(parts := x[1:].split("-")) >= 2 and parts[0] in _neg_twu_pfxs
+    return (
+        x.startswith("-")
+        and len(parts := x[1:].split("-")) >= 2
+        and parts[0] in _neg_twu_pfxs
+    )
 
 
 def cls_join(*classes: str) -> str:
@@ -72,73 +71,36 @@ cn = cls_join
 # -----------------------------------------------------------------------------
 
 # DaisyUI v5 + Tailwind runtime compiler.
-# DaisyUI ships the component classnames; Tailwind runtime compiles utilities.
-
+# DaisyUI ships the component classnames; Tailwind runtime compiles utilities
 daisy_link = Link(
     href="https://cdn.jsdelivr.net/npm/daisyui@5",
     rel="stylesheet",
     type="text/css",
 )
-
 tw_scr = Script(src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4")
+# Plotly JS for chart rendering
+plotly_hdr = Script(src="https://cdn.plot.ly/plotly-2.35.2.min.js")
+# Alpine.js for tab interactivity
+alpine_hdrs = (
+    Script(src="https://unpkg.com/@alpinejs/ui@3.15.3/dist/cdn.min.js", defer=True),
+    Script(
+        src="https://unpkg.com/@alpinejs/collapse@3.15.3/dist/cdn.min.js", defer=True
+    ),
+    Script(src="https://unpkg.com/@alpinejs/focus@3.15.3/dist/cdn.min.js", defer=True),
+    Script(src="https://unpkg.com/alpinejs@3.15.3/dist/cdn.min.js", defer=True),
+)
+# Theme CSS
+here = Path(__file__).resolve().parent
+css_content = (here / "theme.css").read_text(encoding="utf-8")
+theme_css = Style(css_content)
 
-# Base headers (framework only)
-
-daisy_hdrs = (daisy_link, tw_scr)
-
-
-def _read_pkg_text(filename: str) -> str:
-    """Read a text file shipped inside the `ui` package."""
-    try:
-        return (
-            importlib_resources.files(__package__)  # type: ignore[attr-defined]
-            .joinpath(filename)
-            .read_text(encoding="utf-8")
-        )
-    except Exception:
-        # Fallback: relative to this file (useful when running from source)
-        here = Path(__file__).resolve().parent
-        return (here / filename).read_text(encoding="utf-8")
-
-
-def theme_css(path: str | None = None) -> Style:
-    """Return a <style> tag containing theme CSS.
-
-    - If `path` is None, loads `ui/theme.css` from the package.
-    - If `path` is provided, loads that file from disk.
-
-    This keeps app headers ergonomic:
-        app, rt = daisy_app()
-
-    You can still override:
-        app, rt = daisy_app(hdrs=(theme_css('static/css/theme.css'),))
-    """
-
-    if path is None:
-        return Style(_read_pkg_text("theme.css"))
-
-    css_content = Path(path).read_text(encoding="utf-8")
-    return Style(css_content)
+# All headers
+ui_hdrs = (*daisy_link, tw_scr, plotly_hdr, *alpine_hdrs, theme_css)
 
 
-# Opinionated default headers (framework + theme)
-ui_hdrs = (*daisy_hdrs, theme_css())
-
-
-def daisy_app(*, with_theme: bool = True, **kw):
-    """Create a FastHTML app with DaisyUI (+ Tailwind runtime) headers.
-
-    Args:
-        with_theme: If True, injects `ui/theme.css` into the document.
-        **kw: Passed through to `fast_app`.
-
-    Returns:
-        (app, rt)
-    """
-
-    hdrs = kw.pop("hdrs", ())
-    base_hdrs = ui_hdrs if with_theme else daisy_hdrs
-    return fast_app(hdrs=(*base_hdrs, *hdrs), pico=False, **kw)
+def daisy_app(*args, **kwargs):
+    hdrs = kwargs.pop("hdrs", ())
+    return fast_app(hdrs=(*ui_hdrs, *hdrs), pico=False, **kwargs)
 
 
 # -----------------------------------------------------------------------------
@@ -185,13 +147,16 @@ def mk_compfn(
     def fn(*c, cls: str = "", **kw):
         # Expand modifier shortcuts: '-primary' -> 'btn-primary' (unless it's a negative Tailwind utility)
         cls_expanded = " ".join(
-            f"{compcls if x and x.startswith('-') and not _is_neg_twu(x) else ''}{x}" for x in cls.split()
+            f"{compcls if x and x.startswith('-') and not _is_neg_twu(x) else ''}{x}"
+            for x in cls.split()
         )
 
         if slot is not None and "data_slot" not in kw:
             kw["data_slot"] = slot
 
-        return compfunc(*c, cls=f"{compcls} {cls_expanded} {xcls}".strip(), **compkw, **kw)
+        return compfunc(
+            *c, cls=f"{compcls} {cls_expanded} {xcls}".strip(), **compkw, **kw
+        )
 
     fn.__name__ = name
     fn.__doc__ = f"DaisyUI primitive: .{compcls}. Use cls='-modifier' to expand to {compcls}-modifier."

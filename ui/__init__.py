@@ -20,7 +20,6 @@ from .core import (
     DEFAULT_DARK_THEME,
     DEFAULT_THEME,
     daisy_app,
-    daisy_hdrs,
     theme_css,
     ui_hdrs,
     cn,
@@ -69,7 +68,17 @@ from .components import (
     FormField,
     Link,
     LinkColor,
+    MetricValue,
+    DataTable,
+    Figure,
+    FigureSkeleton,
+    SelectFilter,
+    DateRangeFilter,
+    CheckboxFilter,
 )
+
+# Utils
+from .utils import abbrev, format_value
 
 # App-specific compositions
 from .app import (
@@ -79,9 +88,6 @@ from .app import (
     ThinkingSteps,
     EditsIndicator,
     ChatInput,
-    MetricCard,
-    ChartShell,
-    DashboardPanel,
     AuthPage,
     AuthFormCard,
     AuthSimpleCard,
@@ -97,6 +103,7 @@ from .app import (
 
 # Escape hatch: low-level primitives (not star-exported by default)
 from . import daisy
+from . import utils
 
 __version__ = "0.2.0"
 
@@ -110,7 +117,6 @@ __all__ = [
     "theme_css",
     "cn",
     "cls_join",
-
     # Components
     "Button",
     "LinkButton",
@@ -152,7 +158,16 @@ __all__ = [
     "FormField",
     "Link",
     "LinkColor",
-
+    "MetricValue",
+    "DataTable",
+    "Figure",
+    "FigureSkeleton",
+    "SelectFilter",
+    "DateRangeFilter",
+    "CheckboxFilter",
+    # Utils
+    "abbrev",
+    "format_value",
     # App
     "Navbar",
     "UserMessage",
@@ -174,7 +189,7 @@ __all__ = [
     "AuthVerificationResendForm",
     "AuthPasswordResetForm",
     "AuthPasswordResetConfirmForm",
-
-    # Escape hatch module
+    # Escape hatch modules
     "daisy",
+    "utils",
 ]

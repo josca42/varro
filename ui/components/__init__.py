@@ -47,6 +47,10 @@ from .stack import Stack, HStack, VStack, StackDirection
 from .form import Form, FormLayout
 from .stat import Stat, StatSkeleton
 from .link import Link, LinkColor
+from .metric import MetricValue, MetricFormat
+from .table import DataTable, TableVariant, TableSize
+from .figure import Figure, FigureSkeleton
+from .filter import SelectFilter, DateRangeFilter, CheckboxFilter
 
 __all__ = [
     # Buttons
@@ -123,4 +127,18 @@ __all__ = [
     # Link
     "Link",
     "LinkColor",
+    # Metric
+    "MetricValue",
+    "MetricFormat",
+    # Table
+    "DataTable",
+    "TableVariant",
+    "TableSize",
+    # Figure
+    "Figure",
+    "FigureSkeleton",
+    # Filter
+    "SelectFilter",
+    "DateRangeFilter",
+    "CheckboxFilter",
 ]

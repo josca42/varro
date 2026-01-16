@@ -14,11 +14,6 @@ from .chat import (
     EditsIndicator,
     ChatInput,
 )
-from .dashboard import (
-    MetricCard,
-    ChartShell,
-    DashboardPanel,
-)
 from .auth import (
     AuthPage,
     AuthFormCard,

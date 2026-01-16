@@ -57,24 +57,18 @@ def execute_options_query(
 
     Returns a list of option values from the first column.
     """
-    options_attr = filter_def.attrs.get("options", "")
-    if not options_attr.startswith("query:"):
+    options = filter_def.attrs.get("options", "").strip()
+    if not options.startswith("query:"):
         return []
 
-    query_name = options_attr[6:]  # Remove "query:" prefix
-    if query_name not in dash.queries:
+    name = options.removeprefix("query:")
+    query = dash.queries.get(name)
+    if not query:
         return []
 
-    query = dash.queries[query_name]
-    # Options queries don't receive filter params
     with engine.connect() as conn:
-        df = pd.read_sql(text(query), conn)
-
-    if df.empty:
-        return []
-
-    # Return first column values as strings
-    return df.iloc[:, 0].astype(str).tolist()
+        rows = conn.execute(text(query)).scalars().all()  # first column only
+    return [str(x) for x in rows]
 
 
 def detect_output_type(result: Any) -> OutputType:

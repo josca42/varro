@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 def run_cell(self, cell, timeout=None):
-    "Wrapper for original `run_cell` which adds timeout, memory limit, and output capture"
+    "Wrapper for original `run_cell` which adds timeout"
     if timeout:
 
         def handler(*args):

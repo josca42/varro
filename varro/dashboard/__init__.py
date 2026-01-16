@@ -22,7 +22,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from .models import Metric, output
-from .loader import load_dashboards, Dashboard
+from .loader import load_dashboards, load_dashboard, Dashboard
+from .routes import ar as dashboard_routes, configure as configure_dashboards
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
@@ -55,4 +56,7 @@ __all__ = [
     "output",
     "mount_dashboards",
     "Dashboard",
+    "load_dashboard",
+    "dashboard_routes",
+    "configure_dashboards",
 ]
