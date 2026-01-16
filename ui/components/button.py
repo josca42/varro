@@ -15,7 +15,7 @@ from typing import Literal
 from fasthtml.common import *
 
 from ..core import cn
-from ..daisy import Btn, Loading
+from ..daisy import Btn, LinkBtn, Loading
 
 
 ButtonVariant = Literal[
@@ -36,28 +36,7 @@ ButtonSize = Literal[
 ]
 
 
-def Button(
-    *c,
-    variant: ButtonVariant = "default",
-    size: ButtonSize = "default",
-    loading: bool = False,
-    disabled: bool = False,
-    cls: str = "",
-    **kw,
-):
-    """Primary button component.
-
-    Mapping is intentionally project-specific:
-    - default     -> btn-primary
-    - secondary   -> btn-secondary
-    - destructive -> btn-error btn-soft  (shadcn destructive is often "soft")
-    - outline     -> btn-outline
-    - ghost       -> btn-ghost
-    - link        -> btn-link
-
-    Sizes are tuned to match the project's compact density.
-    """
-
+def _button_mods(variant: ButtonVariant, size: ButtonSize) -> list[str]:
     mods: list[str] = []
 
     # Variant
@@ -89,6 +68,33 @@ def Button(
         mods.append("-square")
         mods.append("-sm")
 
+    return mods
+
+
+def Button(
+    *c,
+    variant: ButtonVariant = "default",
+    size: ButtonSize = "default",
+    loading: bool = False,
+    disabled: bool = False,
+    cls: str = "",
+    **kw,
+):
+    """Primary button component.
+
+    Mapping is intentionally project-specific:
+    - default     -> btn-primary
+    - secondary   -> btn-secondary
+    - destructive -> btn-error btn-soft  (shadcn destructive is often "soft")
+    - outline     -> btn-outline
+    - ghost       -> btn-ghost
+    - link        -> btn-link
+
+    Sizes are tuned to match the project's compact density.
+    """
+
+    mods = _button_mods(variant, size)
+
     attrs = {
         "data_variant": variant,
         "data_size": size,
@@ -106,6 +112,43 @@ def Button(
         attrs["aria_busy"] = "true"
 
     return Btn(*content, cls=cn(*mods, cls), **attrs, **kw)
+
+
+def LinkButton(
+    *c,
+    href: str | None = None,
+    variant: ButtonVariant = "default",
+    size: ButtonSize = "default",
+    loading: bool = False,
+    disabled: bool = False,
+    cls: str = "",
+    **kw,
+):
+    """Anchor styled as a button."""
+
+    mods = _button_mods(variant, size)
+
+    attrs = {
+        "data_variant": variant,
+        "data_size": size,
+        "data_slot": "link-button",
+        "href": href,
+    }
+
+    if disabled or loading:
+        mods.append("-disabled")
+        attrs["aria_disabled"] = "true"
+        attrs["tabindex"] = "-1"
+
+    content = c
+    if loading:
+        content = (
+            Loading(cls="-spinner -xs", aria_hidden="true"),
+            *c,
+        )
+        attrs["aria_busy"] = "true"
+
+    return LinkBtn(*content, cls=cn(*mods, cls), **attrs, **kw)
 
 
 def IconButton(
@@ -126,4 +169,4 @@ def IconButton(
     )
 
 
-__all__ = ["Button", "IconButton", "ButtonVariant", "ButtonSize"]
+__all__ = ["Button", "LinkButton", "IconButton", "ButtonVariant", "ButtonSize"]

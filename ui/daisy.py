@@ -21,6 +21,7 @@ from .core import mk_compfn
 # -----------------------------------------------------------------------------
 
 mk_compfn("btn", tag="Button", name="Btn", slot="button")
+mk_compfn("btn", tag="A", name="LinkBtn", slot="link-button")
 mk_compfn("badge", tag="Span", name="Badge", slot="badge")
 mk_compfn("kbd", tag="Kbd", name="Kbd", slot="kbd")
 
@@ -99,6 +100,7 @@ mk_compfn("chat-bubble", tag="Div", name="ChatBubble", slot="chat-bubble")
 __all__ = [
     # Actions
     "Btn",
+    "LinkBtn",
     "Badge",
     "Kbd",
     "Dropdown",

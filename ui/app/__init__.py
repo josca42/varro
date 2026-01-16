@@ -19,6 +19,19 @@ from .dashboard import (
     ChartShell,
     DashboardPanel,
 )
+from .auth import (
+    AuthPage,
+    AuthFormCard,
+    AuthSimpleCard,
+    AuthNotices,
+    AuthLinks,
+    AuthGoogleCta,
+    AuthLoginForm,
+    AuthSignupForm,
+    AuthVerificationResendForm,
+    AuthPasswordResetForm,
+    AuthPasswordResetConfirmForm,
+)
 
 __all__ = [
     "Navbar",
@@ -32,4 +45,16 @@ __all__ = [
     "MetricCard",
     "ChartShell",
     "DashboardPanel",
+    # Auth
+    "AuthPage",
+    "AuthFormCard",
+    "AuthSimpleCard",
+    "AuthNotices",
+    "AuthLinks",
+    "AuthGoogleCta",
+    "AuthLoginForm",
+    "AuthSignupForm",
+    "AuthVerificationResendForm",
+    "AuthPasswordResetForm",
+    "AuthPasswordResetConfirmForm",
 ]

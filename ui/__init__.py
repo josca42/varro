@@ -30,6 +30,7 @@ from .core import (
 # Opinionated components
 from .components import (
     Button,
+    LinkButton,
     IconButton,
     ButtonVariant,
     ButtonSize,
@@ -66,6 +67,8 @@ from .components import (
     Stat,
     StatSkeleton,
     FormField,
+    Link,
+    LinkColor,
 )
 
 # App-specific compositions
@@ -79,6 +82,17 @@ from .app import (
     MetricCard,
     ChartShell,
     DashboardPanel,
+    AuthPage,
+    AuthFormCard,
+    AuthSimpleCard,
+    AuthNotices,
+    AuthLinks,
+    AuthGoogleCta,
+    AuthLoginForm,
+    AuthSignupForm,
+    AuthVerificationResendForm,
+    AuthPasswordResetForm,
+    AuthPasswordResetConfirmForm,
 )
 
 # Escape hatch: low-level primitives (not star-exported by default)
@@ -99,6 +113,7 @@ __all__ = [
 
     # Components
     "Button",
+    "LinkButton",
     "IconButton",
     "ButtonVariant",
     "ButtonSize",
@@ -135,6 +150,8 @@ __all__ = [
     "Stat",
     "StatSkeleton",
     "FormField",
+    "Link",
+    "LinkColor",
 
     # App
     "Navbar",
@@ -146,6 +163,17 @@ __all__ = [
     "MetricCard",
     "ChartShell",
     "DashboardPanel",
+    "AuthPage",
+    "AuthFormCard",
+    "AuthSimpleCard",
+    "AuthNotices",
+    "AuthLinks",
+    "AuthGoogleCta",
+    "AuthLoginForm",
+    "AuthSignupForm",
+    "AuthVerificationResendForm",
+    "AuthPasswordResetForm",
+    "AuthPasswordResetConfirmForm",
 
     # Escape hatch module
     "daisy",

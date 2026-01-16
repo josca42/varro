@@ -1,5 +1,6 @@
 from fasthtml.common import *
 
+from ui import daisy_app  # trigger reload
 from routes.auth import AUTH_CSS, AUTH_SKIP, config_value
 from routes.auth import ar as auth_routes
 from routes.index import ar as index_routes
@@ -21,7 +22,7 @@ def require_auth(req, sess):
 
 beforeware = Beforeware(require_auth, skip=AUTH_SKIP + STATIC_SKIP)
 
-app, _ = fast_app(
+app, _ = daisy_app(
     before=beforeware,
     hdrs=(Style(AUTH_CSS),),
     secret_key=config_value("SESSION_SECRET"),

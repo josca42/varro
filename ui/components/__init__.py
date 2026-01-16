@@ -11,7 +11,7 @@ Most projects will use the top-level re-exports:
     from ui import Button, Card, Input
 """
 
-from .button import Button, IconButton, ButtonVariant, ButtonSize
+from .button import Button, LinkButton, IconButton, ButtonVariant, ButtonSize
 from .card import (
     Card,
     CardBody,
@@ -46,10 +46,12 @@ from .grid import Grid
 from .stack import Stack, HStack, VStack, StackDirection
 from .form import Form, FormLayout
 from .stat import Stat, StatSkeleton
+from .link import Link, LinkColor
 
 __all__ = [
     # Buttons
     "Button",
+    "LinkButton",
     "IconButton",
     "ButtonVariant",
     "ButtonSize",
@@ -118,4 +120,7 @@ __all__ = [
     # Stat
     "Stat",
     "StatSkeleton",
+    # Link
+    "Link",
+    "LinkColor",
 ]
