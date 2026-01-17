@@ -5,7 +5,9 @@ Execute SQL queries and call @output functions.
 
 from __future__ import annotations
 
+import hashlib
 import inspect
+import json
 from typing import Any, Literal
 
 import pandas as pd
@@ -18,6 +20,7 @@ from varro.dashboard.filters import SelectFilter
 
 
 OutputType = Literal["figure", "table", "metric"]
+_query_cache: dict[tuple[str, str], pd.DataFrame] = {}
 
 
 def _infer_param_type(name: str):
@@ -49,6 +52,27 @@ def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.Dat
 
     with engine.connect() as conn:
         return pd.read_sql(stmt, conn, params=bound)
+
+
+def execute_query_cached(
+    query: str, filters: dict[str, Any], engine: Engine
+) -> pd.DataFrame:
+    """Execute a SQL query with a simple cache keyed by query + filters."""
+    query_hash = hashlib.md5(query.encode()).hexdigest()
+    filters_key = json.dumps(filters, sort_keys=True, default=str)
+    key = (query_hash, filters_key)
+
+    cached = _query_cache.get(key)
+    if cached is not None:
+        return cached.copy()
+
+    df = execute_query(query, filters, engine)
+    _query_cache[key] = df
+    return df.copy()
+
+
+def clear_query_cache() -> None:
+    _query_cache.clear()
 
 
 def execute_options_query(
@@ -89,5 +113,7 @@ def execute_output(
         if param == "filters":
             kwargs["filters"] = filters
         elif param in dash.queries:
-            kwargs[param] = execute_query(dash.queries[param], filters, engine)
+            kwargs[param] = execute_query_cached(
+                dash.queries[param], filters, engine
+            )
     return fn(**kwargs)
