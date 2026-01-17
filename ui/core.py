@@ -17,9 +17,8 @@ import inspect
 from pathlib import Path
 from typing import Optional
 
-from fasthtml.common import *
+from fasthtml.common import MarkdownJS, HighlightJS, Script, Style
 import fasthtml.components as fh
-from importlib import resources as importlib_resources
 
 
 # -----------------------------------------------------------------------------
@@ -95,7 +94,15 @@ css_content = (here / "theme.css").read_text(encoding="utf-8")
 theme_css = Style(css_content)
 
 # All headers
-ui_hdrs = (daisy_link, tw_scr, plotly_hdr, *alpine_hdrs, theme_css)
+ui_hdrs = (
+    daisy_link,
+    MarkdownJS(),
+    HighlightJS(langs=["python", "javascript", "html", "css", "json", "bash"]),
+    tw_scr,
+    plotly_hdr,
+    *alpine_hdrs,
+    theme_css,
+)
 
 
 def daisy_app(*args, **kwargs):
