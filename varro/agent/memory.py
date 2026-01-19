@@ -26,7 +26,6 @@ class SessionStore:
 
     user: User
     shell: TerminalInteractiveShell | None = None
-    evidence: "EvidenceManager" | None = None
     memory: Memory | None = None
     cached_prompts: Dict[str, str] = field(default_factory=dict)
     shell_imports: bool = False
@@ -36,15 +35,11 @@ class SessionStore:
         self.memory = Memory(user.id)
         self.cached_prompts = {}
         self.shell = get_shell()
-        self.evidence = None
         self.shell_imports = False
 
     def cleanup(self):
         self.shell.reset(new_session=False)
         self.shell.history_manager.end_session()
-        if self.evidence:
-            self.evidence.stop()
-            self.evidence = None
 
 
 class Memory(BetaAbstractMemoryTool):

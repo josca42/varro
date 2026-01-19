@@ -28,6 +28,7 @@ dependencies = [
     "python-fasthtml>=0.12.37",
     "ipython>=9.6.0",
     "mistletoe>=1.5.1",
+    "resend>=2.19.0",
 ]
 
 [dependency-groups]
@@ -37,4 +38,4 @@ dev = [
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["varro"] 
+packages = ["varro", "ui"] 

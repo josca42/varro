@@ -237,30 +237,6 @@ async def jupyter_notebook(
     return ToolReturn(return_value=res.stdout, content=elements_rendered)
 
 
-@agent.tool(docstring_format="google")
-async def show_dashboard(ctx: RunContext[SessionStore], name: str) -> str:
-    """
-    Show a dashboard in the iframe. Stops any previous dashboard first.
-
-    Use memory tool to create/edit pages at /memories/d/{name}/pages/*.md
-
-    Args:
-        name: Dashboard identifier (e.g., "arbejdsmarked-2024")
-
-    Returns:
-        Confirmation with port number.
-    """
-    if not ctx.deps.evidence:
-        ctx.deps.evidence = EvidenceManager(user_id=ctx.deps.user.id)
-
-    port = await ctx.deps.evidence.serve(name)
-
-    host = os.environ.get("DASHBOARD_HOST", "localhost")
-    await cl.Message(content=f"<!--DASHBOARD:{host}:{port}-->").send()
-
-    return f"Dashboard '{name}' running on {host}:{port}. Write pages to /memories/d/{name}/pages/"
-
-
 async def show_element(element) -> Any | None:
     """Convert a cell output to a format suitable for ToolReturn content."""
     if isinstance(element, pd.DataFrame):
