@@ -5,13 +5,16 @@ Load dashboard folders and queries from queries/ folder.
 
 from __future__ import annotations
 
-import importlib.util
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from varro.dashboard.models import get_outputs
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+from varro.dashboard.models import Metric, output
 from varro.dashboard.filters import Filter, validate_options_queries
 from varro.dashboard.parser import ASTNode, parse_dashboard_md, extract_filters
 
@@ -56,6 +59,25 @@ def extract_params(query: str) -> set[str]:
     return set(re.findall(r"(?<!:):(\w+)", query))
 
 
+def load_outputs(outputs_file: Path) -> dict[str, Callable]:
+    """Load outputs with exec to avoid module caching."""
+    namespace: dict[str, object] = {
+        "output": output,
+        "Metric": Metric,
+        "px": px,
+        "go": go,
+        "pd": pd,
+        "__file__": str(outputs_file),
+        "__name__": f"dashboards.{outputs_file.parent.name}.outputs",
+    }
+    exec(outputs_file.read_text(), namespace)
+    return {
+        name: fn
+        for name, fn in namespace.items()
+        if callable(fn) and getattr(fn, "_is_output", False)
+    }
+
+
 def load_dashboard(folder: Path) -> Dashboard:
     """Load a dashboard from a folder.
 
@@ -77,15 +99,8 @@ def load_dashboard(folder: Path) -> Dashboard:
     # Load queries from folder
     queries = load_queries(folder)
 
-    # Import outputs module
-    spec = importlib.util.spec_from_file_location(
-        f"dashboards.{name}.outputs", outputs_file
-    )
-    if spec is None or spec.loader is None:
-        raise ValueError(f"Cannot load {outputs_file}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    outputs = get_outputs(module)
+    # Load outputs
+    outputs = load_outputs(outputs_file)
 
     # Parse markdown
     ast = parse_dashboard_md(md_file.read_text())
@@ -115,4 +130,3 @@ def load_dashboards(dashboards_dir: str | Path) -> dict[str, Dashboard]:
             dashboards[dash.name] = dash
 
     return dashboards
-

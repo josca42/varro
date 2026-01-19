@@ -5,6 +5,7 @@ FastHTML routes for dashboards with on-demand loading.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -13,7 +14,11 @@ from fasthtml.common import APIRouter, Div, Response
 from sqlalchemy.engine import Engine
 
 from varro.dashboard.loader import Dashboard, load_dashboard
-from varro.dashboard.executor import execute_output, execute_options_query
+from varro.dashboard.executor import (
+    clear_query_cache,
+    execute_options_query,
+    execute_output,
+)
 from varro.dashboard.components import (
     render_shell,
     render_metric_card,
@@ -25,7 +30,13 @@ from varro.dashboard.filters import Filter, SelectFilter
 # Module-level configuration
 _dashboards_dir: Path | None = None
 _engine: Engine | None = None
-_cache: dict[str, Dashboard] = {}
+@dataclass
+class CachedDashboard:
+    dashboard: Dashboard
+    mtimes: tuple[float, ...]
+
+
+_cache: dict[str, CachedDashboard] = {}
 
 ar = APIRouter()
 
@@ -38,16 +49,31 @@ def configure(dashboards_dir: Path | str, engine: Engine) -> None:
     _cache = {}
 
 
+def get_mtimes(folder: Path) -> tuple[float, ...]:
+    queries_dir = folder / "queries"
+    files = [folder / "dashboard.md", folder / "outputs.py"]
+    if queries_dir.exists() and queries_dir.is_dir():
+        files.extend(sorted(queries_dir.glob("*.sql")))
+    return tuple(f.stat().st_mtime for f in files)
+
+
 def get_dashboard(name: str) -> Dashboard | None:
     """Load a dashboard on-demand with caching."""
     if _dashboards_dir is None:
         return None
-    if name not in _cache:
-        path = _dashboards_dir / name
-        if not (path / "dashboard.md").exists():
-            return None
-        _cache[name] = load_dashboard(path)
-    return _cache[name]
+    path = _dashboards_dir / name
+    if not (path / "dashboard.md").exists():
+        return None
+
+    mtimes = get_mtimes(path)
+    cached = _cache.get(name)
+    if cached and cached.mtimes == mtimes:
+        return cached.dashboard
+
+    clear_query_cache()
+    dash = load_dashboard(path)
+    _cache[name] = CachedDashboard(dashboard=dash, mtimes=mtimes)
+    return dash
 
 
 def parse_filters_from_request(
@@ -158,4 +184,3 @@ def render_metric_endpoint(name: str, output_name: str, req):
         return render_metric_card(result)
     except Exception:
         return Div("Error loading metric", cls="text-error text-center p-4")
-
