@@ -16,17 +16,29 @@ from ui.core import cn
 from ui.components import Button, Textarea, MarkdownProse
 
 
-def UserMessage(content, cls: str = "", **kw):
+def Messages():
+    return (
+        Div(
+            Div(
+                Div(*SampleMessages(), id="chat-messages", cls="px-4 py-6"),
+                cls="flex-1 overflow-y-auto",
+            ),
+            ChatInput(),
+            cls="flex flex-col",
+            **{":style": "'width:' + width + '%'"},
+        ),
+    )
+
+
+def UserMsg(content, cls: str = "", **kw):
     """User message bubble (right aligned)."""
 
     return Div(
         Div(
             content,
             cls="bg-base-200 text-base-content px-4 py-3 rounded-box max-w-[85%]",
-            data_slot="chat-user-bubble",
         ),
         cls=cn("flex justify-end mb-4", cls),
-        data_slot="chat-user-message",
         **kw,
     )
 
@@ -69,7 +81,6 @@ def ThinkingSteps(duration: str, steps: Sequence[tuple[str, str]], cls: str = ""
         ),
         x_data=True,
         cls=cn("mb-2", cls),
-        data_slot="chat-thinking",
         **kw,
     )
 
@@ -85,12 +96,11 @@ def EditsIndicator(count: int = 8, cls: str = "", **kw):
         ),
         Button("Show all", variant="ghost", size="sm", cls="text-base-content/60"),
         cls=cn("flex items-center justify-between py-2 mb-2", cls),
-        data_slot="chat-edits",
         **kw,
     )
 
 
-def AssistantMessage(
+def AssistantMsg(
     content,
     thinking_time: str | None = None,
     thinking_steps: Sequence[tuple[str, str]] | None = None,
@@ -111,7 +121,6 @@ def AssistantMessage(
     return Div(
         *parts,
         cls=cn("mb-6", cls),
-        data_slot="chat-assistant-message",
         **kw,
     )
 
@@ -145,7 +154,5 @@ def ChatInput(
         hx_swap="beforeend",
         hx_on__after_request="this.reset()",
         cls=cn("border-t border-base-300 p-4", cls),
-        data_slot="chat-input",
         **kw,
     )
-
