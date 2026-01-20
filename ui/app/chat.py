@@ -27,6 +27,15 @@ from fasthtml.common import (
     A,
     NotStr,
 )
+from pydantic_ai import BinaryContent, ModelMessagesTypeAdapter
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelResponse,
+    BaseToolCallPart,
+    BaseToolReturnPart,
+    ThinkingPart,
+    TextPart,
+)
 
 if TYPE_CHECKING:
     from varro.db.models.chat import Chat, Message
@@ -129,22 +138,31 @@ def UserMessage(content: str):
 
 
 def AssistantMessage(content: dict):
+    messages = _load_pydantic_messages(content)
+    tool_results = _tool_results(messages)
+    attachments = content.get("attachments", {})
     parts = []
-    for node in content.get("nodes", []):
-        for part in node.get("parts", []):
-            if part.get("type") == "thinking":
-                parts.append(ThinkingBlock(part.get("content", "")))
-            elif part.get("type") == "tool_call":
+    for msg in messages:
+        if not isinstance(msg, ModelResponse):
+            continue
+        for part in msg.parts:
+            if isinstance(part, ThinkingPart):
+                parts.append(ThinkingBlock(part.content))
+            elif isinstance(part, BaseToolCallPart):
+                args = part.args or {}
+                if isinstance(args, str):
+                    args = json.loads(args)
+                result_text = _tool_result_text(tool_results.get(part.tool_call_id))
                 parts.append(
                     ToolCallBlock(
-                        part.get("tool", ""),
-                        part.get("args", {}),
-                        part.get("result", ""),
-                        part.get("attachments", []),
+                        part.tool_name,
+                        args,
+                        result_text,
+                        attachments.get(part.tool_call_id, []),
                     )
                 )
-            elif part.get("type") == "text":
-                parts.append(TextBlock(part.get("content", "")))
+            elif isinstance(part, TextPart):
+                parts.append(TextBlock(part.content))
     return Div(*parts, cls="mb-6")
 
 
@@ -344,3 +362,26 @@ def MarkdownTable(content: str):
 
 def ChatInput(*args, **kwargs):
     return ChatForm(*args, **kwargs)
+
+
+def _load_pydantic_messages(content: dict) -> list[ModelMessage]:
+    stored = content.get("pydantic_messages", [])
+    return ModelMessagesTypeAdapter.validate_python(stored)
+
+
+def _tool_results(messages: list[ModelMessage]) -> dict[str, object]:
+    results = {}
+    for msg in messages:
+        for part in getattr(msg, "parts", []):
+            if isinstance(part, BaseToolReturnPart):
+                results[part.tool_call_id] = part.content
+    return results
+
+
+def _tool_result_text(result: object | None) -> str:
+    if result is None:
+        return ""
+    if isinstance(result, list):
+        items = [item for item in result if not isinstance(item, BinaryContent)]
+        return "\n".join(str(item) for item in items if str(item).strip())
+    return str(result)

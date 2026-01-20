@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import shutil
 import uuid
 from pathlib import Path
@@ -17,18 +18,17 @@ from fasthtml.common import (
     to_xml,
 )
 from pydantic_ai import Agent, BinaryContent
+from pydantic_ai import ModelMessagesTypeAdapter
 from pydantic_ai.messages import (
     ModelMessage,
-    ModelRequest,
     ModelResponse,
-    UserPromptPart,
+    BaseToolCallPart,
     ThinkingPart,
-    TextPart,
-    ToolCallPart,
     PartStartEvent,
     FunctionToolCallEvent,
     FunctionToolResultEvent,
 )
+from pydantic_core import to_jsonable_python
 
 from ui.app import (
     ChatPage,
@@ -202,51 +202,36 @@ def serve_upload(path: str, auth):
 
 async def restore_session_store(chat: Chat, deps: SessionStore):
     ctx = SimpleNamespace(deps=deps)
-    for msg in chat.messages:
-        if msg.role != "assistant":
+    history = build_message_history(chat)
+    for msg in history:
+        if not isinstance(msg, ModelResponse):
             continue
-        for node in msg.content.get("nodes", []):
-            for part in node.get("parts", []):
-                if part.get("type") != "tool_call":
-                    continue
+        for part in msg.parts:
+            if not isinstance(part, BaseToolCallPart):
+                continue
 
-                tool = part.get("tool")
-                args = part.get("args", {})
+            tool = part.tool_name
+            if tool not in {"sql_query", "jupyter_notebook"}:
+                continue
 
-                if tool == "sql_query":
-                    sql_query(ctx, args.get("query", ""), args.get("df_name"))
-                elif tool == "jupyter_notebook":
-                    await jupyter_notebook(
-                        ctx, args.get("code", ""), args.get("show", [])
-                    )
+            args = part.args or {}
+            if isinstance(args, str):
+                args = json.loads(args)
+
+            if tool == "sql_query":
+                sql_query(ctx, args.get("query", ""), args.get("df_name"))
+            elif tool == "jupyter_notebook":
+                await jupyter_notebook(
+                    ctx, args.get("code", ""), args.get("show", [])
+                )
 
 
 def build_message_history(chat: Chat) -> list[ModelMessage]:
     history: list[ModelMessage] = []
-    messages = chat.messages[:-1] if chat.messages else []
-
-    for msg in messages:
-        if msg.role == "user":
-            history.append(
-                ModelRequest(parts=[UserPromptPart(content=msg.content.get("text", ""))])
-            )
-        else:
-            for node in msg.content.get("nodes", []):
-                parts = []
-                for part in node.get("parts", []):
-                    if part.get("type") == "thinking":
-                        parts.append(ThinkingPart(content=part.get("content", "")))
-                    elif part.get("type") == "text":
-                        parts.append(TextPart(content=part.get("content", "")))
-                    elif part.get("type") == "tool_call":
-                        parts.append(
-                            ToolCallPart(
-                                tool_name=part.get("tool", ""),
-                                args=part.get("args", {}),
-                            )
-                        )
-                if parts:
-                    history.append(ModelResponse(parts=parts))
+    for msg in chat.messages or []:
+        stored = msg.content.get("pydantic_messages")
+        if stored:
+            history.extend(ModelMessagesTypeAdapter.validate_python(stored))
     return history
 
 
@@ -265,8 +250,7 @@ async def agent_html_stream(chat: Chat, user: User):
     message_history = build_message_history(chat)
     user_msg = chat.messages[-1].content.get("text", "") if chat.messages else ""
 
-    assistant_nodes = []
-    current_node_parts = []
+    attachments_map = {}
 
     try:
         async with agent.iter(
@@ -285,15 +269,8 @@ async def agent_html_stream(chat: Chat, user: User):
                                 )
 
                 elif Agent.is_call_tools_node(node):
-                    if current_node_parts:
-                        assistant_nodes.append({"parts": current_node_parts})
-                        current_node_parts = []
-
                     for part in node.model_response.parts:
                         if isinstance(part, ThinkingPart):
-                            current_node_parts.append(
-                                {"type": "thinking", "content": part.content}
-                            )
                             yield sse_html("content", ThinkingBlock(part.content))
 
                     async with node.stream(run.ctx) as handle_stream:
@@ -301,12 +278,15 @@ async def agent_html_stream(chat: Chat, user: User):
                         async for event in handle_stream:
                             if isinstance(event, FunctionToolCallEvent):
                                 tool_name = event.part.tool_name
+                                args = event.part.args or {}
+                                if isinstance(args, str):
+                                    args = json.loads(args)
                                 yield sse_html(
                                     "progress", ProgressIndicator(get_tool_status(tool_name))
                                 )
                                 current_tool = {
                                     "tool": tool_name,
-                                    "args": event.part.args,
+                                    "args": args,
                                     "tool_call_id": event.part.tool_call_id,
                                 }
 
@@ -332,42 +312,50 @@ async def agent_html_stream(chat: Chat, user: User):
                                                 }
                                             )
 
-                                tool_data = {
-                                    "type": "tool_call",
-                                    "tool": current_tool["tool"],
-                                    "args": current_tool["args"],
-                                    "result": str(result_content)
-                                    if not attachments
-                                    else "",
-                                    "attachments": attachments,
-                                }
-                                current_node_parts.append(tool_data)
+                                if attachments:
+                                    attachments_map[current_tool["tool_call_id"]] = (
+                                        attachments
+                                    )
+
+                                result_text = ""
+                                if isinstance(result_content, list):
+                                    result_text = "\n".join(
+                                        str(item)
+                                        for item in result_content
+                                        if not isinstance(item, BinaryContent)
+                                    )
+                                elif result_content is not None:
+                                    result_text = str(result_content)
 
                                 yield sse_html(
                                     "content",
                                     ToolCallBlock(
                                         current_tool["tool"],
                                         current_tool["args"],
-                                        tool_data["result"],
+                                        result_text,
                                         attachments,
                                     ),
                                 )
                                 current_tool = None
 
                 elif Agent.is_end_node(node):
-                    if current_node_parts:
-                        assistant_nodes.append({"parts": current_node_parts})
-                        current_node_parts = []
-
                     final_text = run.result.output if run.result else ""
-                    assistant_nodes.append(
-                        {"parts": [{"type": "text", "content": final_text}]}
-                    )
 
                     yield sse_html("content", TextBlock(final_text))
 
+        stored_messages = []
+        if run.result:
+            stored_messages = to_jsonable_python(run.result.new_messages())
+
         crud.message.create(
-            Message(chat_id=chat.id, role="assistant", content={"nodes": assistant_nodes})
+            Message(
+                chat_id=chat.id,
+                role="assistant",
+                content={
+                    "pydantic_messages": stored_messages,
+                    "attachments": attachments_map,
+                },
+            )
         )
 
         yield sse_done(chat.id)

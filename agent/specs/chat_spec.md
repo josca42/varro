@@ -75,26 +75,23 @@ class Message(SQLModel, table=True):
 **Assistant message:**
 ```json
 {
-  "nodes": [
-    {
-      "parts": [
-        {"type": "thinking", "content": "I need to find unemployment data..."},
-        {"type": "tool_call", "tool": "sql_query", "args": {"query": "SELECT ...", "df_name": "df_result"}, "result": "Stored as df_result\n| col1 | col2 |..."}
-      ]
-    },
-    {
-      "parts": [
-        {"type": "thinking", "content": "Now I'll visualize this data..."},
-        {"type": "tool_call", "tool": "jupyter_notebook", "args": {"code": "fig = px.bar(...)"}, "result": "", "attachments": [{"path": "1/chat_data/5/abc123.png", "media_type": "image/png"}]}
-      ]
-    },
-    {
-      "parts": [
-        {"type": "text", "content": "Arbejdsløsheden i Danmark er 4.2% pr. januar 2025..."}
-      ]
-    }
-  ]
+  "pydantic_messages": [
+    {"kind": "request", "parts": [{"part_kind": "system-prompt", "content": "..."}]},
+    {"kind": "request", "parts": [{"part_kind": "user-prompt", "content": "Hvad er arbejdsløsheden i Danmark?"}]},
+    {"kind": "response", "parts": [{"part_kind": "tool-call", "tool_name": "sql_query", "args": {"query": "SELECT ...", "df_name": "df_result"}, "tool_call_id": "pyd_ai_tool_call_id"}]},
+    {"kind": "response", "parts": [{"part_kind": "text", "content": "Arbejdsløsheden i Danmark er 4.2% pr. januar 2025..."}]}
+  ],
+  "attachments": {
+    "pyd_ai_tool_call_id": [
+      {"path": "1/chat_data/5/abc123.png", "media_type": "image/png"}
+    ]
+  }
 }
+```
+
+`pydantic_messages` is stored via:
+```python
+messages_json = to_jsonable_python(run.result.new_messages())
 ```
 
 ---
@@ -108,7 +105,7 @@ class Message(SQLModel, table=True):
 
 **Lifecycle:**
 - Created when tool produces `BinaryContent`
-- Referenced via `attachments` array in tool_call part
+- Referenced via `attachments` map keyed by `tool_call_id`
 - Deleted when chat is deleted (entire `/{user_id}/chat_data/{chat_id}/` folder)
 
 ---
@@ -133,27 +130,26 @@ sess['chat_id']  # Current active chat ID or None
 - Replay all tool calls from chat history to restore `SessionStore`
 - Then execute new message with restored state
 
-### Replay Logic
+### Replay Logic (from native pydantic messages)
 
 ```python
 async def restore_session_store(chat: Chat, deps: SessionStore):
     """Replay tool calls to restore SessionStore state."""
-    for msg in chat.messages:
-        if msg.role != 'assistant':
+    history = build_message_history(chat)
+    for msg in history:
+        if not isinstance(msg, ModelResponse):
             continue
-
-        for node in msg.content.get('nodes', []):
-            for part in node.get('parts', []):
-                if part['type'] != 'tool_call':
-                    continue
-
-                tool = part['tool']
-                args = part['args']
-
-                if tool == 'sql_query':
-                    sql_query(deps, args['query'], args.get('df_name'))
-                elif tool == 'jupyter_notebook':
-                    jupyter_notebook(deps, args['code'], args.get('show', []))
+        for part in msg.parts:
+            if not isinstance(part, BaseToolCallPart):
+                continue
+            tool = part.tool_name
+            args = part.args or {}
+            if isinstance(args, str):
+                args = json.loads(args)
+            if tool == 'sql_query':
+                sql_query(deps, args.get('query', ''), args.get('df_name'))
+            elif tool == 'jupyter_notebook':
+                jupyter_notebook(deps, args.get('code', ''), args.get('show', []))
 ```
 
 ---
@@ -351,8 +347,7 @@ async def agent_html_stream(chat: Chat, user: User):
     message_history = build_message_history(chat)
     user_msg = chat.messages[-1].content['text']
 
-    assistant_nodes = []
-    current_node_parts = []
+    attachments_map = {}
 
     try:
         async with agent.iter(user_msg, deps=deps, message_history=message_history) as run:
@@ -367,17 +362,8 @@ async def agent_html_stream(chat: Chat, user: User):
                                     yield sse_html("progress", ProgressIndicator("Reasoning..."))
 
                 elif Agent.is_call_tools_node(node):
-                    if current_node_parts:
-                        assistant_nodes.append({"parts": current_node_parts})
-                        current_node_parts = []
-
-                    # Process thinking parts
                     for part in node.model_response.parts:
                         if 'Thinking' in type(part).__name__:
-                            current_node_parts.append({
-                                "type": "thinking",
-                                "content": part.content
-                            })
                             yield sse_html("content", ThinkingBlock(part.content))
 
                     # Execute tools
@@ -408,40 +394,30 @@ async def agent_html_stream(chat: Chat, user: User):
                                                     "media_type": item.media_type
                                                 })
 
-                                    tool_data = {
-                                        "type": "tool_call",
-                                        "tool": current_tool["tool"],
-                                        "args": current_tool["args"],
-                                        "result": str(result_content) if not attachments else "",
-                                        "attachments": attachments
-                                    }
-                                    current_node_parts.append(tool_data)
+                                    if attachments:
+                                        attachments_map[current_tool["tool_call_id"]] = attachments
 
                                     yield sse_html("content", ToolCallBlock(
                                         current_tool["tool"],
                                         current_tool["args"],
-                                        tool_data["result"],
+                                        "" if attachments else str(result_content),
                                         attachments
                                     ))
                                     current_tool = None
 
                 elif Agent.is_end_node(node):
-                    if current_node_parts:
-                        assistant_nodes.append({"parts": current_node_parts})
-                        current_node_parts = []
-
                     final_text = run.result.output
-                    assistant_nodes.append({
-                        "parts": [{"type": "text", "content": final_text}]
-                    })
-
                     yield sse_html("content", TextBlock(final_text))
 
         # Save assistant message
+        stored_messages = to_jsonable_python(run.result.new_messages())
         crud.message.create(Message(
             chat_id=chat.id,
             role='assistant',
-            content={"nodes": assistant_nodes}
+            content={
+                "pydantic_messages": stored_messages,
+                "attachments": attachments_map,
+            }
         ))
 
         yield sse_done(chat.id)
@@ -498,23 +474,10 @@ def save_binary_content(user_id: int, chat_id: int, content: BinaryContent) -> s
 
 def build_message_history(chat: Chat) -> list[ModelMessage]:
     history = []
-    for msg in chat.messages[:-1]:
-        if msg.role == 'user':
-            history.append(ModelRequest(parts=[
-                UserPromptPart(content=msg.content['text'])
-            ]))
-        else:
-            for node in msg.content.get('nodes', []):
-                parts = []
-                for part in node.get('parts', []):
-                    if part['type'] == 'thinking':
-                        parts.append(ThinkingPart(content=part['content']))
-                    elif part['type'] == 'text':
-                        parts.append(TextPart(content=part['content']))
-                    elif part['type'] == 'tool_call':
-                        parts.append(ToolCallPart(tool_name=part['tool'], args=part['args']))
-                if parts:
-                    history.append(ModelResponse(parts=parts))
+    for msg in chat.messages:
+        stored = msg.content.get("pydantic_messages")
+        if stored:
+            history.extend(ModelMessagesTypeAdapter.validate_python(stored))
     return history
 ```
 
@@ -639,18 +602,37 @@ def UserMessage(content: str):
 
 
 def AssistantMessage(content: dict):
+    messages = ModelMessagesTypeAdapter.validate_python(
+        content.get("pydantic_messages", [])
+    )
+    attachments = content.get("attachments", {})
+    tool_results = {}
+
+    for msg in messages:
+        for part in getattr(msg, "parts", []):
+            if isinstance(part, BaseToolReturnPart):
+                tool_results[part.tool_call_id] = part.content
+
     parts = []
-    for node in content.get('nodes', []):
-        for part in node.get('parts', []):
-            if part['type'] == 'thinking':
-                parts.append(ThinkingBlock(part['content']))
-            elif part['type'] == 'tool_call':
+    for msg in messages:
+        if not isinstance(msg, ModelResponse):
+            continue
+        for part in msg.parts:
+            if isinstance(part, ThinkingPart):
+                parts.append(ThinkingBlock(part.content))
+            elif isinstance(part, BaseToolCallPart):
+                args = part.args or {}
+                if isinstance(args, str):
+                    args = json.loads(args)
+                result = tool_results.get(part.tool_call_id)
                 parts.append(ToolCallBlock(
-                    part['tool'], part['args'],
-                    part['result'], part.get('attachments', [])
+                    part.tool_name,
+                    args,
+                    render_result_text(result),
+                    attachments.get(part.tool_call_id, []),
                 ))
-            elif part['type'] == 'text':
-                parts.append(TextBlock(part['content']))
+            elif isinstance(part, TextPart):
+                parts.append(TextBlock(part.content))
     return Div(*parts, cls="mb-6")
 ```
 
@@ -660,7 +642,7 @@ def AssistantMessage(content: dict):
 def ThinkingBlock(content: str):
     return Div(
         Div(
-            Span("▶", cls="text-xs transition-transform duration-200 mr-2",
+            Span(">", cls="text-xs transition-transform duration-200 mr-2",
                  **{":class": "{'rotate-90': open}"}),
             "Thinking...",
             cls="cursor-pointer text-sm text-base-content/50 flex items-center",
@@ -683,7 +665,7 @@ def ThinkingBlock(content: str):
 def ToolCallBlock(tool: str, args: dict, result: str, attachments: list):
     return Div(
         Div(
-            Span("▶", cls="text-xs transition-transform duration-200 mr-2",
+            Span(">", cls="text-xs transition-transform duration-200 mr-2",
                  **{":class": "{'rotate-90': open}"}),
             f"Called {tool}",
             cls="cursor-pointer text-sm text-base-content/50 flex items-center",
@@ -706,7 +688,7 @@ def ToolArgsDisplay(tool: str, args: dict):
         return Div(
             Pre(Code(args.get('query', ''), cls="language-sql"),
                 cls="text-xs bg-base-200 p-2 rounded overflow-x-auto"),
-            Span(f"→ {args.get('df_name')}", cls="text-xs text-base-content/50")
+            Span(f"-> {args.get('df_name')}", cls="text-xs text-base-content/50")
                 if args.get('df_name') else None
         )
     elif tool == 'jupyter_notebook':
@@ -727,6 +709,16 @@ def ToolResultDisplay(result: str, attachments: list):
     for att in attachments:
         parts.append(Img(src=f"/uploads/{att['path']}", cls="max-w-full rounded mt-2"))
     return Div(*parts) if parts else None
+
+
+def render_result_text(result):
+    if result is None:
+        return ""
+    if isinstance(result, list):
+        return "\n".join(
+            str(item) for item in result if not isinstance(item, BinaryContent)
+        )
+    return str(result)
 
 
 def TextBlock(content: str):
@@ -761,7 +753,7 @@ def ChatHeader(chat: Chat | None):
 def ChatDropdownTrigger(chat: Chat | None):
     title = chat.title if chat else "New chat"
     return Div(
-        Button(title, Span("▼", cls="ml-2 text-xs"), cls="btn btn-ghost btn-sm",
+        Button(title, Span("v", cls="ml-2 text-xs"), cls="btn btn-ghost btn-sm",
                **{"@click": "open = !open"}),
         Div(id="chat-dropdown", hx_get="/chat/history", hx_trigger="click from:previous",
             cls="absolute mt-2 w-64 bg-base-100 shadow-lg rounded-box z-50",
@@ -780,7 +772,7 @@ def ChatDropdownItem(chat: Chat):
         A(Span(chat.title or "Untitled", cls="truncate"),
           Span(chat.created_at.strftime("%Y-%m-%d"), cls="text-xs text-base-content/50"),
           hx_get=f"/chat/switch/{chat.id}", cls="flex flex-col"),
-        Button("×", hx_delete=f"/chat/delete/{chat.id}", hx_confirm="Delete?",
+        Button("x", hx_delete=f"/chat/delete/{chat.id}", hx_confirm="Delete?",
                cls="btn btn-ghost btn-xs"),
         cls="flex justify-between items-center"
     ))
@@ -856,7 +848,7 @@ def serve_upload(path: str, user: User):
 |--------|----------|
 | Architecture | Server renders HTML, SSE streams HTML fragments |
 | Client JS | Minimal (Alpine.js for collapsibles only) |
-| Data storage | Postgres JSONB + filesystem for binary |
+| Data storage | Postgres JSONB (native pydantic messages + attachments map) + filesystem for binary |
 | SSE events | `content` (append HTML), `progress` (OOB update), `done` (close stream) |
 | Cancellation | Stop button replaces SSE container via hx-get |
 | Form state | Server controls via OOB swaps |
