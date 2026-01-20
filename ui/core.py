@@ -79,6 +79,8 @@ daisy_link = Link(
 tw_scr = Script(src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4")
 # Plotly JS for chart rendering
 plotly_hdr = Script(src="https://cdn.plot.ly/plotly-2.35.2.min.js")
+# HTMX SSE extension
+sse_hdr = Script(src="https://unpkg.com/htmx-ext-sse@2.2.3/sse.js")
 # Alpine.js for tab interactivity
 alpine_hdrs = (
     Script(src="https://unpkg.com/@alpinejs/ui@3.15.3/dist/cdn.min.js", defer=True),
@@ -100,6 +102,7 @@ ui_hdrs = (
     HighlightJS(langs=["python", "javascript", "html", "css", "json", "bash"]),
     tw_scr,
     plotly_hdr,
+    sse_hdr,
     *alpine_hdrs,
     theme_css,
 )

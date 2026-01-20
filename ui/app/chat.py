@@ -1,158 +1,346 @@
-"""ui.app.chat
-
-Chat panel compositions used by the demo app.
-
-These mirror the structure that was previously in `main.py`, but implemented
-using `ui.components`.
-"""
-
 from __future__ import annotations
 
-from typing import Iterable, Sequence
+import json
+from typing import TYPE_CHECKING
 
-from fasthtml.common import *
+import mistletoe
+from fasthtml.common import (
+    Div,
+    Span,
+    Button,
+    Form,
+    Textarea,
+    Pre,
+    Code,
+    Img,
+    Main,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
+    H1,
+    Header,
+    Ul,
+    Li,
+    A,
+    NotStr,
+)
 
-from ui.core import cn
-from ui.components import Button, Textarea, MarkdownProse
+if TYPE_CHECKING:
+    from varro.db.models.chat import Chat, Message
 
 
-def Messages():
-    return (
-        Div(
-            Div(
-                Div(*SampleMessages(), id="chat-messages", cls="px-4 py-6"),
-                cls="flex-1 overflow-y-auto",
-            ),
-            ChatInput(),
-            cls="flex flex-col",
-            **{":style": "'width:' + width + '%'"},
-        ),
+def ChatPage(chat: "Chat" | None):
+    messages = chat.messages if chat else []
+    return Main(
+        ChatHeader(chat),
+        ChatMessages(messages),
+        ChatForm(disabled=False),
+        cls="flex flex-col h-screen",
     )
 
 
-def UserMsg(content, cls: str = "", **kw):
-    """User message bubble (right aligned)."""
-
+def ChatMessages(messages: list["Message"]):
     return Div(
-        Div(
-            content,
-            cls="bg-base-200 text-base-content px-4 py-3 rounded-box max-w-[85%]",
-        ),
-        cls=cn("flex justify-end mb-4", cls),
-        **kw,
+        *[MessageComponent(m) for m in messages],
+        Div(id="stream-container"),
+        id="chat-messages",
+        cls="flex-1 overflow-y-auto px-4 py-6",
     )
 
 
-def ThinkingSteps(duration: str, steps: Sequence[tuple[str, str]], cls: str = "", **kw):
-    """Expandable "thinking" panel with smooth animations (claude.ai style).
+def MessageComponent(message: "Message"):
+    if message.role == "user":
+        return UserMessage(message.content.get("text", ""))
+    return AssistantMessage(message.content)
 
-    Uses Alpine.js x-disclosure + x-collapse for smooth expand/collapse transitions.
-    """
 
+def StreamContainer(chat_id: int):
     return Div(
-        # x-disclosure container
-        Div(
-            # Trigger button
-            Div(
-                Div(
-                    "▶",
-                    cls="text-xs transition-transform inline-block mr-1",
-                    **{":class": "{'rotate-90': $disclosure.isOpen}"},
-                ),
-                f"Thought for {duration}",
-                cls="inline",
-                **{"x-disclosure:button": True},
-            ),
-            # Collapsible panel with smooth height animation
-            Div(
-                *[
-                    Div(
-                        Div(title, cls="text-sm font-medium text-base-content/70"),
-                        Div(desc, cls="text-sm text-base-content/60"),
-                        cls="py-1",
-                    )
-                    for title, desc in steps
-                ],
-                cls="pl-4 border-l border-base-300 space-y-2 mt-2 mb-3",
-                **{"x-disclosure:panel": True, "x-collapse": True},
-            ),
-            **{"x-disclosure": True},
-            cls="cursor-pointer text-sm text-base-content/50 hover:text-base-content/70",
+        ProgressIndicator("Thinking..."),
+        Div(id="streaming-content", sse_swap="content:beforeend"),
+        Button(
+            "Stop",
+            hx_get=f"/chat/stop/{chat_id}",
+            hx_target="#stream-container",
+            hx_swap="outerHTML",
+            cls="btn btn-error btn-sm mt-2",
         ),
-        x_data=True,
-        cls=cn("mb-2", cls),
-        **kw,
+        id="stream-container",
+        hx_ext="sse",
+        sse_connect=f"/chat/stream/{chat_id}",
+        sse_swap="done:outerHTML",
     )
 
 
-def EditsIndicator(count: int = 8, cls: str = "", **kw):
-    """Small "edits made" row."""
-
+def ProgressIndicator(status: str):
     return Div(
-        Div(
-            Div("✎", cls="text-base-content/40"),
-            Div(f"{count} edits made", cls="text-sm text-base-content/60"),
-            cls="flex items-center gap-2",
-        ),
-        Button("Show all", variant="ghost", size="sm", cls="text-base-content/60"),
-        cls=cn("flex items-center justify-between py-2 mb-2", cls),
-        **kw,
+        Span(cls="loading loading-dots loading-sm"),
+        Span(status, cls="ml-2 text-sm text-base-content/50"),
+        id="progress-indicator",
+        hx_swap_oob="true",
+        cls="flex items-center mb-4",
     )
 
 
-def AssistantMsg(
-    content,
-    thinking_time: str | None = None,
-    thinking_steps: Sequence[tuple[str, str]] | None = None,
-    show_edits: bool = False,
-    cls: str = "",
-    **kw,
-):
-    """Assistant message block with optional thinking accordion."""
-
-    parts = []
-    if thinking_time and thinking_steps:
-        parts.append(ThinkingSteps(thinking_time, thinking_steps))
-    if show_edits:
-        parts.append(EditsIndicator())
-
-    parts.append(MarkdownProse(content))
-
-    return Div(
-        *parts,
-        cls=cn("mb-6", cls),
-        **kw,
-    )
-
-
-def ChatInput(
-    *,
-    action: str = "/msg",
-    target: str = "#chat-messages",
-    placeholder: str = "Ask Lovable...",
-    textarea_id: str = "msg-input",
-    cls: str = "",
-    **kw,
-):
-    """Bottom input bar (HTMX-friendly)."""
-
+def ChatForm(disabled: bool = False, **kw):
     return Form(
         Div(
             Textarea(
-                placeholder=placeholder,
-                name="user_msg",
-                id=textarea_id,
-                rows="2",
-                cls="w-full resize-none",
-                size="default",
+                id="message-input",
+                name="message",
+                placeholder="Ask about Danish statistics...",
+                rows="1",
+                disabled=disabled,
+                cls="textarea textarea-bordered w-full resize-none",
             ),
-            Button("Send", type="submit", variant="default", size="default"),
+            Button(
+                "Send",
+                type="submit",
+                disabled=disabled,
+                cls="btn btn-primary btn-sm",
+            ),
             cls="flex gap-2 items-end",
         ),
-        hx_post=action,
-        hx_target=target,
-        hx_swap="beforeend",
-        hx_on__after_request="this.reset()",
-        cls=cn("border-t border-base-300 p-4", cls),
+        hx_post="/chat/send",
+        hx_target="#stream-container",
+        hx_swap="outerHTML",
+        id="chat-form",
+        cls="px-4 py-3 border-t",
         **kw,
     )
+
+
+def ChatFormDisabled():
+    return ChatForm(disabled=True, hx_swap_oob="true")
+
+
+def ChatFormEnabled():
+    return Div(ChatForm(disabled=False), hx_swap_oob="outerHTML:#chat-form")
+
+
+def UserMessage(content: str):
+    return Div(
+        Div(content, cls="bg-base-200 px-4 py-3 rounded-box max-w-[85%]"),
+        cls="flex justify-end mb-4",
+    )
+
+
+def AssistantMessage(content: dict):
+    parts = []
+    for node in content.get("nodes", []):
+        for part in node.get("parts", []):
+            if part.get("type") == "thinking":
+                parts.append(ThinkingBlock(part.get("content", "")))
+            elif part.get("type") == "tool_call":
+                parts.append(
+                    ToolCallBlock(
+                        part.get("tool", ""),
+                        part.get("args", {}),
+                        part.get("result", ""),
+                        part.get("attachments", []),
+                    )
+                )
+            elif part.get("type") == "text":
+                parts.append(TextBlock(part.get("content", "")))
+    return Div(*parts, cls="mb-6")
+
+
+def ThinkingBlock(content: str):
+    return Div(
+        Div(
+            Span(
+                ">",
+                cls="text-xs transition-transform duration-200 mr-2",
+                **{":class": "{'rotate-90': open}"},
+            ),
+            "Thinking...",
+            cls="cursor-pointer text-sm text-base-content/50 flex items-center",
+            **{"@click": "open = !open"},
+        ),
+        Div(
+            content,
+            cls="pl-4 border-l-2 border-base-300 mt-2 text-sm text-base-content/60 whitespace-pre-wrap",
+            x_show="open",
+            x_collapse=True,
+        ),
+        x_data="{open: false}",
+        cls="mb-2",
+    )
+
+
+def ToolCallBlock(tool: str, args: dict, result: str, attachments: list):
+    return Div(
+        Div(
+            Span(
+                ">",
+                cls="text-xs transition-transform duration-200 mr-2",
+                **{":class": "{'rotate-90': open}"},
+            ),
+            f"Called {tool}",
+            cls="cursor-pointer text-sm text-base-content/50 flex items-center",
+            **{"@click": "open = !open"},
+        ),
+        Div(
+            ToolArgsDisplay(tool, args),
+            ToolResultDisplay(result, attachments),
+            cls="pl-4 border-l-2 border-base-300 mt-2",
+            x_show="open",
+            x_collapse=True,
+        ),
+        x_data="{open: false}",
+        cls="mb-2",
+    )
+
+
+def ToolArgsDisplay(tool: str, args: dict):
+    if tool == "sql_query":
+        return Div(
+            Pre(
+                Code(args.get("query", ""), cls="language-sql"),
+                cls="text-xs bg-base-200 p-2 rounded overflow-x-auto",
+            ),
+            Span(f"-> {args.get('df_name')}", cls="text-xs text-base-content/50")
+            if args.get("df_name")
+            else None,
+        )
+    if tool == "jupyter_notebook":
+        return Pre(
+            Code(args.get("code", ""), cls="language-python"),
+            cls="text-xs bg-base-200 p-2 rounded overflow-x-auto",
+        )
+    return Pre(
+        json.dumps(args, indent=2, ensure_ascii=False),
+        cls="text-xs bg-base-200 p-2 rounded overflow-x-auto",
+    )
+
+
+def ToolResultDisplay(result: str, attachments: list):
+    parts = []
+    if result:
+        if "|" in result and "\n" in result:
+            parts.append(MarkdownTable(result))
+        else:
+            parts.append(Pre(result, cls="text-xs overflow-x-auto mt-2"))
+    for att in attachments:
+        parts.append(
+            Img(src=f"/uploads/{att['path']}", cls="max-w-full rounded mt-2")
+        )
+    return Div(*parts) if parts else None
+
+
+def TextBlock(content: str):
+    return Div(
+        NotStr(render_markdown(content)),
+        cls="prose prose-sm max-w-none mb-6",
+    )
+
+
+def ErrorBlock(message: str):
+    return Div(f"Error: {message}", cls="text-error text-sm mb-4")
+
+
+def ChatHeader(chat: "Chat" | None):
+    return Header(
+        Div(
+            H1("Rigsstatistikeren", cls="text-xl font-semibold"),
+            ChatDropdownTrigger(chat),
+            cls="flex items-center gap-4",
+        ),
+        Button("New Chat", hx_get="/chat/new", cls="btn btn-primary btn-sm"),
+        cls="flex justify-between items-center px-4 py-3 border-b",
+    )
+
+
+def ChatDropdownTrigger(chat: "Chat" | None):
+    title = chat.title if chat else "New chat"
+    return Div(
+        Button(
+            title,
+            Span("v", cls="ml-2 text-xs"),
+            cls="btn btn-ghost btn-sm",
+            **{"@click": "open = !open"},
+        ),
+        Div(
+            id="chat-dropdown",
+            hx_get="/chat/history",
+            hx_trigger="click from:previous",
+            cls="absolute mt-2 w-64 bg-base-100 shadow-lg rounded-box z-50",
+            x_show="open",
+            **{"@click.outside": "open = false"},
+        ),
+        x_data="{open: false}",
+        cls="relative",
+    )
+
+
+def ChatDropdown(chats: list["Chat"]):
+    return Ul(*[ChatDropdownItem(c) for c in chats], cls="menu p-2")
+
+
+def ChatDropdownItem(chat: "Chat"):
+    return Li(
+        Div(
+            A(
+                Span(chat.title or "Untitled", cls="truncate"),
+                Span(
+                    chat.created_at.strftime("%Y-%m-%d"),
+                    cls="text-xs text-base-content/50",
+                ),
+                hx_get=f"/chat/switch/{chat.id}",
+                cls="flex flex-col",
+            ),
+            Button(
+                "x",
+                hx_delete=f"/chat/delete/{chat.id}",
+                hx_confirm="Delete?",
+                cls="btn btn-ghost btn-xs",
+            ),
+            cls="flex justify-between items-center",
+        )
+    )
+
+
+def render_markdown(content: str) -> str:
+    return mistletoe.markdown(content or "")
+
+
+def MarkdownTable(content: str):
+    lines = [line for line in content.splitlines() if line.strip()]
+    if not lines:
+        return Pre(content, cls="text-xs overflow-x-auto mt-2")
+
+    title = None
+    if lines[0].startswith("df.") and len(lines) > 1:
+        title = lines.pop(0)
+
+    rows = [line.split("|") for line in lines]
+    if not rows:
+        return Pre(content, cls="text-xs overflow-x-auto mt-2")
+
+    header = rows[0]
+    body = rows[1:]
+
+    return Div(
+        Div(title, cls="text-xs text-base-content/50 mb-1") if title else None,
+        Div(
+            Table(
+                Thead(Tr(*[Th(cell.strip()) for cell in header])),
+                Tbody(
+                    *[
+                        Tr(*[Td(cell.strip()) for cell in row])
+                        for row in body
+                    ]
+                ),
+                cls="table table-xs",
+            ),
+            cls="overflow-x-auto bg-base-200/60 p-2 rounded",
+        ),
+        cls="mt-2",
+    )
+
+
+def ChatInput(*args, **kwargs):
+    return ChatForm(*args, **kwargs)

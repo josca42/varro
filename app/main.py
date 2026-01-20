@@ -5,6 +5,7 @@ from fasthtml.common import Script, RedirectResponse
 from ui.core import daisy_app
 from varro.dashboard import dashboard_routes, configure_dashboards
 from varro.db.db import engine
+from app.routes.chat import ar as chat_routes
 
 # Auth imports (commented out)
 # from routes.auth import AUTH_CSS, AUTH_SKIP, config_value
@@ -37,6 +38,7 @@ app, rt = daisy_app()
 # Configure and mount dashboard routes
 configure_dashboards(Path("example_dashboard_folder"), engine)
 dashboard_routes.to_app(app)
+chat_routes.to_app(app)
 
 
 @app.get("/")

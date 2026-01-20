@@ -1,5 +1,4 @@
 import os
-import chainlit as cl
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -19,9 +18,7 @@ from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
 from varro.agent.memory import Memory, SessionStore
-from varro.evidence import EvidenceManager
 from pathlib import Path
-import logfire
 from varro.agent.playwright_render import html_to_png
 from varro.agent.utils import get_dim_tables
 from varro.db.db import engine
@@ -38,8 +35,6 @@ import io
 from pydantic_ai.builtin_tools import MemoryTool
 from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
 
-logfire.configure(scrubbing=False)
-logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 

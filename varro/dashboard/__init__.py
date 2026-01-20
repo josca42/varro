@@ -23,7 +23,6 @@ from typing import TYPE_CHECKING
 
 from varro.dashboard.models import Metric, output
 from varro.dashboard.loader import load_dashboards, Dashboard
-from varro.dashboard.routes import ar as dashboard_routes, configure as configure_dashboards
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
@@ -47,5 +46,5 @@ def mount_dashboards(
     from varro.dashboard.routes import mount_dashboard_routes
 
     dashboards = load_dashboards(dashboards_dir)
-    mount_dashboard_routes(app, dashboards, engine)
+    mount_dashboard_routes(app, dashboards_dir, engine)
     return dashboards

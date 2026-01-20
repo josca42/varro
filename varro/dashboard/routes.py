@@ -30,6 +30,8 @@ from varro.dashboard.filters import Filter, SelectFilter
 # Module-level configuration
 _dashboards_dir: Path | None = None
 _engine: Engine | None = None
+
+
 @dataclass
 class CachedDashboard:
     dashboard: Dashboard
@@ -47,6 +49,12 @@ def configure(dashboards_dir: Path | str, engine: Engine) -> None:
     _dashboards_dir = Path(dashboards_dir)
     _engine = engine
     _cache = {}
+
+
+def mount_dashboard_routes(app, dashboards_dir: Path | str, engine: Engine) -> None:
+    """Configure and mount dashboard routes on the app."""
+    configure(dashboards_dir, engine)
+    ar.to_app(app)
 
 
 def get_mtimes(folder: Path) -> tuple[float, ...]:
