@@ -30,7 +30,6 @@ daisy-ui: agent/docs/daisy-ui.txt
 alpine.js: agent/docs/alpine_js/*
 url-design: agent/docs/url_design.txt
 
-
 # Code style
 When writing code then only include essential comments. Otherwise leave comments out.
 

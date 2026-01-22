@@ -16,31 +16,6 @@ from pathlib import Path
 import shutil
 from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
 
-if TYPE_CHECKING:
-    from varro.evidence import EvidenceManager
-
-
-@dataclass
-class SessionStore:
-    """Stores objects and jupyter kernel"""
-
-    user: User
-    shell: TerminalInteractiveShell | None = None
-    memory: Memory | None = None
-    cached_prompts: Dict[str, str] = field(default_factory=dict)
-    shell_imports: bool = False
-
-    def __init__(self, user: User):
-        self.user = user
-        self.memory = Memory(user.id)
-        self.cached_prompts = {}
-        self.shell = get_shell()
-        self.shell_imports = False
-
-    def cleanup(self):
-        self.shell.reset(new_session=False)
-        self.shell.history_manager.end_session()
-
 
 class Memory(BetaAbstractMemoryTool):
     def __init__(self, user_id: int):

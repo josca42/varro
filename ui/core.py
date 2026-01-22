@@ -17,7 +17,7 @@ import inspect
 from pathlib import Path
 from typing import Optional
 
-from fasthtml.common import MarkdownJS, HighlightJS, Script, Style
+from fasthtml.common import MarkdownJS, HighlightJS, Script, Style, Link, fast_app
 import fasthtml.components as fh
 
 

@@ -17,7 +17,8 @@ from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
-from varro.agent.memory import Memory, SessionStore
+
+# from varro.agent.memory import Memory, SessionStore
 from pathlib import Path
 from varro.agent.playwright_render import html_to_png
 from varro.agent.utils import get_dim_tables
@@ -32,9 +33,11 @@ from varro.context.tools import (
 from sqlalchemy import text
 import matplotlib.pyplot as plt
 import io
-from pydantic_ai.builtin_tools import MemoryTool
-from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
 
+from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
+from varro.db.models.user import User
+from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
+from varro.chat.session import ChatSession
 
 DIM_TABLES = get_dim_tables()
 
@@ -48,9 +51,9 @@ sonnet_settings = AnthropicModelSettings(
 agent = Agent(
     model=sonnet_model,
     model_settings=sonnet_settings,
-    deps_type=SessionStore,
+    deps_type=ChatSession,
     builtin_tools=[
-        MemoryTool(),
+        # MemoryTool(),
         WebSearchTool(
             search_context_size="medium",
             user_location=WebSearchUserLocation(
@@ -68,7 +71,7 @@ agent = Agent(
 
 
 @agent.instructions
-async def get_system_prompt(ctx: RunContext[SessionStore]) -> str:
+async def get_system_prompt(ctx: RunContext[ChatSession]) -> str:
     prompts = ctx.deps.cached_prompts
     if not prompts:
         prompts = get_prompts(prompts)
@@ -83,12 +86,12 @@ def get_prompts(prompts):
     return prompts
 
 
-@agent.tool()
-async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
-    if ctx.deps.memory is None:
-        ctx.deps.memory = Memory(ctx.deps.user.id)
+# @agent.tool()
+# async def memory(ctx: RunContext[SessionStore], **command: Any) -> Any:
+#     if ctx.deps.memory is None:
+#         ctx.deps.memory = Memory(ctx.deps.user.id)
 
-    return ctx.deps.memory.call(command)
+#     return ctx.deps.memory.call(command)
 
 
 @agent.tool_plain(docstring_format="google")
@@ -165,7 +168,7 @@ def view_column_values(
 
 
 @agent.tool(docstring_format="google")
-def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = None):
+def sql_query(ctx: RunContext[ChatSession], query: str, df_name: str | None = None):
     """
     Execute a SQL query against the PostgreSQL database containing the dimension and fact tables. If df_name is provided then the result is stored in the <session_store> with the name specified by df_name.
 
@@ -188,7 +191,7 @@ def sql_query(ctx: RunContext[SessionStore], query: str, df_name: str | None = N
 
 @agent.tool(docstring_format="google")
 async def jupyter_notebook(
-    ctx: RunContext[SessionStore], code: str, show: list[str] = []
+    ctx: RunContext[ChatSession], code: str, show: list[str] = []
 ):
     """
     Stateful Jupyter notebook environment. Each call executes as a new cell.

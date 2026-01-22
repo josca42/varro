@@ -11,8 +11,7 @@ wheels/
 .venv
 /data
 /notebooks
-agent/docs/alpine_js/*
-/docs
+/docs/llm_docs/alpine_js/*
 /evidence-template/node_modules/
 /mnt/
 .evidence/

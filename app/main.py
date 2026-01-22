@@ -20,8 +20,7 @@ from app.routes.chat import ar as chat_routes
 # ]
 
 # def require_auth(req, sess):
-#     auth = sess.get("auth")
-#     req.scope["auth"] = auth
+#     auth = req.scope['auth'] = sess.get('auth', None)
 #     if not auth:
 #         return RedirectResponse("/login", status_code=303)
 
