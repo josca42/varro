@@ -29,6 +29,8 @@ dependencies = [
     "ipython>=9.6.0",
     "mistletoe>=1.5.1",
     "resend>=2.19.0",
+    "msgpack>=1.1.2",
+    "zstandard>=0.25.0",
 ]
 
 [dependency-groups]

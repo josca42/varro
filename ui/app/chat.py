@@ -9,6 +9,7 @@ from fasthtml.common import (
     Span,
     Button,
     Form,
+    Input,
     Textarea,
     Pre,
     Code,
@@ -27,79 +28,75 @@ from fasthtml.common import (
     A,
     NotStr,
 )
-from pydantic_ai import BinaryContent, ModelMessagesTypeAdapter
+from pydantic_ai import BinaryContent
 from pydantic_ai.messages import (
-    ModelMessage,
-    ModelResponse,
-    BaseToolCallPart,
-    BaseToolReturnPart,
     ThinkingPart,
     TextPart,
+    ToolCallPart,
+    ToolReturnPart,
 )
 
 if TYPE_CHECKING:
-    from varro.db.models.chat import Chat, Message
+    from varro.db.models.chat import Chat, Turn
 
 
-def ChatPage(chat: "Chat" | None):
-    messages = chat.messages if chat else []
+def ChatPage(chat: "Chat | None"):
+    turns = chat.turns if chat else []
+    chat_id = chat.id if chat else None
     return Main(
         ChatHeader(chat),
-        ChatMessages(messages),
-        ChatForm(disabled=False),
+        ChatMessages(turns),
+        ChatForm(chat_id=chat_id),
         cls="flex flex-col h-screen",
     )
 
 
-def ChatMessages(messages: list["Message"]):
+def ChatMessages(turns: list["Turn"]):
     return Div(
-        *[MessageComponent(m) for m in messages],
-        Div(id="stream-container"),
+        *[TurnComponent(t) for t in turns],
         id="chat-messages",
         cls="flex-1 overflow-y-auto px-4 py-6",
     )
 
 
-def MessageComponent(message: "Message"):
-    if message.role == "user":
-        return UserMessage(message.content.get("text", ""))
-    return AssistantMessage(message.content)
+def TurnComponent(turn: "Turn"):
+    """Render a complete turn from stored data."""
+    from pathlib import Path
+    from varro.chat.session import UserSession
+
+    parts = [UserMessage(turn.user_text)]
+
+    msgs = UserSession._load_turn(Path(turn.obj_fp))
+    for msg in msgs:
+        from pydantic_ai.messages import ModelResponse
+
+        if not isinstance(msg, ModelResponse):
+            continue
+        for part in msg.parts:
+            if isinstance(part, ThinkingPart):
+                parts.append(ThinkingBlock(part.content))
+            elif isinstance(part, TextPart):
+                parts.append(TextBlock(part.content))
+            elif isinstance(part, ToolCallPart):
+                args = _parse_args(part.args)
+                parts.append(
+                    ToolCallBlock(
+                        tool=part.tool_name,
+                        args=args,
+                        result="",
+                        attachments=[],
+                    )
+                )
+
+    return Div(*parts, cls="mb-6")
 
 
-def StreamContainer(chat_id: int):
-    return Div(
-        ProgressIndicator("Thinking..."),
-        Div(id="streaming-content", sse_swap="content:beforeend"),
-        Button(
-            "Stop",
-            hx_get=f"/chat/stop/{chat_id}",
-            hx_target="#stream-container",
-            hx_swap="outerHTML",
-            cls="btn btn-error btn-sm mt-2",
-        ),
-        id="stream-container",
-        hx_ext="sse",
-        sse_connect=f"/chat/stream/{chat_id}",
-        sse_swap="done:outerHTML",
-    )
-
-
-def ProgressIndicator(status: str):
-    return Div(
-        Span(cls="loading loading-dots loading-sm"),
-        Span(status, cls="ml-2 text-sm text-base-content/50"),
-        id="progress-indicator",
-        hx_swap_oob="true",
-        cls="flex items-center mb-4",
-    )
-
-
-def ChatForm(disabled: bool = False, **kw):
+def ChatForm(chat_id: int | None = None, disabled: bool = False):
     return Form(
         Div(
             Textarea(
                 id="message-input",
-                name="message",
+                name="msg",
                 placeholder="Ask about Danish statistics...",
                 rows="1",
                 disabled=disabled,
@@ -113,17 +110,15 @@ def ChatForm(disabled: bool = False, **kw):
             ),
             cls="flex gap-2 items-end",
         ),
-        hx_post="/chat/send",
-        hx_target="#stream-container",
-        hx_swap="outerHTML",
+        Input(type="hidden", name="chat_id", value=chat_id) if chat_id else None,
+        ws_send=True,
         id="chat-form",
         cls="px-4 py-3 border-t",
-        **kw,
     )
 
 
 def ChatFormDisabled():
-    return ChatForm(disabled=True, hx_swap_oob="true")
+    return Div(ChatForm(disabled=True), hx_swap_oob="outerHTML:#chat-form")
 
 
 def ChatFormEnabled():
@@ -137,33 +132,61 @@ def UserMessage(content: str):
     )
 
 
-def AssistantMessage(content: dict):
-    messages = _load_pydantic_messages(content)
-    tool_results = _tool_results(messages)
-    attachments = content.get("attachments", {})
+def UserPromptBlock(node):
+    """Render a UserPromptNode."""
+    return UserMessage(node.user_prompt)
+
+
+def ModelRequestBlock(node):
+    """
+    Render a ModelRequestNode.
+    Contains the request sent to the model (tool return parts from previous calls).
+    """
     parts = []
-    for msg in messages:
-        if not isinstance(msg, ModelResponse):
-            continue
-        for part in msg.parts:
-            if isinstance(part, ThinkingPart):
-                parts.append(ThinkingBlock(part.content))
-            elif isinstance(part, BaseToolCallPart):
-                args = part.args or {}
-                if isinstance(args, str):
-                    args = json.loads(args)
-                result_text = _tool_result_text(tool_results.get(part.tool_call_id))
-                parts.append(
-                    ToolCallBlock(
-                        part.tool_name,
-                        args,
-                        result_text,
-                        attachments.get(part.tool_call_id, []),
-                    )
+    for part in node.request.parts:
+        if isinstance(part, ToolReturnPart):
+            parts.append(ToolResultBlock(part))
+
+    return Div(*parts) if parts else None
+
+
+def CallToolsBlock(node):
+    """
+    Render a CallToolsNode.
+    Contains the model's response: thinking, text, and tool calls.
+    """
+    parts = []
+    model_response = node.model_response
+
+    for part in model_response.parts:
+        if isinstance(part, ThinkingPart):
+            parts.append(ThinkingBlock(part.content))
+        elif isinstance(part, TextPart):
+            parts.append(TextBlock(part.content))
+        elif isinstance(part, ToolCallPart):
+            args = _parse_args(part.args)
+            parts.append(
+                ToolCallBlock(
+                    tool=part.tool_name,
+                    args=args,
+                    result="",
+                    attachments=[],
                 )
-            elif isinstance(part, TextPart):
-                parts.append(TextBlock(part.content))
-    return Div(*parts, cls="mb-6")
+            )
+
+    return Div(*parts, cls="mb-4") if parts else None
+
+
+def ToolResultBlock(part: ToolReturnPart):
+    """Render a tool result from a ModelRequestNode."""
+    result_text = _format_tool_result(part.content)
+    return Div(
+        Div(f"Result from {part.tool_name}", cls="text-xs text-base-content/50"),
+        Pre(result_text, cls="text-xs bg-base-200 p-2 rounded overflow-x-auto mt-1")
+        if result_text
+        else None,
+        cls="pl-4 border-l-2 border-base-300 mb-2",
+    )
 
 
 def ThinkingBlock(content: str):
@@ -243,16 +266,14 @@ def ToolResultDisplay(result: str, attachments: list):
         else:
             parts.append(Pre(result, cls="text-xs overflow-x-auto mt-2"))
     for att in attachments:
-        parts.append(
-            Img(src=f"/uploads/{att['path']}", cls="max-w-full rounded mt-2")
-        )
+        parts.append(Img(src=f"/uploads/{att['path']}", cls="max-w-full rounded mt-2"))
     return Div(*parts) if parts else None
 
 
 def TextBlock(content: str):
     return Div(
         NotStr(render_markdown(content)),
-        cls="prose prose-sm max-w-none mb-6",
+        cls="prose prose-sm max-w-none mb-4",
     )
 
 
@@ -260,7 +281,7 @@ def ErrorBlock(message: str):
     return Div(f"Error: {message}", cls="text-error text-sm mb-4")
 
 
-def ChatHeader(chat: "Chat" | None):
+def ChatHeader(chat: "Chat | None"):
     return Header(
         Div(
             H1("Rigsstatistikeren", cls="text-xl font-semibold"),
@@ -272,7 +293,7 @@ def ChatHeader(chat: "Chat" | None):
     )
 
 
-def ChatDropdownTrigger(chat: "Chat" | None):
+def ChatDropdownTrigger(chat: "Chat | None"):
     title = chat.title if chat else "New chat"
     return Div(
         Button(
@@ -346,12 +367,7 @@ def MarkdownTable(content: str):
         Div(
             Table(
                 Thead(Tr(*[Th(cell.strip()) for cell in header])),
-                Tbody(
-                    *[
-                        Tr(*[Td(cell.strip()) for cell in row])
-                        for row in body
-                    ]
-                ),
+                Tbody(*[Tr(*[Td(cell.strip()) for cell in row]) for row in body]),
                 cls="table table-xs",
             ),
             cls="overflow-x-auto bg-base-200/60 p-2 rounded",
@@ -360,28 +376,18 @@ def MarkdownTable(content: str):
     )
 
 
-def ChatInput(*args, **kwargs):
-    return ChatForm(*args, **kwargs)
+def _parse_args(args) -> dict:
+    if isinstance(args, dict):
+        return args
+    if isinstance(args, str):
+        return json.loads(args or "{}")
+    return {}
 
 
-def _load_pydantic_messages(content: dict) -> list[ModelMessage]:
-    stored = content.get("pydantic_messages", [])
-    return ModelMessagesTypeAdapter.validate_python(stored)
-
-
-def _tool_results(messages: list[ModelMessage]) -> dict[str, object]:
-    results = {}
-    for msg in messages:
-        for part in getattr(msg, "parts", []):
-            if isinstance(part, BaseToolReturnPart):
-                results[part.tool_call_id] = part.content
-    return results
-
-
-def _tool_result_text(result: object | None) -> str:
-    if result is None:
+def _format_tool_result(content) -> str:
+    if content is None:
         return ""
-    if isinstance(result, list):
-        items = [item for item in result if not isinstance(item, BinaryContent)]
+    if isinstance(content, list):
+        items = [item for item in content if not isinstance(item, BinaryContent)]
         return "\n".join(str(item) for item in items if str(item).strip())
-    return str(result)
+    return str(content)

@@ -17,8 +17,6 @@ from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
-
-# from varro.agent.memory import Memory, SessionStore
 from pathlib import Path
 from varro.agent.playwright_render import html_to_png
 from varro.agent.utils import get_dim_tables
@@ -37,7 +35,7 @@ import io
 from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
 from varro.db.models.user import User
 from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
-from varro.chat.session import ChatSession
+from varro.chat.session import UserSession
 
 DIM_TABLES = get_dim_tables()
 
@@ -51,7 +49,7 @@ sonnet_settings = AnthropicModelSettings(
 agent = Agent(
     model=sonnet_model,
     model_settings=sonnet_settings,
-    deps_type=ChatSession,
+    deps_type=UserSession,
     builtin_tools=[
         # MemoryTool(),
         WebSearchTool(
@@ -71,7 +69,7 @@ agent = Agent(
 
 
 @agent.instructions
-async def get_system_prompt(ctx: RunContext[ChatSession]) -> str:
+async def get_system_prompt(ctx: RunContext[UserSession]) -> str:
     prompts = ctx.deps.cached_prompts
     if not prompts:
         prompts = get_prompts(prompts)
@@ -168,7 +166,7 @@ def view_column_values(
 
 
 @agent.tool(docstring_format="google")
-def sql_query(ctx: RunContext[ChatSession], query: str, df_name: str | None = None):
+def sql_query(ctx: RunContext[UserSession], query: str, df_name: str | None = None):
     """
     Execute a SQL query against the PostgreSQL database containing the dimension and fact tables. If df_name is provided then the result is stored in the <session_store> with the name specified by df_name.
 
@@ -191,7 +189,7 @@ def sql_query(ctx: RunContext[ChatSession], query: str, df_name: str | None = No
 
 @agent.tool(docstring_format="google")
 async def jupyter_notebook(
-    ctx: RunContext[ChatSession], code: str, show: list[str] = []
+    ctx: RunContext[UserSession], code: str, show: list[str] = []
 ):
     """
     Stateful Jupyter notebook environment. Each call executes as a new cell.

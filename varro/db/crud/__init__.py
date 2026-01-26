@@ -1,5 +1,5 @@
 from .user import user
 from .prompt import prompt
-from .chat import chat, message
+from .chat import chat, turn
 
-__all__ = ["user", "prompt", "chat", "message"]
+__all__ = ["user", "prompt", "chat", "turn"]

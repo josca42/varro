@@ -3,21 +3,19 @@ I want to create a chat app that allows a user to write to an AI assistant. So i
 The chat app should be developed using fasthtml and htmx for web framework. Pydantic-ai for AI assistant and a crud framework for saving data to disk.
 The chat app will be part of a larger application handling authentication etc.. So everything besides the chat app is handled.
 
-The chat should be establishing a websocket connection. When a websocket connection is established then a ChatSession should be created. The chat session has an active ipython shell, chat message history etc..
-The chat session should just be kept in memory in a python dictionary. Each user should at most be able to have one active chat session.
-The chat session should handle the chat life cycle with restoring shell namespace if previous conversation and handling messages etc.. And also cleanup when disconnecting.
+The chat should be establishing a websocket connection. When a websocket connection is established then a UserSession should be created. The user session has an active ipython shell, chat message history etc..
+The user session should just be kept in memory in a python dictionary. Each user should at most be able to have one active session.
+The session should handle the chat life cycle with restoring shell namespace if previous conversation and handling messages etc.. And also cleanup when disconnecting.
 
-The websocket connection should stream html. The html streamed should represent pydantic-ai nodes. So each html returned is pydantic-ai node in an agent stream.
+The websocket connection should stream html. The html streamed should represent pydantic-ai nodes. So each html returned is pydantic-ai node in an agent.iter loop
 
-The html should be an append only structure. With the caveat that a User might go back and edit a message which should delete all messages after the edited message and then continue the append only structure.
-
-For storing messages then messages are stored as message turns and pydantic-ai json representing a message turn between a user and an AI assistant is just stored raw as jsonb. For brevity the name Message is still used all though it represents a message turn.
+The html should be an append only structure. With the caveat that a user might go back and edit a message which should delete all messages after the edited message and then continue the append only structure.
 
 Note all the AGENTS.md included contain specific knowledge about the project structure.
 
 See the pydantic_ai.md file in the project for docs on pydantic-ai
 
-Below is some pseudo code I have in my notes
+I have create some initial code, which can be considered pseudocode'ish,
 ### User flow
 
 ```python
@@ -81,13 +79,6 @@ See varro/chat/session.py
 ### Routes
 
 ```python
-@ar("/chat/stream/{chat_id}")
-async def chat_stream(user: User, chats: CrudChat, chat_id: int):
-    chat = chats.get(chat_id, with_msgs=True)
-    if not chat:
-        return Response(status_code=404)
-    # ...
-
 @ar("/chat/history")
 def chat_history(chats: CrudChat):
     return ChatDropdown(chats.get_recent(limit=10))

@@ -1,9 +1,6 @@
-from pathlib import Path
-
-from fasthtml.common import Script, RedirectResponse, Beforeware
+from fasthtml.common import RedirectResponse, Beforeware
 
 from ui.core import daisy_app
-from varro.db.db import engine
 from app.routes.chat import ar as chat_routes
 from varro.db import crud
 
@@ -13,23 +10,25 @@ STATIC_SKIP = [
     r".*\.css",
     r".*\.js",
 ]
+
 DEMO_USER_ID = 1
 
 
 def before(req, sess):
-    user = crud.user.get(DEMO_USER_ID)
+    """Beforeware to inject user and scoped CRUD."""
+    user_id = sess.get("user_id", DEMO_USER_ID)
+    sess["user_id"] = user_id
 
-    # Attach scoped instances to request
+    user = crud.user.get(user_id)
+
     req.scope["user"] = user
-    req.scope["chats"] = crud.chat.for_user(user.id)
+    req.scope["chats"] = crud.chat.for_user(user_id)
 
 
 beforeware = Beforeware(before, skip=STATIC_SKIP)
 
-# Create FastHTML app with DaisyUI + Plotly + Alpine.js
-app, rt = daisy_app()
+app, rt = daisy_app(exts="ws", before=beforeware)
 
-# Configure and mount dashboard routes
 chat_routes.to_app(app)
 
 
