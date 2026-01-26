@@ -21,20 +21,14 @@ async def run_agent(user_text: str, session: UserSession) -> AsyncIterator[str]:
 
     One node = one HTML block = one websocket send.
     """
-    try:
-        async with agent.iter(
-            user_text, message_history=session.msgs, deps=session
-        ) as run:
-            async for node in run:
-                html = node_to_html(node)
-                if html:
-                    yield html
+    async with agent.iter(user_text, message_history=session.msgs, deps=session) as run:
+        async for node in run:
+            html = node_to_html(node)
+            if html:
+                yield html
 
-        new_msgs = run.result.new_messages()
-        session.save_turn(new_msgs, user_text)
-
-    except Exception as e:
-        yield to_xml(ErrorBlock(str(e)))
+    new_msgs = run.result.new_messages()
+    session.save_turn(new_msgs, user_text)
 
 
 def node_to_html(node) -> str | None:

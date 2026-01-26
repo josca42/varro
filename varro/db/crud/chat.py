@@ -23,6 +23,11 @@ class CrudChat(CrudBase[Chat]):
             query = query.where(Chat.user_id == self._user_id)
         return query
 
+    def create(self, chat: Chat) -> Chat:
+        if self._user_id is not None:
+            chat.user_id = self._user_id
+        return super().create(chat)
+
     def get(self, chat_id: int | None, with_turns: bool = False) -> Chat | None:
         if chat_id is None:
             return None
@@ -41,7 +46,6 @@ class CrudChat(CrudBase[Chat]):
 
 
 class CrudTurn(CrudBase[Turn]):
-
     def delete_from_idx(self, chat_id: int, idx: int) -> list[str]:
         """
         Delete all turns with idx >= given idx.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Awaitable, Callable
@@ -13,7 +14,7 @@ from pydantic_core import to_jsonable_python
 
 from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
 from varro.db.crud.chat import CrudChat
-from varro.db.models.chat import Turn
+from varro.db.models.chat import Chat, Turn
 from varro.db.models.user import User
 from varro.db import crud
 
@@ -25,7 +26,7 @@ zstd_decompressor = zstd.ZstdDecompressor()
 class UserSession:
     """In-memory session for a single user's chat interaction."""
 
-    user: User
+    user_id: int
     chats: CrudChat
     send: Callable[[object], Awaitable[None]]
 
@@ -73,6 +74,7 @@ class UserSession:
                 idx=self.turn_idx,
             )
         )
+        crud.chat.update(Chat(id=self.chat_id, updated_at=datetime.now(timezone.utc)))
         self.msgs.extend(new_msgs)
         self.turn_idx += 1
 
@@ -111,7 +113,7 @@ class UserSession:
 
     def _turn_filepath(self) -> Path:
         """Generate filepath for current turn."""
-        base = Path(f"data/chats/{self.user.id}/{self.chat_id}")
+        base = Path(f"data/chats/{self.user_id}/{self.chat_id}")
         base.mkdir(parents=True, exist_ok=True)
         return base / f"{self.turn_idx}.mpk"
 
@@ -166,14 +168,14 @@ class SessionManager:
         return self._sessions.get(user_id)
 
     def create(
-        self, user: User, chats: CrudChat, send: Callable[[object], Awaitable[None]]
+        self, user_id: int, chats: CrudChat, send: Callable[[object], Awaitable[None]]
     ) -> UserSession:
         """Create session, replacing any existing one for this user."""
-        if user.id in self._sessions:
-            self._sessions[user.id].cleanup()
+        if user_id in self._sessions:
+            self._sessions[user_id].cleanup()
 
-        session = UserSession(user=user, chats=chats, send=send)
-        self._sessions[user.id] = session
+        session = UserSession(user_id=user_id, chats=chats, send=send)
+        self._sessions[user_id] = session
         return session
 
     def remove(self, user_id: int) -> None:

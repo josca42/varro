@@ -48,6 +48,8 @@ def ChatPage(chat: "Chat | None"):
         ChatMessages(turns),
         ChatForm(chat_id=chat_id),
         cls="flex flex-col h-screen",
+        hx_ext="ws",
+        ws_connect="/ws",
     )
 
 
