@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fasthtml.common import (
     APIRouter,
     Div,
@@ -13,10 +15,10 @@ from ui.app.chat import (
     ChatFormEnabled,
     ChatDropdown,
     ErrorBlock,
+    ChatMessages,
 )
 from varro.chat.session import sessions
 from varro.chat.agent_run import run_agent
-from varro.db.crud.chat import CrudChat
 from varro.db.models import Chat
 from varro.db import crud
 
@@ -27,7 +29,7 @@ async def on_conn(ws, send, sess, req):
     """Called when websocket connects."""
     user_id = sess.get("user_id")
     chats = crud.chat.for_user(user_id)
-    session = sessions.create(user_id, chats, send)
+    session = await sessions.create(user_id, chats, send, ws)
 
     chat_id = sess.get("chat_id")
     if chat_id:
@@ -36,11 +38,15 @@ async def on_conn(ws, send, sess, req):
 
 def on_disconn(ws, sess):
     """Called when websocket disconnects."""
-    sessions.remove(sess["user_id"])
+    if session := sessions.get(sess["user_id"]):
+        if session.ws is ws:
+            sessions.remove(sess["user_id"])
 
 
 @ar.ws("/ws", conn=on_conn, disconn=on_disconn)
-async def on_message(msg: str, chat_id: int | None, edit_idx: int | None, sess):
+async def on_message(
+    msg: str, sess, chat_id: int | None = None, edit_idx: int | None = None
+):
     """
     Handle incoming chat messages.
 
@@ -58,25 +64,23 @@ async def on_message(msg: str, chat_id: int | None, edit_idx: int | None, sess):
         chat_id = chat.id
         sess["chat_id"] = chat_id
 
-    if edit_idx is not None:
-        s.delete_from_idx(edit_idx)
-
     if s.chat_id != chat_id:
         await s.start_chat(chat_id)
 
-    await s.send(ChatFormDisabled())
-    try:
-        async for html in run_agent(msg, s):
-            await s.send(Div(html, hx_swap_oob="beforeend:#chat-messages"))
-    except Exception:
-        await s.send(
-            Div(
-                ErrorBlock("Something went wrong. Please try again."),
-                hx_swap_oob="beforeend:#chat-messages",
+    if edit_idx is not None:
+        s.delete_from_idx(edit_idx)
+        chat = s.chats.get(s.chat_id, with_turns=True)
+        if chat:
+            await s.send(
+                ChatMessages(chat.turns, hx_swap_oob="outerHTML:#chat-messages")
             )
-        )
-    finally:
-        await s.send(ChatFormEnabled())
+
+    await s.send(ChatFormDisabled(chat_id))
+
+    async for block in run_agent(msg, s):
+        await s.send(Div(block, hx_swap_oob="beforeend:#chat-messages"))
+
+    await s.send(ChatFormEnabled(chat_id))
 
 
 @ar.get("/chat")
@@ -118,13 +122,19 @@ def chat_history(req):
 @ar.delete("/chat/delete/{chat_id}")
 def chat_delete(chat_id: int, req, sess):
     """Delete a chat."""
-    chat = req.state.chats.get(chat_id)
+    chat = req.state.chats.get(chat_id, with_turns=True)
     if not chat:
         return Response(status_code=404)
+
+    turn_paths = [Path(turn.obj_fp) for turn in chat.turns]
 
     req.state.chats.delete(chat)
 
     if sess.get("chat_id") == chat_id:
         sess.pop("chat_id", None)
+
+    for path in turn_paths:
+        if path.exists():
+            path.unlink()
 
     return Response(status_code=200)

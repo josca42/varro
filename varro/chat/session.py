@@ -15,7 +15,6 @@ from pydantic_core import to_jsonable_python
 from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
 from varro.db.crud.chat import CrudChat
 from varro.db.models.chat import Chat, Turn
-from varro.db.models.user import User
 from varro.db import crud
 
 zstd_compressor = zstd.ZstdCompressor(level=3)
@@ -29,6 +28,7 @@ class UserSession:
     user_id: int
     chats: CrudChat
     send: Callable[[object], Awaitable[None]]
+    ws: object
 
     shell: TerminalInteractiveShell = field(init=False)
     chat_id: int | None = field(default=None, init=False)
@@ -102,6 +102,10 @@ class UserSession:
             if self.shell.history_manager:
                 self.shell.history_manager.end_session()
 
+    async def close_ws(self) -> None:
+        if self.ws is not None:
+            await self.ws.close()
+
     def _reset_chat_state(self) -> None:
         """Reset state for a new/different chat."""
         self.chat_id = None
@@ -144,7 +148,7 @@ class UserSession:
     @staticmethod
     def _save_turn(msgs: list[ModelMessage], fp: Path) -> None:
         """Save messages to disk as msgpack+zstd."""
-        msg_objs = to_jsonable_python(msgs)
+        msg_objs = to_jsonable_python(msgs, bytes_mode="base64")
         packed = msgpack.packb(msg_objs, use_bin_type=True, strict_types=True)
         compressed = zstd_compressor.compress(packed)
         fp.write_bytes(compressed)
@@ -167,14 +171,20 @@ class SessionManager:
     def get(self, user_id: int) -> UserSession | None:
         return self._sessions.get(user_id)
 
-    def create(
-        self, user_id: int, chats: CrudChat, send: Callable[[object], Awaitable[None]]
+    async def create(
+        self,
+        user_id: int,
+        chats: CrudChat,
+        send: Callable[[object], Awaitable[None]],
+        ws: object,
     ) -> UserSession:
         """Create session, replacing any existing one for this user."""
         if user_id in self._sessions:
-            self._sessions[user_id].cleanup()
+            old_session = self._sessions[user_id]
+            await old_session.close_ws()
+            old_session.cleanup()
 
-        session = UserSession(user_id=user_id, chats=chats, send=send)
+        session = UserSession(user_id=user_id, chats=chats, send=send, ws=ws)
         self._sessions[user_id] = session
         return session
 

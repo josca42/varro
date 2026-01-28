@@ -53,11 +53,12 @@ def ChatPage(chat: "Chat | None"):
     )
 
 
-def ChatMessages(turns: list["Turn"]):
+def ChatMessages(turns: list["Turn"], **attrs):
     return Div(
         *[TurnComponent(t) for t in turns],
         id="chat-messages",
         cls="flex-1 overflow-y-auto px-4 py-6",
+        **attrs,
     )
 
 
@@ -90,7 +91,7 @@ def TurnComponent(turn: "Turn"):
                     )
                 )
 
-    return Div(*parts, cls="mb-6")
+    return Div(*parts, id=f"turn-{turn.idx}", cls="mb-6")
 
 
 def ChatForm(chat_id: int | None = None, disabled: bool = False):
@@ -112,19 +113,25 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
             ),
             cls="flex gap-2 items-end",
         ),
-        Input(type="hidden", name="chat_id", value=chat_id) if chat_id else None,
+        Input(type="hidden", name="chat_id", value=chat_id)
+        if chat_id is not None
+        else None,
         ws_send=True,
         id="chat-form",
         cls="px-4 py-3 border-t",
     )
 
 
-def ChatFormDisabled():
-    return Div(ChatForm(disabled=True), hx_swap_oob="outerHTML:#chat-form")
+def ChatFormDisabled(chat_id: int | None = None):
+    return Div(
+        ChatForm(chat_id=chat_id, disabled=True), hx_swap_oob="outerHTML:#chat-form"
+    )
 
 
-def ChatFormEnabled():
-    return Div(ChatForm(disabled=False), hx_swap_oob="outerHTML:#chat-form")
+def ChatFormEnabled(chat_id: int | None = None):
+    return Div(
+        ChatForm(chat_id=chat_id, disabled=False), hx_swap_oob="outerHTML:#chat-form"
+    )
 
 
 def UserMessage(content: str):
@@ -290,7 +297,7 @@ def ChatHeader(chat: "Chat | None"):
             ChatDropdownTrigger(chat),
             cls="flex items-center gap-4",
         ),
-        Button("New Chat", hx_get="/chat/new", cls="btn btn-primary btn-sm"),
+        A("New Chat", href="/chat/new", cls="btn btn-primary btn-sm"),
         cls="flex justify-between items-center px-4 py-3 border-b",
     )
 
@@ -330,7 +337,7 @@ def ChatDropdownItem(chat: "Chat"):
                     chat.created_at.strftime("%Y-%m-%d"),
                     cls="text-xs text-base-content/50",
                 ),
-                hx_get=f"/chat/switch/{chat.id}",
+                href=f"/chat/switch/{chat.id}",
                 cls="flex flex-col",
             ),
             Button(
