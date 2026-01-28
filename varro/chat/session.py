@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Awaitable, Callable
+from types import SimpleNamespace
 
 import msgpack
 import zstandard as zstd
@@ -16,7 +17,6 @@ from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
 from varro.db.crud.chat import CrudChat
 from varro.db.models.chat import Chat, Turn
 from varro.db import crud
-from varro.agent.assistant import sql_query, jupyter_notebook
 
 zstd_compressor = zstd.ZstdCompressor(level=3)
 zstd_decompressor = zstd.ZstdDecompressor()
@@ -124,6 +124,10 @@ class UserSession:
 
     async def _restore_shell_namespace(self) -> None:
         """Re-run tool calls to restore shell state."""
+        from varro.agent.assistant import sql_query, jupyter_notebook
+
+        ctx = SimpleNamespace(deps=self)
+
         for msg in self.msgs:
             if not isinstance(msg, ModelResponse):
                 continue
@@ -139,10 +143,10 @@ class UserSession:
                 if part.tool_name == "sql_query":
                     df_name = args.get("df_name")
                     if df_name:
-                        sql_query(self, args.get("query", ""), df_name)
+                        sql_query(ctx, args.get("query", ""), df_name)
 
                 elif part.tool_name == "jupyter_notebook":
-                    await jupyter_notebook(self, args.get("code", ""), show=[])
+                    await jupyter_notebook(ctx, args.get("code", ""), show=[])
 
     @staticmethod
     def _save_turn(msgs: list[ModelMessage], fp: Path) -> None:
