@@ -12,8 +12,13 @@ import zstandard as zstd
 from pydantic_ai.messages import ModelMessage, ModelResponse, BaseToolCallPart
 from pydantic_ai import ModelMessagesTypeAdapter
 from pydantic_core import to_jsonable_python
+from starlette.websockets import WebSocketState
 
-from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
+from varro.agent.ipython_shell import (
+    get_shell,
+    TerminalInteractiveShell,
+    JUPYTER_INITIAL_IMPORTS,
+)
 from varro.db.crud.chat import CrudChat
 from varro.db.models.chat import Chat, Turn
 from varro.db import crud
@@ -36,10 +41,10 @@ class UserSession:
     msgs: list[ModelMessage] = field(default_factory=list, init=False)
     turn_idx: int = field(default=0, init=False)
     cached_prompts: dict[str, str] = field(default_factory=dict, init=False)
-    shell_imports: bool = field(default=False, init=False)
 
     def __post_init__(self):
         self.shell = get_shell()
+        self.shell.run_cell(JUPYTER_INITIAL_IMPORTS)
 
     async def start_chat(self, chat_id: int | None) -> None:
         """Initialize or restore a chat session."""
@@ -104,17 +109,29 @@ class UserSession:
                 self.shell.history_manager.end_session()
 
     async def close_ws(self) -> None:
-        if self.ws is not None:
+        if self.ws is None:
+            return
+        try:
+            if (
+                getattr(self.ws, "application_state", None)
+                is WebSocketState.DISCONNECTED
+                or getattr(self.ws, "client_state", None) is WebSocketState.DISCONNECTED
+            ):
+                return
             await self.ws.close()
+        except RuntimeError:
+            return
+        finally:
+            self.ws = None
 
     def _reset_chat_state(self) -> None:
         """Reset state for a new/different chat."""
         self.chat_id = None
         self.msgs = []
         self.turn_idx = 0
-        self.shell_imports = False
         if self.shell:
             self.shell.reset(new_session=True)
+            self.shell.run_cell(JUPYTER_INITIAL_IMPORTS)
 
     def _turn_filepath(self) -> Path:
         """Generate filepath for current turn."""
@@ -127,7 +144,6 @@ class UserSession:
         from varro.agent.assistant import sql_query, jupyter_notebook
 
         ctx = SimpleNamespace(deps=self)
-
         for msg in self.msgs:
             if not isinstance(msg, ModelResponse):
                 continue

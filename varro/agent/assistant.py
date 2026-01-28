@@ -30,6 +30,10 @@ import matplotlib.pyplot as plt
 import io
 from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
 from varro.chat.session import UserSession
+import logfire
+
+logfire.configure(scrubbing=False)
+logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
@@ -204,10 +208,6 @@ async def jupyter_notebook(
     Args:
         code (str): The Python code to execute.
     """
-    if not ctx.deps.shell_imports:
-        ctx.deps.shell.run_cell(JUPYTER_INITIAL_IMPORTS)
-        ctx.deps.shell_imports = True
-
     res = ctx.deps.shell.run_cell(code)
     if res.error_before_exec:
         raise ModelRetry(repr(res.error_before_exec))

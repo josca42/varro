@@ -26,7 +26,7 @@ outputs.py    →  loader.py  →  dict[name, callable]
 | File | Purpose |
 |------|---------|
 | `models.py` | `Metric` pydantic model, `@output` marker decorator |
-| `parser.py` | Stack-based parser for `:::` containers and `{% %}` tags |
+| `parser.py` | Stack-based parser for `:::` containers and `<tag />` components |
 | `loader.py` | Load folder, parse `-- @query: name` from SQL |
 | `executor.py` | Inject query results into `@output` functions by param name |
 | `routes.py` | `/dash/{name}`, `/_/filters`, `/_/{type}/{output}` |
@@ -36,17 +36,17 @@ outputs.py    →  loader.py  →  dict[name, callable]
 
 ```markdown
 ::: filters
-{% select name="region" options="query:regions" default="all" /%}
-{% daterange name="period" /%}
+<filter-select name="region" options="query:regions" default="all" />
+<filter-date name="period" />
 :::
 
 ::: grid cols=2
-{% metric name="total_revenue" /%}
+<metric name="total_revenue" />
 :::
 
 ::: tabs
 ::: tab name="Chart"
-{% figure name="trend" /%}
+<fig name="trend" />
 :::
 :::
 ```

@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 
 import plotly.io as pio
 pio.renderers.default = None
+pio.templates.default = "plotly_white"
 """
 
 

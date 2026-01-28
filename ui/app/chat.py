@@ -28,6 +28,7 @@ from fasthtml.common import (
     A,
     NotStr,
 )
+from ui.components import DataTable, Figure
 from pydantic_ai import BinaryContent
 from pydantic_ai.messages import (
     ThinkingPart,
@@ -35,17 +36,25 @@ from pydantic_ai.messages import (
     ToolCallPart,
     ToolReturnPart,
 )
+from varro.dashboard.parser import (
+    parse_dashboard_md,
+    MarkdownNode,
+    ComponentNode,
+    ContainerNode,
+)
+from varro.dashboard.filters import Filter
 
 if TYPE_CHECKING:
     from varro.db.models.chat import Chat, Turn
+    from varro.agent.ipython_shell import TerminalInteractiveShell
 
 
-def ChatPage(chat: "Chat | None"):
+def ChatPage(chat: "Chat | None", shell: "TerminalInteractiveShell | None" = None):
     turns = chat.turns if chat else []
     chat_id = chat.id if chat else None
     return Main(
         ChatHeader(chat),
-        ChatMessages(turns),
+        ChatMessages(turns, shell=shell),
         ChatForm(chat_id=chat_id),
         cls="flex flex-col h-screen",
         hx_ext="ws",
@@ -53,16 +62,18 @@ def ChatPage(chat: "Chat | None"):
     )
 
 
-def ChatMessages(turns: list["Turn"], **attrs):
+def ChatMessages(
+    turns: list["Turn"], shell: "TerminalInteractiveShell | None" = None, **attrs
+):
     return Div(
-        *[TurnComponent(t) for t in turns],
+        *[TurnComponent(t, shell=shell) for t in turns],
         id="chat-messages",
         cls="flex-1 overflow-y-auto px-4 py-6",
         **attrs,
     )
 
 
-def TurnComponent(turn: "Turn"):
+def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None):
     """Render a complete turn from stored data."""
     from pathlib import Path
     from varro.chat.session import UserSession
@@ -79,7 +90,7 @@ def TurnComponent(turn: "Turn"):
             if isinstance(part, ThinkingPart):
                 parts.append(ThinkingBlock(part.content))
             elif isinstance(part, TextPart):
-                parts.append(TextBlock(part.content))
+                parts.append(TextBlock(part.content, shell=shell))
             elif isinstance(part, ToolCallPart):
                 args = _parse_args(part.args)
                 parts.append(
@@ -159,7 +170,7 @@ def ModelRequestBlock(node):
     return Div(*parts) if parts else None
 
 
-def CallToolsBlock(node):
+def CallToolsBlock(node, shell: "TerminalInteractiveShell | None" = None):
     """
     Render a CallToolsNode.
     Contains the model's response: thinking, text, and tool calls.
@@ -171,7 +182,7 @@ def CallToolsBlock(node):
         if isinstance(part, ThinkingPart):
             parts.append(ThinkingBlock(part.content))
         elif isinstance(part, TextPart):
-            parts.append(TextBlock(part.content))
+            parts.append(TextBlock(part.content, shell=shell))
         elif isinstance(part, ToolCallPart):
             args = _parse_args(part.args)
             parts.append(
@@ -279,11 +290,9 @@ def ToolResultDisplay(result: str, attachments: list):
     return Div(*parts) if parts else None
 
 
-def TextBlock(content: str):
-    return Div(
-        NotStr(render_markdown(content)),
-        cls="prose prose-sm max-w-none mb-4",
-    )
+def TextBlock(content: str, shell: "TerminalInteractiveShell | None" = None):
+    parts = render_markdown_blocks(content, shell=shell)
+    return Div(*parts, cls="mb-4 flex flex-col gap-4")
 
 
 def ErrorBlock(message: str):
@@ -352,7 +361,89 @@ def ChatDropdownItem(chat: "Chat"):
 
 
 def render_markdown(content: str) -> str:
-    return mistletoe.markdown(content or "")
+    if not content or not content.strip():
+        return ""
+    return mistletoe.markdown(content)
+
+
+def render_markdown_blocks(
+    content: str, shell: "TerminalInteractiveShell | None" = None
+):
+    if not content:
+        return []
+    nodes = parse_dashboard_md(content)
+    return _render_chat_nodes(nodes, shell)
+
+
+def _render_chat_nodes(
+    nodes, shell: "TerminalInteractiveShell | None" = None
+):
+    parts = []
+    for node in nodes:
+        if isinstance(node, MarkdownNode):
+            html = render_markdown(node.content)
+            if html.strip():
+                parts.append(Div(NotStr(html), cls="prose prose-sm max-w-none"))
+        elif isinstance(node, ComponentNode):
+            name = (node.attrs.get("name") or "").strip()
+            if node.type in ("fig", "df"):
+                parts.append(_render_placeholder(node.type, name, shell))
+            elif node.type == "metric":
+                parts.append(_missing_placeholder("metric", name))
+            else:
+                parts.append(_missing_placeholder(node.type, name))
+        elif isinstance(node, ContainerNode):
+            parts.extend(_render_chat_nodes(node.children, shell))
+        elif isinstance(node, Filter):
+            parts.append(_missing_placeholder("filter", node.name))
+
+    return [p for p in parts if p is not None]
+
+
+def _render_placeholder(
+    kind: str, name: str, shell: "TerminalInteractiveShell | None" = None
+):
+    if not name:
+        return None
+    if not shell or not getattr(shell, "user_ns", None):
+        return _missing_placeholder(kind, name)
+
+    obj = shell.user_ns.get(name)
+    if obj is None:
+        return _missing_placeholder(kind, name)
+
+    if kind == "df":
+        import pandas as pd
+
+        if isinstance(obj, pd.DataFrame):
+            df = obj
+            if not isinstance(df.index, pd.RangeIndex):
+                df = df.reset_index()
+            return DataTable(df, cls="my-2")
+    elif kind == "fig":
+        try:
+            from plotly.basedatatypes import BaseFigure
+        except Exception:
+            BaseFigure = None
+
+        if BaseFigure is None or isinstance(obj, BaseFigure):
+            return Div(Figure(obj), cls="my-2")
+
+    return _missing_placeholder(kind, name)
+
+
+def _missing_placeholder(kind: str, name: str):
+    label_map = {
+        "fig": "figure",
+        "df": "dataframe",
+        "metric": "metric",
+        "filter": "filter",
+    }
+    label = label_map.get(kind, kind)
+    return Div(
+        f"Missing {label}: {name}",
+        cls="text-xs text-base-content/50 italic",
+    )
 
 
 def MarkdownTable(content: str):

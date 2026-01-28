@@ -135,7 +135,7 @@ class CheckboxFilter(Filter):
 
 
 def filter_from_component(type_: str, attrs: dict[str, str]) -> Filter | None:
-    if type_ == "select":
+    if type_ == "filter-select":
         options_raw = (attrs.get("options") or "").strip()
         options_query = None
         if options_raw:
@@ -152,7 +152,7 @@ def filter_from_component(type_: str, attrs: dict[str, str]) -> Filter | None:
             options_query=options_query,
         )
 
-    if type_ == "daterange":
+    if type_ == "filter-date":
         return DateRangeFilter(
             type="daterange",
             name=attrs.get("name", ""),
@@ -162,7 +162,7 @@ def filter_from_component(type_: str, attrs: dict[str, str]) -> Filter | None:
             default_to=attrs.get("default_to"),
         )
 
-    if type_ == "checkbox":
+    if type_ == "filter-checkbox":
         return CheckboxFilter(
             type="checkbox",
             name=attrs.get("name", ""),
@@ -184,4 +184,3 @@ def validate_options_queries(
                 raise ValueError(
                     f"Unknown options query '{f.options_query}' for filter '{f.name}'"
                 )
-

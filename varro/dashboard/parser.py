@@ -5,7 +5,7 @@ Parse dashboard.md into an AST.
 Syntax:
 - ::: container attrs  (open container)
 - :::                  (close container)
-- {% tag attrs /%}     (component tag)
+- <tag attrs />        (component tag)
 - Everything else is markdown
 """
 
@@ -29,7 +29,7 @@ class ContainerNode:
 
 @dataclass
 class ComponentNode:
-    """A component tag like {% figure name="revenue" /%}"""
+    """A component tag like <fig name="revenue" />"""
 
     type: str
     attrs: dict[str, str] = field(default_factory=dict)
@@ -48,7 +48,19 @@ ASTNode = Union[ContainerNode, ComponentNode, MarkdownNode, Filter]
 # Regex patterns
 CONTAINER_OPEN = re.compile(r"^:::\s*(\w+)(?:\s+(.+))?$")
 CONTAINER_CLOSE = re.compile(r"^:::\s*$")
-COMPONENT_TAG = re.compile(r"\{%\s*(\w+)\s+([^%]*?)\s*/%\}")
+COMPONENT_NAMES = (
+    "fig",
+    "df",
+    "metric",
+    "filter-select",
+    "filter-date",
+    "filter-checkbox",
+)
+COMPONENT_TAG = re.compile(
+    r"<\s*(?P<type>"
+    + "|".join(re.escape(name) for name in COMPONENT_NAMES)
+    + r")\b(?P<attrs>[^/>]*?)\s*/\s*>"
+)
 ATTR_PATTERN = re.compile(r'(\w+)=(?:"([^"]*)"|(\S+))')
 
 
@@ -78,9 +90,11 @@ def parse_dashboard_md(content: str) -> list[ASTNode]:
     def flush_markdown():
         nonlocal md_buffer
         if md_buffer:
-            text = "\n".join(md_buffer).strip()
+            text = "".join(md_buffer)
             if text:
-                stack[-1].append(MarkdownNode(content=text))
+                text = text.strip()
+                if text:
+                    stack[-1].append(MarkdownNode(content=text))
             md_buffer = []
 
     for line in lines:
@@ -104,21 +118,25 @@ def parse_dashboard_md(content: str) -> list[ASTNode]:
             container_stack.append(node)
             continue
 
-        # Component tag: {% type attrs /%}
-        if match := COMPONENT_TAG.search(line):
+        # Component tags (can appear inline)
+        cursor = 0
+        for match in COMPONENT_TAG.finditer(line):
+            if match.start() > cursor:
+                md_buffer.append(line[cursor : match.start()])
             flush_markdown()
-            type_ = match.group(1)
-            attrs = parse_attrs(match.group(2))
+            type_ = match.group("type")
+            attrs = parse_attrs(match.group("attrs"))
             if container_stack and container_stack[-1].type == "filters":
                 f = filter_from_component(type_, attrs)
                 if f:
                     stack[-1].append(f)
+                    cursor = match.end()
                     continue
             stack[-1].append(ComponentNode(type=type_, attrs=attrs))
-            continue
+            cursor = match.end()
 
-        # Regular markdown
-        md_buffer.append(line)
+        md_buffer.append(line[cursor:])
+        md_buffer.append("\n")
 
     flush_markdown()
     return root
@@ -143,4 +161,3 @@ def extract_filters(ast: list[ASTNode]) -> list[Filter]:
 
     walk(ast)
     return filters
-

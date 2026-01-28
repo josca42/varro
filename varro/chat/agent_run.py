@@ -21,7 +21,7 @@ async def run_agent(user_text: str, session: UserSession) -> AsyncIterator[objec
     """
     async with agent.iter(user_text, message_history=session.msgs, deps=session) as run:
         async for node in run:
-            block = node_to_block(node)
+            block = node_to_block(node, session)
             if block:
                 yield block
 
@@ -29,7 +29,7 @@ async def run_agent(user_text: str, session: UserSession) -> AsyncIterator[objec
     session.save_turn(new_msgs, user_text)
 
 
-def node_to_block(node) -> object | None:
+def node_to_block(node, session: UserSession) -> object | None:
     """Convert a completed pydantic-ai node to a UI block."""
 
     if Agent.is_user_prompt_node(node):
@@ -39,7 +39,7 @@ def node_to_block(node) -> object | None:
         return ModelRequestBlock(node)
 
     elif Agent.is_call_tools_node(node):
-        return CallToolsBlock(node)
+        return CallToolsBlock(node, shell=session.shell)
 
     elif Agent.is_end_node(node):
         return None

@@ -157,9 +157,10 @@ def render_ast(
             result.append(Div(NotStr(html), cls="prose prose-sm max-w-none"))
 
         elif isinstance(node, ComponentNode):
-            if node.type in ("figure", "table", "metric"):
+            output_map = {"fig": "figure", "df": "table", "metric": "metric"}
+            if node.type in output_map:
                 name = node.attrs.get("name", "")
-                result.append(render_placeholder(dash.name, node.type, name))
+                result.append(render_placeholder(dash.name, output_map[node.type], name))
 
         elif isinstance(node, ContainerNode):
             if node.type == "filters":

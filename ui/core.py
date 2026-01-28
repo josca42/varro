@@ -94,6 +94,11 @@ alpine_hdrs = (
 here = Path(__file__).resolve().parent
 css_content = (here / "theme.css").read_text(encoding="utf-8")
 theme_css = Style(css_content)
+prose_css = Link(
+    href="/static/css/prose.css",
+    rel="stylesheet",
+    type="text/css",
+)
 
 # All headers
 ui_hdrs = (
@@ -105,6 +110,7 @@ ui_hdrs = (
     sse_hdr,
     *alpine_hdrs,
     theme_css,
+    prose_css,
 )
 
 
