@@ -16,6 +16,7 @@ from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
 from varro.db.crud.chat import CrudChat
 from varro.db.models.chat import Chat, Turn
 from varro.db import crud
+from varro.agent.assistant import sql_query, jupyter_notebook
 
 zstd_compressor = zstd.ZstdCompressor(level=3)
 zstd_decompressor = zstd.ZstdDecompressor()
@@ -123,8 +124,6 @@ class UserSession:
 
     async def _restore_shell_namespace(self) -> None:
         """Re-run tool calls to restore shell state."""
-        from varro.agent.assistant import sql_query, jupyter_notebook
-
         for msg in self.msgs:
             if not isinstance(msg, ModelResponse):
                 continue

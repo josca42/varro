@@ -1,7 +1,5 @@
-import os
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional, Union
-
+from typing import Any
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -17,7 +15,6 @@ from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
-from pathlib import Path
 from varro.agent.playwright_render import html_to_png
 from varro.agent.utils import get_dim_tables
 from varro.db.db import engine
@@ -31,14 +28,10 @@ from varro.context.tools import (
 from sqlalchemy import text
 import matplotlib.pyplot as plt
 import io
-
 from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS
-from varro.db.models.user import User
-from varro.agent.ipython_shell import get_shell, TerminalInteractiveShell
 from varro.chat.session import UserSession
 
 DIM_TABLES = get_dim_tables()
-
 
 sonnet_model = AnthropicModel("claude-sonnet-4-5")
 sonnet_settings = AnthropicModelSettings(
