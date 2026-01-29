@@ -108,7 +108,7 @@ def revenue_trend(monthly_revenue, filters):
     return px.line(monthly_revenue, x="month", y="revenue", title="Revenue Trend")
 ```
 
-**`@output` is a simple marker** with no configuration arguments. Function name must **exactly match** the `name` attribute in `{% figure/table/metric %}` tags.
+**`@output` is a simple marker** with no configuration arguments. Function name must **exactly match** the `name` attribute in `<fig />`, `<df />`, or `<metric />` tags.
 
 ### Dependency Injection
 
@@ -124,9 +124,9 @@ Three return types are supported:
 
 | Return Type | Rendered As | Markdown Tag |
 |-------------|-------------|--------------|
-| `pd.DataFrame` | DaisyUI table | `{% table %}` |
-| `plotly.graph_objects.Figure` | Plotly chart | `{% figure %}` |
-| `Metric` | Metric card | `{% metric %}` |
+| `pd.DataFrame` | DaisyUI table | `<df />` |
+| `plotly.graph_objects.Figure` | Plotly chart | `<fig />` |
+| `Metric` | Metric card | `<metric />` |
 
 ### Metric Model
 
@@ -199,30 +199,30 @@ Extended Markdown with containers and component tags. **Full markdown is support
 # Dashboard Title
 
 ::: filters
-{% select name="region" label="Region" options="query:regions" default="all" /%}
-{% daterange name="period" label="Period" default="all" /%}
+<filter-select name="region" label="Region" options="query:regions" default="all" />
+<filter-date name="period" label="Period" default="all" />
 :::
 
 ::: grid cols=2
-{% metric name="total_revenue" /%}
-{% metric name="total_orders" /%}
+<metric name="total_revenue" />
+<metric name="total_orders" />
 :::
 
 ::: tabs
 ::: tab name="Overview"
 ::: grid cols=2
-{% figure name="revenue_trend" /%}
-{% figure name="orders_by_category" /%}
+<fig name="revenue_trend" />
+<fig name="orders_by_category" />
 :::
 :::
 ::: tab name="Details"
-{% table name="top_products_table" /%}
+<df name="top_products_table" />
 :::
 :::
 
 Some markdown commentary here.
 
-{% figure name="detailed_chart" /%}
+<fig name="detailed_chart" />
 ```
 
 **Title handling:** H1 renders as regular markdown. No dashboard title.
@@ -231,7 +231,7 @@ Some markdown commentary here.
 
 ## 4. Container Syntax
 
-Containers use `:::` fence syntax (Docusaurus/VuePress style). **Parsed using mistletoe with custom extensions.**
+Containers use `:::` fence syntax (Docusaurus/VuePress style). **Parsed using the stack parser in `dashboard/parser.py`.**
 
 ### Available Containers
 
@@ -250,8 +250,8 @@ Maximum one level of nesting is supported. Primary use case: grid inside tab. **
 ::: tabs
 ::: tab name="Charts"
 ::: grid cols=2
-{% figure name="chart1" /%}
-{% figure name="chart2" /%}
+<fig name="chart1" />
+<fig name="chart2" />
 :::
 :::
 :::
@@ -262,12 +262,12 @@ Maximum one level of nesting is supported. Primary use case: grid inside tab. **
 **filters**
 ```markdown
 ::: filters
-{% select ... /%}
-{% daterange ... /%}
+<filter-select ... />
+<filter-date ... />
 :::
 ```
 - Renders as `<form id="filters">`
-- All figure/table placeholders use `hx-include="#filters"`
+- All output placeholders use `hx-include="#filters"`
 - Filter changes trigger URL update and `filtersChanged` event
 - **Styling delegated to ui library** (request filter component from ui/)
 
@@ -301,25 +301,25 @@ content
 
 ## 5. Component Tag Syntax
 
-Component tags use `{% %}` syntax (Markdoc style).
+Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 
 ### Available Tags
 
 | Tag | Attributes | Description |
 |-----|------------|-------------|
-| `figure` | `name` | Plotly chart placeholder |
-| `table` | `name` | DataFrame table placeholder |
+| `fig` | `name` | Plotly chart placeholder |
+| `df` | `name` | DataFrame table placeholder |
 | `metric` | `name` | Metric card placeholder |
-| `select` | `name`, `label`, `options`, `default` | Dropdown filter |
-| `daterange` | `name`, `label`, `default` or `default_from`/`default_to` | Date range filter |
-| `checkbox` | `name`, `label`, `default` | Boolean filter |
+| `filter-select` | `name`, `label`, `options`, `default` | Dropdown filter |
+| `filter-date` | `name`, `label`, `default` or `default_from`/`default_to` | Date range filter |
+| `filter-checkbox` | `name`, `label`, `default` | Boolean filter |
 
-### Output Tags (figure, table, metric)
+### Output Tags (fig, df, metric)
 
 ```markdown
-{% figure name="revenue_trend" /%}
-{% table name="top_products" /%}
-{% metric name="total_revenue" /%}
+<fig name="revenue_trend" />
+<df name="top_products" />
+<metric name="total_revenue" />
 ```
 
 - `name` references a function in `outputs.py` (**exact match required**)
@@ -329,9 +329,9 @@ Component tags use `{% %}` syntax (Markdoc style).
 
 ### Filter Tags
 
-**select**
+**filter-select**
 ```markdown
-{% select name="region" label="Region" options="query:regions" default="all" /%}
+<filter-select name="region" label="Region" options="query:regions" default="all" />
 ```
 - `name`: URL parameter name and SQL parameter name
 - `label`: Display label
@@ -339,10 +339,10 @@ Component tags use `{% %}` syntax (Markdoc style).
 - `default`: Default value; `"all"` is magic value meaning no filter (NULL in SQL)
 - **Empty options queries render an empty dropdown**
 
-**daterange**
+**filter-date**
 ```markdown
-{% daterange name="period" label="Period" default="all" /%}
-{% daterange name="period" label="Period" default_from="2025-01-01" default_to="2025-12-31" /%}
+<filter-date name="period" label="Period" default="all" />
+<filter-date name="period" label="Period" default_from="2025-01-01" default_to="2025-12-31" />
 ```
 - `name`: Base name; produces `{name}_from` and `{name}_to` URL/SQL parameters
 - `label`: Display label
@@ -351,9 +351,9 @@ Component tags use `{% %}` syntax (Markdoc style).
 - **Independent bounds**—setting just 'from' (open-ended) or just 'to' (historical cutoff) is valid
 - **Date picker UI delegated to ui library**
 
-**checkbox**
+**filter-checkbox**
 ```markdown
-{% checkbox name="include_pending" label="Include Pending" default=false /%}
+<filter-checkbox name="include_pending" label="Include Pending" default=false />
 ```
 - `name`: URL parameter name and SQL parameter name
 - `label`: Display label
@@ -381,9 +381,9 @@ Component tags use `{% %}` syntax (Markdoc style).
 
 | Filter Type | URL Parameters |
 |-------------|----------------|
-| select | `?{name}={value}` |
-| daterange | `?{name}_from={date}&{name}_to={date}` (independent) |
-| checkbox | `?{name}=true` or `?{name}=false` |
+| filter-select | `?{name}={value}` |
+| filter-date | `?{name}_from={date}&{name}_to={date}` (independent) |
+| filter-checkbox | `?{name}=true` or `?{name}=false` |
 
 ### Defaults
 
@@ -421,7 +421,7 @@ Browser                          Server
    │  ─────────────────────────────>│
    │                                │  4. Execute required data queries
    │                                │  5. Call @output function
-   │                                │  6. Render figure/table/metric
+   │                                │  6. Render fig/df/metric
    │  <plotly html>                 │
    │  <─────────────────────────────│
    │                                │
@@ -585,13 +585,13 @@ def execute_query(query: str, params: dict) -> pd.DataFrame:
 1. Load dashboard folder (`queries/` folder, `outputs.py`, `dashboard.md`)—error if missing
 2. Load queries from `queries/` folder → dict of named query strings (filename = query name)
 3. Import `outputs.py` → dict of `@output` functions with their dependencies
-4. Parse `dashboard.md` (mistletoe with custom extensions):
+4. Parse `dashboard.md` (stack parser):
    - Extract filter definitions (including `options="query:..."` references)
    - Build component tree (stack-based container closing)
 5. Execute options queries (no filter params, always fresh)
 6. Render shell HTML with populated filters and placeholders
 
-### Output Render (figure/table/metric request)
+### Output Render (fig/df/metric request)
 
 1. Parse filter params from request
 2. Look up `@output` function by name (exact match)
@@ -676,20 +676,20 @@ def top_products_table(top_products, filters):
 # Sales Dashboard
 
 ::: filters
-{% select name="region" label="Region" options="query:regions" default="all" /%}
-{% daterange name="period" label="Period" default="all" /%}
+<filter-select name="region" label="Region" options="query:regions" default="all" />
+<filter-date name="period" label="Period" default="all" />
 :::
 
 ::: grid cols=2
-{% metric name="total_revenue" /%}
+<metric name="total_revenue" />
 :::
 
 ::: tabs
 ::: tab name="Trend"
-{% figure name="revenue_trend" /%}
+<fig name="revenue_trend" />
 :::
 ::: tab name="Products"
-{% table name="top_products_table" /%}
+<df name="top_products_table" />
 :::
 :::
 ```
@@ -701,7 +701,7 @@ def top_products_table(top_products, filters):
 | Module | Responsibility |
 |--------|----------------|
 | `dashboard/loader.py` | Load dashboard folder, load queries from queries/ folder, import outputs.py |
-| `dashboard/parser.py` | Mistletoe extension for `:::` containers and `{% %}` tags |
+| `dashboard/parser.py` | Stack parser for `:::` containers and `<tag />` components |
 | `dashboard/executor.py` | Execute queries, call @output functions, detect return types |
 | `dashboard/routes.py` | FastHTML routes for shell, filters, figure/table/metric endpoints |
 | `dashboard/models.py` | Pydantic models (`Metric`), `@output` decorator |
@@ -714,7 +714,7 @@ def top_products_table(top_products, filters):
 The following components are needed from the ui/ library:
 
 - **Filter form container** (styling for ::: filters)
-- **Date picker** (for daterange filter)
+- **Date picker** (for filter-date)
 - **Metric card** (with change indicator styling)
 - **Table** (DaisyUI table rendering)
 - **Placeholder card** (with spinner, appropriate heights)

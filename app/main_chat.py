@@ -23,7 +23,7 @@ def before(req, sess):
 
 beforeware = Beforeware(before, skip=STATIC_SKIP)
 
-app, rt = daisy_app(exts="ws", before=beforeware, live=True)
+app, rt = daisy_app(exts="ws", before=beforeware)
 
 chat_routes.to_app(app)
 

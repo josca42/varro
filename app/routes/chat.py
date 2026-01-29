@@ -72,7 +72,9 @@ async def on_message(
         chat = s.chats.get(s.chat_id, with_turns=True)
         if chat:
             await s.send(
-                ChatMessages(chat.turns, hx_swap_oob="outerHTML:#chat-messages")
+                ChatMessages(
+                    chat.turns, shell=s.shell, hx_swap_oob="outerHTML:#chat-messages"
+                )
             )
 
     await s.send(ChatFormDisabled(chat_id))
@@ -88,7 +90,8 @@ def chat_page(req, sess):
     """Render the main chat page."""
     chat_id = sess.get("chat_id")
     chat = req.state.chats.get(chat_id, with_turns=True) if chat_id else None
-    return ChatPage(chat)
+    session = sessions.get(sess.get("user_id"))
+    return ChatPage(chat, shell=session.shell if session else None)
 
 
 @ar.get("/chat/new")
@@ -104,12 +107,7 @@ async def chat_switch(chat_id: int, req, sess):
     chat = req.state.chats.get(chat_id)
     if not chat:
         return Response(status_code=404)
-
     sess["chat_id"] = chat_id
-
-    if session := sessions.get(sess["user_id"]):
-        await session.start_chat(chat_id)
-
     return RedirectResponse("/chat", status_code=303)
 
 

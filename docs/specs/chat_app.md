@@ -44,6 +44,7 @@ WebSocket Connection
 | `varro/db/models/chat.py` | Chat, Turn SQLModel definitions |
 | `varro/db/crud/chat.py` | CrudChat, CrudTurn |
 | `ui/app/chat.py` | UI components for rendering |
+| `varro/dashboard/parser.py` | Shared markdown parser for chat/dashboard tags |
 
 ## Data Model
 
@@ -88,6 +89,14 @@ Each pydantic-ai node maps to a UI component:
 | `ModelRequestNode` | `ModelRequestBlock` | Tool return results |
 | `CallToolsNode` | `CallToolsBlock` | Thinking, text, tool calls |
 | `EndNode` | (none) | Signals completion |
+
+## Markdown Rendering
+
+- Chat markdown is parsed server-side using `parse_dashboard_md()` and then rendered with `mistletoe`.
+- Self-closing tags are supported in text blocks:
+  - `<fig name="figure_id" />` → Plotly figure from `session.shell.user_ns`
+  - `<df name="df_id" />` → DataFrame table from `session.shell.user_ns`
+- Everything else is normal markdown and rendered inside a `.prose` container.
 
 ## Key Patterns
 

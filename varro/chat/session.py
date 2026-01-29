@@ -10,7 +10,7 @@ from types import SimpleNamespace
 import msgpack
 import zstandard as zstd
 from pydantic_ai.messages import ModelMessage, ModelResponse, BaseToolCallPart
-from pydantic_ai import ModelMessagesTypeAdapter
+from pydantic_ai import ModelMessagesTypeAdapter, ModelRetry
 from pydantic_core import to_jsonable_python
 from starlette.websockets import WebSocketState
 
@@ -162,7 +162,10 @@ class UserSession:
                         sql_query(ctx, args.get("query", ""), df_name)
 
                 elif part.tool_name == "jupyter_notebook":
-                    await jupyter_notebook(ctx, args.get("code", ""), show=[])
+                    try:
+                        await jupyter_notebook(ctx, args.get("code", ""), show=[])
+                    except ModelRetry as e:
+                        continue
 
     @staticmethod
     def _save_turn(msgs: list[ModelMessage], fp: Path) -> None:

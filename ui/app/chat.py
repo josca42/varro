@@ -42,7 +42,8 @@ from varro.dashboard.parser import (
     ComponentNode,
     ContainerNode,
 )
-from varro.dashboard.filters import Filter
+from plotly.basedatatypes import BaseFigure
+import pandas as pd
 
 if TYPE_CHECKING:
     from varro.db.models.chat import Chat, Turn
@@ -86,21 +87,7 @@ def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None)
 
         if not isinstance(msg, ModelResponse):
             continue
-        for part in msg.parts:
-            if isinstance(part, ThinkingPart):
-                parts.append(ThinkingBlock(part.content))
-            elif isinstance(part, TextPart):
-                parts.append(TextBlock(part.content, shell=shell))
-            elif isinstance(part, ToolCallPart):
-                args = _parse_args(part.args)
-                parts.append(
-                    ToolCallBlock(
-                        tool=part.tool_name,
-                        args=args,
-                        result="",
-                        attachments=[],
-                    )
-                )
+        parts.extend(_render_model_parts(msg.parts, shell=shell))
 
     return Div(*parts, id=f"turn-{turn.idx}", cls="mb-6")
 
@@ -162,12 +149,12 @@ def ModelRequestBlock(node):
     Render a ModelRequestNode.
     Contains the request sent to the model (tool return parts from previous calls).
     """
-    parts = []
-    for part in node.request.parts:
-        if isinstance(part, ToolReturnPart):
-            parts.append(ToolResultBlock(part))
-
-    return Div(*parts) if parts else None
+    tool_parts = [
+        part for part in node.request.parts if isinstance(part, ToolReturnPart)
+    ]
+    if not tool_parts:
+        return None
+    return ToolResultsGroup(tool_parts)
 
 
 def CallToolsBlock(node, shell: "TerminalInteractiveShell | None" = None):
@@ -175,38 +162,13 @@ def CallToolsBlock(node, shell: "TerminalInteractiveShell | None" = None):
     Render a CallToolsNode.
     Contains the model's response: thinking, text, and tool calls.
     """
-    parts = []
-    model_response = node.model_response
-
-    for part in model_response.parts:
-        if isinstance(part, ThinkingPart):
-            parts.append(ThinkingBlock(part.content))
-        elif isinstance(part, TextPart):
-            parts.append(TextBlock(part.content, shell=shell))
-        elif isinstance(part, ToolCallPart):
-            args = _parse_args(part.args)
-            parts.append(
-                ToolCallBlock(
-                    tool=part.tool_name,
-                    args=args,
-                    result="",
-                    attachments=[],
-                )
-            )
-
+    parts = _render_model_parts(node.model_response.parts, shell=shell)
     return Div(*parts, cls="mb-4") if parts else None
 
 
 def ToolResultBlock(part: ToolReturnPart):
     """Render a tool result from a ModelRequestNode."""
-    result_text = _format_tool_result(part.content)
-    return Div(
-        Div(f"Result from {part.tool_name}", cls="text-xs text-base-content/50"),
-        Pre(result_text, cls="text-xs bg-base-200 p-2 rounded overflow-x-auto mt-1")
-        if result_text
-        else None,
-        cls="pl-4 border-l-2 border-base-300 mb-2",
-    )
+    return ToolResultsGroup([part])
 
 
 def ThinkingBlock(content: str):
@@ -233,26 +195,180 @@ def ThinkingBlock(content: str):
 
 
 def ToolCallBlock(tool: str, args: dict, result: str, attachments: list):
+    return ToolCallsGroup(
+        [
+            _tool_call_item(
+                tool=tool,
+                args=args,
+                result=result,
+                attachments=attachments,
+                status="running",
+            )
+        ]
+    )
+
+
+def ToolCallsGroup(tool_calls: list[dict]):
+    if not tool_calls:
+        return None
+    return Div(
+        ToolGroupHeader("Tool calls", len(tool_calls)),
+        Div(
+            *[
+                ToolCallStep(
+                    tool=item["tool"],
+                    args=item["args"],
+                    result=item.get("result", ""),
+                    attachments=item.get("attachments", []),
+                    status=item.get("status", "running"),
+                )
+                for item in tool_calls
+            ],
+            cls="tool-steps",
+            x_show="open",
+            x_collapse=True,
+        ),
+        x_data="{open: true}",
+        cls="tool-call-group mb-4",
+    )
+
+
+def ToolResultsGroup(tool_parts: list[ToolReturnPart]):
+    if not tool_parts:
+        return None
+    return Div(
+        ToolGroupHeader("Tool results", len(tool_parts)),
+        Div(
+            *[ToolResultStep(part) for part in tool_parts],
+            cls="tool-steps",
+            x_show="open",
+            x_collapse=True,
+        ),
+        x_data="{open: true}",
+        cls="tool-call-group mb-4",
+    )
+
+
+def ToolGroupHeader(title: str, count: int):
     return Div(
         Div(
+            Span(title, cls="tool-call-title"),
+            Span(f"{count} steps", cls="tool-call-meta"),
+            cls="flex items-center gap-2",
+        ),
+        Div(
+            Span(
+                "Hide steps",
+                cls="tool-call-toggle",
+                x_text="open ? 'Hide steps' : 'Show steps'",
+            ),
             Span(
                 ">",
-                cls="text-xs transition-transform duration-200 mr-2",
+                cls="tool-call-chevron",
                 **{":class": "{'rotate-90': open}"},
             ),
-            f"Called {tool}",
-            cls="cursor-pointer text-sm text-base-content/50 flex items-center",
+            cls="flex items-center gap-2",
+        ),
+        cls="tool-call-header",
+        **{"@click": "open = !open"},
+    )
+
+
+def ToolCallStep(
+    tool: str,
+    args: dict,
+    result: str,
+    attachments: list,
+    status: str = "running",
+):
+    label = _format_tool_label(tool)
+    summary = _tool_arg_summary(args)
+    return Div(
+        Div(
+            Div(
+                Span(label, cls="tool-step-title"),
+                Span(summary, cls="tool-step-meta"),
+                cls="flex flex-col",
+            ),
+            Span(
+                ">",
+                cls="tool-step-chevron",
+                **{":class": "{'rotate-90': open}"},
+            ),
+            cls="tool-step-summary",
             **{"@click": "open = !open"},
         ),
         Div(
-            ToolArgsDisplay(tool, args),
-            ToolResultDisplay(result, attachments),
-            cls="pl-4 border-l-2 border-base-300 mt-2",
+            ToolCallDetailCard(tool, args, result, attachments),
+            cls="tool-step-details",
             x_show="open",
             x_collapse=True,
         ),
         x_data="{open: false}",
-        cls="mb-2",
+        cls="tool-step",
+        data_status=status,
+    )
+
+
+def ToolResultStep(part: ToolReturnPart):
+    result_text = _format_tool_result(part.content)
+    status = _tool_result_status(result_text)
+    summary = _tool_result_summary(part.content)
+    label = _format_tool_label(part.tool_name)
+    return Div(
+        Div(
+            Div(
+                Span(label, cls="tool-step-title"),
+                Span(summary, cls="tool-step-meta"),
+                cls="flex flex-col",
+            ),
+            Span(
+                ">",
+                cls="tool-step-chevron",
+                **{":class": "{'rotate-90': open}"},
+            ),
+            cls="tool-step-summary",
+            **{"@click": "open = !open"},
+        ),
+        Div(
+            ToolResultDetailCard(result_text, []),
+            cls="tool-step-details",
+            x_show="open",
+            x_collapse=True,
+        ),
+        x_data="{open: false}",
+        cls="tool-step",
+        data_status=status,
+    )
+
+
+def ToolCallDetailCard(tool: str, args: dict, result: str, attachments: list):
+    sections = [
+        Div(
+            Span("Input", cls="tool-card-label"),
+            ToolArgsDisplay(tool, args),
+            cls="tool-card-section",
+        )
+    ]
+    if result or attachments:
+        sections.append(
+            Div(
+                Span("Output", cls="tool-card-label"),
+                ToolResultDisplay(result, attachments),
+                cls="tool-card-section",
+            )
+        )
+    return Div(*sections, cls="tool-card")
+
+
+def ToolResultDetailCard(result: str, attachments: list):
+    return Div(
+        Div(
+            Span("Output", cls="tool-card-label"),
+            ToolResultDisplay(result, attachments),
+            cls="tool-card-section",
+        ),
+        cls="tool-card",
     )
 
 
@@ -261,20 +377,21 @@ def ToolArgsDisplay(tool: str, args: dict):
         return Div(
             Pre(
                 Code(args.get("query", ""), cls="language-sql"),
-                cls="text-xs bg-base-200 p-2 rounded overflow-x-auto",
+                cls="tool-code-block",
             ),
-            Span(f"-> {args.get('df_name')}", cls="text-xs text-base-content/50")
+            Span(f"-> {args.get('df_name')}", cls="tool-code-meta")
             if args.get("df_name")
             else None,
+            cls="flex flex-col gap-2",
         )
     if tool == "jupyter_notebook":
         return Pre(
             Code(args.get("code", ""), cls="language-python"),
-            cls="text-xs bg-base-200 p-2 rounded overflow-x-auto",
+            cls="tool-code-block",
         )
     return Pre(
         json.dumps(args, indent=2, ensure_ascii=False),
-        cls="text-xs bg-base-200 p-2 rounded overflow-x-auto",
+        cls="tool-code-block",
     )
 
 
@@ -282,12 +399,14 @@ def ToolResultDisplay(result: str, attachments: list):
     parts = []
     if result:
         if "|" in result and "\n" in result:
-            parts.append(MarkdownTable(result))
+            parts.append(Div(MarkdownTable(result), cls="tool-output-block"))
         else:
-            parts.append(Pre(result, cls="text-xs overflow-x-auto mt-2"))
+            parts.append(Pre(result, cls="tool-output-block"))
     for att in attachments:
-        parts.append(Img(src=f"/uploads/{att['path']}", cls="max-w-full rounded mt-2"))
-    return Div(*parts) if parts else None
+        parts.append(Img(src=f"/uploads/{att['path']}", cls="tool-output-asset"))
+    if not parts:
+        return Span("No output", cls="tool-empty")
+    return Div(*parts, cls="flex flex-col gap-2")
 
 
 def TextBlock(content: str, shell: "TerminalInteractiveShell | None" = None):
@@ -360,12 +479,6 @@ def ChatDropdownItem(chat: "Chat"):
     )
 
 
-def render_markdown(content: str) -> str:
-    if not content or not content.strip():
-        return ""
-    return mistletoe.markdown(content)
-
-
 def render_markdown_blocks(
     content: str, shell: "TerminalInteractiveShell | None" = None
 ):
@@ -375,27 +488,19 @@ def render_markdown_blocks(
     return _render_chat_nodes(nodes, shell)
 
 
-def _render_chat_nodes(
-    nodes, shell: "TerminalInteractiveShell | None" = None
-):
+def _render_chat_nodes(nodes, shell: "TerminalInteractiveShell | None" = None):
     parts = []
     for node in nodes:
         if isinstance(node, MarkdownNode):
-            html = render_markdown(node.content)
-            if html.strip():
+            html = mistletoe.markdown(node.content) if node.content.strip() else ""
+            if html:
                 parts.append(Div(NotStr(html), cls="prose prose-sm max-w-none"))
         elif isinstance(node, ComponentNode):
             name = (node.attrs.get("name") or "").strip()
             if node.type in ("fig", "df"):
                 parts.append(_render_placeholder(node.type, name, shell))
-            elif node.type == "metric":
-                parts.append(_missing_placeholder("metric", name))
-            else:
-                parts.append(_missing_placeholder(node.type, name))
         elif isinstance(node, ContainerNode):
             parts.extend(_render_chat_nodes(node.children, shell))
-        elif isinstance(node, Filter):
-            parts.append(_missing_placeholder("filter", node.name))
 
     return [p for p in parts if p is not None]
 
@@ -403,49 +508,32 @@ def _render_chat_nodes(
 def _render_placeholder(
     kind: str, name: str, shell: "TerminalInteractiveShell | None" = None
 ):
-    if not name:
-        return None
-    if not shell or not getattr(shell, "user_ns", None):
-        return _missing_placeholder(kind, name)
-
     obj = shell.user_ns.get(name)
     if obj is None:
         return _missing_placeholder(kind, name)
 
     if kind == "df":
-        import pandas as pd
-
         if isinstance(obj, pd.DataFrame):
             df = obj
             if not isinstance(df.index, pd.RangeIndex):
                 df = df.reset_index()
             return DataTable(df, cls="my-2")
     elif kind == "fig":
-        try:
-            from plotly.basedatatypes import BaseFigure
-        except Exception:
-            BaseFigure = None
-
-        if BaseFigure is None or isinstance(obj, BaseFigure):
+        if isinstance(obj, BaseFigure):
             return Div(Figure(obj), cls="my-2")
 
     return _missing_placeholder(kind, name)
 
 
 def _missing_placeholder(kind: str, name: str):
-    label_map = {
-        "fig": "figure",
-        "df": "dataframe",
-        "metric": "metric",
-        "filter": "filter",
-    }
-    label = label_map.get(kind, kind)
+    label = "figure" if kind == "fig" else "dataframe"
     return Div(
         f"Missing {label}: {name}",
         cls="text-xs text-base-content/50 italic",
     )
 
 
+# TODO: remove MarkdownTable function and replace with DataTable rendering instead. Or user mistletoe to render the markdown table.
 def MarkdownTable(content: str):
     lines = [line for line in content.splitlines() if line.strip()]
     if not lines:
@@ -474,6 +562,89 @@ def MarkdownTable(content: str):
         ),
         cls="mt-2",
     )
+
+
+def _render_model_parts(parts, shell: "TerminalInteractiveShell | None" = None):
+    rendered = []
+    tool_calls = []
+
+    def flush_tool_calls():
+        nonlocal tool_calls
+        if tool_calls:
+            rendered.append(ToolCallsGroup(tool_calls))
+            tool_calls = []
+
+    for part in parts:
+        if isinstance(part, ThinkingPart):
+            flush_tool_calls()
+            rendered.append(ThinkingBlock(part.content))
+        elif isinstance(part, TextPart):
+            flush_tool_calls()
+            rendered.append(TextBlock(part.content, shell=shell))
+        elif isinstance(part, ToolCallPart):
+            tool_calls.append(
+                _tool_call_item(
+                    tool=part.tool_name,
+                    args=_parse_args(part.args),
+                    result="",
+                    attachments=[],
+                    status="running",
+                )
+            )
+    flush_tool_calls()
+    return rendered
+
+
+def _tool_call_item(
+    tool: str, args: dict, result: str = "", attachments: list | None = None, status: str = "running"
+):
+    return {
+        "tool": tool,
+        "args": args,
+        "result": result,
+        "attachments": attachments or [],
+        "status": status,
+    }
+
+
+def _format_tool_label(tool: str) -> str:
+    label = tool.replace("_", " ").replace("-", " ").strip()
+    return label.title() if label else "Tool"
+
+
+def _tool_arg_summary(args: dict) -> str:
+    if not args:
+        return "No input"
+    keys = [str(key) for key in args.keys() if key]
+    if not keys:
+        return "No input"
+    shown = ", ".join(keys[:3])
+    if len(keys) > 3:
+        shown = f"{shown} +{len(keys) - 3} more"
+    return f"Input: {shown}"
+
+
+def _tool_result_summary(content) -> str:
+    if content is None:
+        return "No output"
+    if isinstance(content, list):
+        items = [item for item in content if not isinstance(item, BinaryContent)]
+        if not items:
+            return "No output"
+        return f"Output: {len(items)} items"
+    text = str(content).strip()
+    if not text:
+        return "No output"
+    preview = text.replace("\n", " ")
+    if len(preview) > 80:
+        preview = f"{preview[:77]}..."
+    return f"Output: {preview}"
+
+
+def _tool_result_status(result_text: str) -> str:
+    if result_text and result_text.strip().lower().startswith("error"):
+        return "error"
+    return "success"
 
 
 def _parse_args(args) -> dict:
