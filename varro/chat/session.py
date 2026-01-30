@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+import asyncio
+from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Awaitable, Callable
@@ -32,11 +33,15 @@ class UserSession:
     """In-memory session for a single user's chat interaction."""
 
     user_id: int
+    sid: str
     chats: CrudChat
     send: Callable[[object], Awaitable[None]]
     ws: object
 
     shell: TerminalInteractiveShell = field(init=False)
+    last_seen: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc), init=False
+    )
     chat_id: int | None = field(default=None, init=False)
     msgs: list[ModelMessage] = field(default_factory=list, init=False)
     turn_idx: int = field(default=0, init=False)
@@ -45,6 +50,10 @@ class UserSession:
     def __post_init__(self):
         self.shell = get_shell()
         self.shell.run_cell(JUPYTER_INITIAL_IMPORTS)
+        self.touch()
+
+    def touch(self) -> None:
+        self.last_seen = datetime.now(timezone.utc)
 
     async def start_chat(self, chat_id: int | None) -> None:
         """Initialize or restore a chat session."""
@@ -188,32 +197,86 @@ class SessionManager:
     """Manages all active user sessions."""
 
     def __init__(self):
-        self._sessions: dict[int, UserSession] = {}
+        self._sessions: dict[int, dict[str, UserSession]] = {}
+        self._cleanup_task: asyncio.Task | None = None
 
-    def get(self, user_id: int) -> UserSession | None:
-        return self._sessions.get(user_id)
+    def get(self, user_id: int, sid: str) -> UserSession | None:
+        return self._sessions.get(user_id, {}).get(sid)
+
+    def find_by_ws(self, user_id: int, ws: object) -> UserSession | None:
+        sessions = self._sessions.get(user_id, {})
+        for session in sessions.values():
+            if session.ws is ws:
+                return session
+        return None
 
     async def create(
         self,
         user_id: int,
+        sid: str,
         chats: CrudChat,
         send: Callable[[object], Awaitable[None]],
         ws: object,
     ) -> UserSession:
-        """Create session, replacing any existing one for this user."""
-        if user_id in self._sessions:
-            old_session = self._sessions[user_id]
+        """Create session, replacing any existing one for this sid."""
+        sessions = self._sessions.setdefault(user_id, {})
+        if sid in sessions:
+            old_session = sessions[sid]
             await old_session.close_ws()
             old_session.cleanup()
 
-        session = UserSession(user_id=user_id, chats=chats, send=send, ws=ws)
-        self._sessions[user_id] = session
+        session = UserSession(user_id=user_id, sid=sid, chats=chats, send=send, ws=ws)
+        sessions[sid] = session
         return session
 
-    def remove(self, user_id: int) -> None:
+    def remove(self, user_id: int, sid: str) -> None:
         """Remove and cleanup a session."""
-        if session := self._sessions.pop(user_id, None):
+        sessions = self._sessions.get(user_id)
+        if not sessions:
+            return
+        if session := sessions.pop(sid, None):
             session.cleanup()
+        if not sessions:
+            self._sessions.pop(user_id, None)
+
+    async def close_and_remove(self, user_id: int, sid: str) -> None:
+        session = self.get(user_id, sid)
+        if not session:
+            return
+        await session.close_ws()
+        self.remove(user_id, sid)
+
+    def touch(self, user_id: int, sid: str) -> None:
+        session = self.get(user_id, sid)
+        if session:
+            session.touch()
+
+    async def evict_idle(self, ttl: timedelta) -> None:
+        now = datetime.now(timezone.utc)
+        to_evict: list[tuple[int, str]] = []
+        for user_id, sessions in self._sessions.items():
+            for sid, session in sessions.items():
+                if now - session.last_seen > ttl:
+                    to_evict.append((user_id, sid))
+        for user_id, sid in to_evict:
+            await self.close_and_remove(user_id, sid)
+
+    def start_cleanup_task(
+        self, ttl: timedelta = timedelta(minutes=20), interval: int = 60
+    ) -> None:
+        if self._cleanup_task and not self._cleanup_task.done():
+            return
+
+        async def _loop() -> None:
+            while True:
+                await asyncio.sleep(interval)
+                await self.evict_idle(ttl)
+
+        self._cleanup_task = asyncio.create_task(_loop())
+
+    def stop_cleanup_task(self) -> None:
+        if self._cleanup_task and not self._cleanup_task.done():
+            self._cleanup_task.cancel()
 
 
 sessions = SessionManager()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import parse_qs
 
 from fasthtml.common import (
     APIRouter,
@@ -28,8 +29,20 @@ ar = APIRouter()
 async def on_conn(ws, send, sess, req):
     """Called when websocket connects."""
     user_id = sess.get("user_id")
+    sid = None
+    if req is not None and getattr(req, "query_params", None) is not None:
+        sid = req.query_params.get("sid")
+    if not sid and getattr(ws, "query_params", None) is not None:
+        sid = ws.query_params.get("sid")
+    if not sid:
+        qs = ws.scope.get("query_string", b"").decode()
+        sid = parse_qs(qs).get("sid", [None])[0]
+    if not sid:
+        await ws.close()
+        return
     chats = crud.chat.for_user(user_id)
-    session = await sessions.create(user_id, chats, send, ws)
+    session = await sessions.create(user_id, sid, chats, send, ws)
+    session.touch()
 
     chat_id = sess.get("chat_id")
     if chat_id:
@@ -38,14 +51,17 @@ async def on_conn(ws, send, sess, req):
 
 def on_disconn(ws, sess):
     """Called when websocket disconnects."""
-    if session := sessions.get(sess["user_id"]):
-        if session.ws is ws:
-            sessions.remove(sess["user_id"])
+    if session := sessions.find_by_ws(sess["user_id"], ws):
+        sessions.remove(sess["user_id"], session.sid)
 
 
 @ar.ws("/ws", conn=on_conn, disconn=on_disconn)
 async def on_message(
-    msg: str, sess, chat_id: int | None = None, edit_idx: int | None = None
+    msg: str,
+    sess,
+    chat_id: int | None = None,
+    edit_idx: int | None = None,
+    sid: str | None = None,
 ):
     """
     Handle incoming chat messages.
@@ -55,9 +71,12 @@ async def on_message(
         chat_id: The chat ID (may be None for new chat)
         edit_idx: If provided, delete turns from this index before processing
     """
-    s = sessions.get(sess["user_id"])
+    if not sid:
+        return
+    s = sessions.get(sess["user_id"], sid)
     if not s:
         return
+    s.touch()
 
     if chat_id is None:
         chat = s.chats.create(Chat())
@@ -90,8 +109,19 @@ def chat_page(req, sess):
     """Render the main chat page."""
     chat_id = sess.get("chat_id")
     chat = req.state.chats.get(chat_id, with_turns=True) if chat_id else None
-    session = sessions.get(sess.get("user_id"))
-    return ChatPage(chat, shell=session.shell if session else None)
+    return ChatPage(chat, shell=None)
+
+
+@ar.post("/chat/heartbeat")
+def chat_heartbeat(sid: str, sess):
+    sessions.touch(sess.get("user_id"), sid)
+    return Response(status_code=204)
+
+
+@ar.post("/chat/close")
+async def chat_close(sid: str, sess):
+    await sessions.close_and_remove(sess.get("user_id"), sid)
+    return Response(status_code=204)
 
 
 @ar.get("/chat/new")

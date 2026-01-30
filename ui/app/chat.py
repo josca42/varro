@@ -15,6 +15,7 @@ from fasthtml.common import (
     Code,
     Img,
     Main,
+    Script,
     Table,
     Thead,
     Tbody,
@@ -57,9 +58,10 @@ def ChatPage(chat: "Chat | None", shell: "TerminalInteractiveShell | None" = Non
         ChatHeader(chat),
         ChatMessages(turns, shell=shell),
         ChatForm(chat_id=chat_id),
+        ChatClientScript(),
         cls="flex flex-col h-screen",
+        id="chat-root",
         hx_ext="ws",
-        ws_connect="/ws",
     )
 
 
@@ -111,6 +113,7 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
             ),
             cls="flex gap-2 items-end",
         ),
+        Input(type="hidden", name="sid", value=""),
         Input(type="hidden", name="chat_id", value=chat_id)
         if chat_id is not None
         else None,
@@ -129,6 +132,92 @@ def ChatFormDisabled(chat_id: int | None = None):
 def ChatFormEnabled(chat_id: int | None = None):
     return Div(
         ChatForm(chat_id=chat_id, disabled=False), hx_swap_oob="outerHTML:#chat-form"
+    )
+
+
+def ChatClientScript():
+    return Script(
+        """
+(() => {
+  const sidKey = "varro_chat_sid";
+  let sid = sessionStorage.getItem(sidKey);
+  if (!sid) {
+    const makeSid = () => {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+      if (window.crypto && window.crypto.getRandomValues) {
+        const bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
+        return `${hex.slice(0, 4).join("")}-${hex
+          .slice(4, 6)
+          .join("")}-${hex.slice(6, 8).join("")}-${hex
+          .slice(8, 10)
+          .join("")}-${hex.slice(10, 16).join("")}`;
+      }
+      return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    };
+    sid = makeSid();
+    sessionStorage.setItem(sidKey, sid);
+  }
+
+  const root = document.getElementById("chat-root");
+  if (root) {
+    root.setAttribute("ws-connect", `/ws?sid=${encodeURIComponent(sid)}`);
+    if (window.htmx) {
+      window.htmx.process(root);
+    }
+  }
+
+  const setSidInputs = () => {
+    for (const input of document.querySelectorAll("input[name='sid']")) {
+      input.value = sid;
+    }
+  };
+
+  setSidInputs();
+  document.body.addEventListener("htmx:afterSwap", () => {
+    setSidInputs();
+  });
+
+  let lastInput = Date.now();
+  const markActive = () => {
+    lastInput = Date.now();
+  };
+
+  ["keydown", "pointerdown", "mousedown", "touchstart"].forEach((event) => {
+    window.addEventListener(event, markActive, { passive: true });
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      markActive();
+    }
+  });
+
+  const activeWindowMs = 2 * 60 * 1000;
+  const intervalMs = 60 * 1000;
+
+  const heartbeat = () => {
+    if (document.visibilityState !== "visible") {
+      return;
+    }
+    if (Date.now() - lastInput > activeWindowMs) {
+      return;
+    }
+    navigator.sendBeacon(`/chat/heartbeat?sid=${encodeURIComponent(sid)}`);
+  };
+
+  setInterval(heartbeat, intervalMs);
+
+  window.addEventListener("beforeunload", () => {
+    navigator.sendBeacon(`/chat/close?sid=${encodeURIComponent(sid)}`);
+  });
+})();
+"""
     )
 
 
@@ -508,6 +597,8 @@ def _render_chat_nodes(nodes, shell: "TerminalInteractiveShell | None" = None):
 def _render_placeholder(
     kind: str, name: str, shell: "TerminalInteractiveShell | None" = None
 ):
+    if shell is None:
+        return _missing_placeholder(kind, name)
     obj = shell.user_ns.get(name)
     if obj is None:
         return _missing_placeholder(kind, name)
@@ -596,7 +687,11 @@ def _render_model_parts(parts, shell: "TerminalInteractiveShell | None" = None):
 
 
 def _tool_call_item(
-    tool: str, args: dict, result: str = "", attachments: list | None = None, status: str = "running"
+    tool: str,
+    args: dict,
+    result: str = "",
+    attachments: list | None = None,
+    status: str = "running",
 ):
     return {
         "tool": tool,
