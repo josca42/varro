@@ -18,17 +18,20 @@ from ui.app.chat import (
     UserPromptBlock,
     ModelRequestBlock,
     CallToolsBlock,
-    ToolResultBlock,
-    ThinkingBlock,
-    ToolCallBlock,
-    ToolArgsDisplay,
-    ToolResultDisplay,
     TextBlock,
     ErrorBlock,
     ChatHeader,
     ChatDropdownTrigger,
     ChatDropdown,
     ChatDropdownItem,
+)
+from ui.app.tool import (
+    ThinkingBlock,
+    ToolCallBlock,
+    ToolResultBlock,
+    ToolArgsDisplay,
+    ToolResultDisplay,
+    ReasoningBlock,
 )
 from ui.app.auth import (
     AuthPage,
@@ -64,6 +67,7 @@ __all__ = [
     "ToolResultDisplay",
     "TextBlock",
     "ErrorBlock",
+    "ReasoningBlock",
     "ChatHeader",
     "ChatDropdownTrigger",
     "ChatDropdown",

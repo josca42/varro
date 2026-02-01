@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import asyncio
 from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass, field
@@ -13,8 +12,6 @@ import zstandard as zstd
 from pydantic_ai.messages import ModelMessage, ModelResponse, BaseToolCallPart
 from pydantic_ai import ModelMessagesTypeAdapter, ModelRetry
 from pydantic_core import to_jsonable_python
-from starlette.websockets import WebSocketState
-
 from varro.agent.ipython_shell import (
     get_shell,
     TerminalInteractiveShell,
@@ -67,10 +64,7 @@ class UserSession:
         if not chat:
             return
 
-        for turn in chat.turns:
-            loaded = self._load_turn(Path(turn.obj_fp))
-            self.msgs.extend(loaded)
-
+        self.msgs = self._load_msgs(chat.turns)
         self.turn_idx = len(chat.turns)
 
         if self.msgs:
@@ -95,19 +89,11 @@ class UserSession:
 
     def delete_from_idx(self, idx: int) -> None:
         """Delete turns from idx onwards (for edit functionality)."""
-        deleted_paths = crud.turn.delete_from_idx(self.chat_id, idx)
-
-        for fp in deleted_paths:
-            path = Path(fp)
-            if path.exists():
-                path.unlink()
+        for fp in crud.turn.delete_from_idx(self.chat_id, idx):
+            Path(fp).unlink(missing_ok=True)
 
         chat = self.chats.get(self.chat_id, with_turns=True)
-        self.msgs = []
-        for turn in chat.turns:
-            loaded = self._load_turn(Path(turn.obj_fp))
-            self.msgs.extend(loaded)
-
+        self.msgs = self._load_msgs(chat.turns)
         self.turn_idx = idx
 
     def cleanup(self) -> None:
@@ -121,17 +107,17 @@ class UserSession:
         if self.ws is None:
             return
         try:
-            if (
-                getattr(self.ws, "application_state", None)
-                is WebSocketState.DISCONNECTED
-                or getattr(self.ws, "client_state", None) is WebSocketState.DISCONNECTED
-            ):
-                return
             await self.ws.close()
-        except RuntimeError:
-            return
+        except Exception:
+            pass
         finally:
             self.ws = None
+
+    def _load_msgs(self, turns) -> list[ModelMessage]:
+        msgs = []
+        for turn in turns:
+            msgs.extend(self._load_turn(Path(turn.obj_fp)))
+        return msgs
 
     def _reset_chat_state(self) -> None:
         """Reset state for a new/different chat."""
@@ -161,18 +147,14 @@ class UserSession:
                 if not isinstance(part, BaseToolCallPart):
                     continue
 
-                args = part.args or {}
-                if isinstance(args, str):
-                    args = json.loads(args)
-
+                kwargs = part.args
                 if part.tool_name == "sql_query":
-                    df_name = args.get("df_name")
-                    if df_name:
-                        sql_query(ctx, args.get("query", ""), df_name)
+                    if "df_name" in kwargs:
+                        sql_query(ctx, **kwargs)
 
                 elif part.tool_name == "jupyter_notebook":
                     try:
-                        await jupyter_notebook(ctx, args.get("code", ""), show=[])
+                        await jupyter_notebook(ctx, **kwargs)
                     except ModelRetry as e:
                         continue
 

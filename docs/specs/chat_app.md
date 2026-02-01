@@ -66,7 +66,9 @@ Chat (1) ──────< Turn (N)
 2. **Message** (`on_message`):
    - Creates chat if needed
    - Handles edit via `edit_idx` (deletes subsequent turns)
+   - Disables input, shows progress animation
    - Runs agent, streams HTML blocks
+   - Stops animation and re-enables input
 3. **Disconnect** (`on_disconn`): Cleans up session and shell
 
 ## Session Lifecycle
@@ -86,9 +88,24 @@ Each pydantic-ai node maps to a UI component:
 | Node Type | UI Component | Renders |
 |-----------|--------------|---------|
 | `UserPromptNode` | `UserPromptBlock` | User message bubble |
-| `ModelRequestNode` | `ModelRequestBlock` | Tool return results |
-| `CallToolsNode` | `CallToolsBlock` | Thinking, text, tool calls |
-| `EndNode` | (none) | Signals completion |
+| `ModelRequestNode` | `ReasoningBlock` (OOB update) | Tool return results merged into reasoning |
+| `CallToolsNode` | `ReasoningBlock` + `CallToolsBlock` (final) | Thinking, text, tool calls |
+| `EndNode` | (optional) `ReasoningBlock` | Flushes any pending reasoning |
+
+### Reasoning / Tool Calls UI
+
+- Tool calls that belong to the reasoning process are grouped into a single **Reasoning** box.
+- The reasoning box contains interleaved **Thinking**, **Text**, and **ToolCall** steps.
+- Tool return outputs are merged into the matching tool call by `tool_call_id`.
+- The reasoning box updates in-place via `hx-swap-oob="outerHTML:#reasoning-{turn}"`.
+- The final answer is rendered separately (finish_reason = "stop").
+
+### Progress Indicator
+
+- A small Game of Life logo sits **last** in `#chat-messages`.
+- On message start, `ChatProgressStart()` swaps the logo to animated (`data-run=1`).
+- On completion, `ChatProgressEnd()` swaps it to the final static form (`data-run=0`).
+- After any HTMX swap, `window.__golRefresh()` re-initializes the canvas.
 
 ## Markdown Rendering
 
@@ -102,7 +119,10 @@ Each pydantic-ai node maps to a UI component:
 
 **One node = one WebSocket send**: Agent nodes are awaited to completion before rendering (not streaming partial events).
 
-**OOB swaps**: HTML blocks use `hx_swap_oob="beforeend:#chat-messages"` to append to chat.
+**OOB swaps**:
+- Reasoning updates use `outerHTML:#reasoning-{turn}` to keep one box.
+- The progress logo uses `outerHTML:#chat-progress`.
+- Non-OOB blocks are inserted **before** `#chat-progress` to keep the logo last.
 
 **Form state**: `ChatFormDisabled()`/`ChatFormEnabled()` toggle input during processing.
 

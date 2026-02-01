@@ -13,15 +13,11 @@ class Chat(SQLModel, table=True):
     title: str | None = None
     created_at: Optional[datetime] = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime, server_default=func.now()),
     )
     updated_at: Optional[datetime] = Field(
         default=None,
-        sa_column=Column(
-            DateTime(timezone=True),
-            server_default=func.now(),
-            onupdate=func.now(),
-        ),
+        sa_column=Column(DateTime, server_default=func.now(), onupdate=func.now()),
     )
     turns: list["Turn"] = Relationship(
         back_populates="chat",
@@ -42,6 +38,6 @@ class Turn(SQLModel, table=True):
     idx: int
     created_at: Optional[datetime] = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime, server_default=func.now()),
     )
     chat: Chat | None = Relationship(back_populates="turns")

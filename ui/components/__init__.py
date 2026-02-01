@@ -51,6 +51,7 @@ from ui.components.metric import MetricValue, MetricFormat
 from ui.components.table import DataTable, TableVariant, TableSize
 from ui.components.figure import Figure, FigureSkeleton
 from ui.components.filter import SelectFilter, DateRangeFilter, CheckboxFilter
+from ui.components.game_of_life import GameOfLifeAnimation
 
 __all__ = [
     # Buttons
@@ -137,6 +138,7 @@ __all__ = [
     # Figure
     "Figure",
     "FigureSkeleton",
+    "GameOfLifeAnimation",
     # Filter
     "SelectFilter",
     "DateRangeFilter",

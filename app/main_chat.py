@@ -1,4 +1,4 @@
-from fasthtml.common import RedirectResponse, Beforeware, serve
+from fasthtml.common import RedirectResponse, Beforeware
 from datetime import timedelta
 
 from ui.core import daisy_app
@@ -45,4 +45,7 @@ def index():
     return RedirectResponse("/chat", status_code=303)
 
 
-serve()
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=5001)

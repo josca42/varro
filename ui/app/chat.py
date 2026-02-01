@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 import mistletoe
@@ -11,17 +10,8 @@ from fasthtml.common import (
     Form,
     Input,
     Textarea,
-    Pre,
-    Code,
-    Img,
     Main,
     Script,
-    Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
     H1,
     Header,
     Ul,
@@ -29,13 +19,21 @@ from fasthtml.common import (
     A,
     NotStr,
 )
-from ui.components import DataTable, Figure
-from pydantic_ai import BinaryContent
+from ui.components import DataTable, Figure, GameOfLifeAnimation
 from pydantic_ai.messages import (
+    ModelRequest,
+    ModelResponse,
     ThinkingPart,
     TextPart,
     ToolCallPart,
     ToolReturnPart,
+)
+from ui.app.tool import (
+    ThinkingBlock,
+    ToolCallsGroup,
+    ToolResultsGroup,
+    ReasoningBlock,
+    _tool_call_item,
 )
 from varro.dashboard.parser import (
     parse_dashboard_md,
@@ -70,6 +68,7 @@ def ChatMessages(
 ):
     return Div(
         *[TurnComponent(t, shell=shell) for t in turns],
+        ChatProgressPlaceholder(),
         id="chat-messages",
         cls="flex-1 overflow-y-auto px-4 py-6",
         **attrs,
@@ -84,12 +83,7 @@ def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None)
     parts = [UserMessage(turn.user_text)]
 
     msgs = UserSession._load_turn(Path(turn.obj_fp))
-    for msg in msgs:
-        from pydantic_ai.messages import ModelResponse
-
-        if not isinstance(msg, ModelResponse):
-            continue
-        parts.extend(_render_model_parts(msg.parts, shell=shell))
+    parts.extend(_render_turn_messages(msgs, shell=shell))
 
     return Div(*parts, id=f"turn-{turn.idx}", cls="mb-6")
 
@@ -135,31 +129,38 @@ def ChatFormEnabled(chat_id: int | None = None):
     )
 
 
+# TODO: Does it make sense to have the client script in the UI library?
+# Maybe it would make more sense to have it in the app folder. And can this be simplified somehow?. Essentially, the script does two things:
+# 1. It creates a random view UID, enabling a user to have multiple sessions in different tabs.
+# 2. These sessions are then closed after a time interval if the user is inactive.
 def ChatClientScript():
     return Script(
         """
 (() => {
+  const makeSid = () => {
+    if (window.crypto && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    if (window.crypto && crypto.getRandomValues) {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
+      return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex
+        .slice(6, 8)
+        .join("")}-${hex.slice(8, 10).join("")}-${hex
+        .slice(10, 16)
+        .join("")}`;
+    }
+    return `sid-${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
+  };
+
   const sidKey = "varro_chat_sid";
   let sid = sessionStorage.getItem(sidKey);
   if (!sid) {
-    const makeSid = () => {
-      if (window.crypto && typeof window.crypto.randomUUID === "function") {
-        return window.crypto.randomUUID();
-      }
-      if (window.crypto && window.crypto.getRandomValues) {
-        const bytes = new Uint8Array(16);
-        window.crypto.getRandomValues(bytes);
-        bytes[6] = (bytes[6] & 0x0f) | 0x40;
-        bytes[8] = (bytes[8] & 0x3f) | 0x80;
-        const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
-        return `${hex.slice(0, 4).join("")}-${hex
-          .slice(4, 6)
-          .join("")}-${hex.slice(6, 8).join("")}-${hex
-          .slice(8, 10)
-          .join("")}-${hex.slice(10, 16).join("")}`;
-      }
-      return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-    };
     sid = makeSid();
     sessionStorage.setItem(sidKey, sid);
   }
@@ -181,7 +182,14 @@ def ChatClientScript():
   setSidInputs();
   document.body.addEventListener("htmx:afterSwap", () => {
     setSidInputs();
+    if (window.__golRefresh) {
+      window.__golRefresh();
+    }
   });
+
+  if (window.__golRefresh) {
+    window.__golRefresh();
+  }
 
   let lastInput = Date.now();
   const markActive = () => {
@@ -246,256 +254,21 @@ def ModelRequestBlock(node):
     return ToolResultsGroup(tool_parts)
 
 
-def CallToolsBlock(node, shell: "TerminalInteractiveShell | None" = None):
+def CallToolsBlock(
+    node,
+    shell: "TerminalInteractiveShell | None" = None,
+    connected: bool = True,
+):
     """
     Render a CallToolsNode.
     Contains the model's response: thinking, text, and tool calls.
     """
-    parts = _render_model_parts(node.model_response.parts, shell=shell)
+    parts = _render_model_parts(
+        node.model_response.parts,
+        shell=shell,
+        connected=connected,
+    )
     return Div(*parts, cls="mb-4") if parts else None
-
-
-def ToolResultBlock(part: ToolReturnPart):
-    """Render a tool result from a ModelRequestNode."""
-    return ToolResultsGroup([part])
-
-
-def ThinkingBlock(content: str):
-    return Div(
-        Div(
-            Span(
-                ">",
-                cls="text-xs transition-transform duration-200 mr-2",
-                **{":class": "{'rotate-90': open}"},
-            ),
-            "Thinking...",
-            cls="cursor-pointer text-sm text-base-content/50 flex items-center",
-            **{"@click": "open = !open"},
-        ),
-        Div(
-            content,
-            cls="pl-4 border-l-2 border-base-300 mt-2 text-sm text-base-content/60 whitespace-pre-wrap",
-            x_show="open",
-            x_collapse=True,
-        ),
-        x_data="{open: false}",
-        cls="mb-2",
-    )
-
-
-def ToolCallBlock(tool: str, args: dict, result: str, attachments: list):
-    return ToolCallsGroup(
-        [
-            _tool_call_item(
-                tool=tool,
-                args=args,
-                result=result,
-                attachments=attachments,
-                status="running",
-            )
-        ]
-    )
-
-
-def ToolCallsGroup(tool_calls: list[dict]):
-    if not tool_calls:
-        return None
-    return Div(
-        ToolGroupHeader("Tool calls", len(tool_calls)),
-        Div(
-            *[
-                ToolCallStep(
-                    tool=item["tool"],
-                    args=item["args"],
-                    result=item.get("result", ""),
-                    attachments=item.get("attachments", []),
-                    status=item.get("status", "running"),
-                )
-                for item in tool_calls
-            ],
-            cls="tool-steps",
-            x_show="open",
-            x_collapse=True,
-        ),
-        x_data="{open: true}",
-        cls="tool-call-group mb-4",
-    )
-
-
-def ToolResultsGroup(tool_parts: list[ToolReturnPart]):
-    if not tool_parts:
-        return None
-    return Div(
-        ToolGroupHeader("Tool results", len(tool_parts)),
-        Div(
-            *[ToolResultStep(part) for part in tool_parts],
-            cls="tool-steps",
-            x_show="open",
-            x_collapse=True,
-        ),
-        x_data="{open: true}",
-        cls="tool-call-group mb-4",
-    )
-
-
-def ToolGroupHeader(title: str, count: int):
-    return Div(
-        Div(
-            Span(title, cls="tool-call-title"),
-            Span(f"{count} steps", cls="tool-call-meta"),
-            cls="flex items-center gap-2",
-        ),
-        Div(
-            Span(
-                "Hide steps",
-                cls="tool-call-toggle",
-                x_text="open ? 'Hide steps' : 'Show steps'",
-            ),
-            Span(
-                ">",
-                cls="tool-call-chevron",
-                **{":class": "{'rotate-90': open}"},
-            ),
-            cls="flex items-center gap-2",
-        ),
-        cls="tool-call-header",
-        **{"@click": "open = !open"},
-    )
-
-
-def ToolCallStep(
-    tool: str,
-    args: dict,
-    result: str,
-    attachments: list,
-    status: str = "running",
-):
-    label = _format_tool_label(tool)
-    summary = _tool_arg_summary(args)
-    return Div(
-        Div(
-            Div(
-                Span(label, cls="tool-step-title"),
-                Span(summary, cls="tool-step-meta"),
-                cls="flex flex-col",
-            ),
-            Span(
-                ">",
-                cls="tool-step-chevron",
-                **{":class": "{'rotate-90': open}"},
-            ),
-            cls="tool-step-summary",
-            **{"@click": "open = !open"},
-        ),
-        Div(
-            ToolCallDetailCard(tool, args, result, attachments),
-            cls="tool-step-details",
-            x_show="open",
-            x_collapse=True,
-        ),
-        x_data="{open: false}",
-        cls="tool-step",
-        data_status=status,
-    )
-
-
-def ToolResultStep(part: ToolReturnPart):
-    result_text = _format_tool_result(part.content)
-    status = _tool_result_status(result_text)
-    summary = _tool_result_summary(part.content)
-    label = _format_tool_label(part.tool_name)
-    return Div(
-        Div(
-            Div(
-                Span(label, cls="tool-step-title"),
-                Span(summary, cls="tool-step-meta"),
-                cls="flex flex-col",
-            ),
-            Span(
-                ">",
-                cls="tool-step-chevron",
-                **{":class": "{'rotate-90': open}"},
-            ),
-            cls="tool-step-summary",
-            **{"@click": "open = !open"},
-        ),
-        Div(
-            ToolResultDetailCard(result_text, []),
-            cls="tool-step-details",
-            x_show="open",
-            x_collapse=True,
-        ),
-        x_data="{open: false}",
-        cls="tool-step",
-        data_status=status,
-    )
-
-
-def ToolCallDetailCard(tool: str, args: dict, result: str, attachments: list):
-    sections = [
-        Div(
-            Span("Input", cls="tool-card-label"),
-            ToolArgsDisplay(tool, args),
-            cls="tool-card-section",
-        )
-    ]
-    if result or attachments:
-        sections.append(
-            Div(
-                Span("Output", cls="tool-card-label"),
-                ToolResultDisplay(result, attachments),
-                cls="tool-card-section",
-            )
-        )
-    return Div(*sections, cls="tool-card")
-
-
-def ToolResultDetailCard(result: str, attachments: list):
-    return Div(
-        Div(
-            Span("Output", cls="tool-card-label"),
-            ToolResultDisplay(result, attachments),
-            cls="tool-card-section",
-        ),
-        cls="tool-card",
-    )
-
-
-def ToolArgsDisplay(tool: str, args: dict):
-    if tool == "sql_query":
-        return Div(
-            Pre(
-                Code(args.get("query", ""), cls="language-sql"),
-                cls="tool-code-block",
-            ),
-            Span(f"-> {args.get('df_name')}", cls="tool-code-meta")
-            if args.get("df_name")
-            else None,
-            cls="flex flex-col gap-2",
-        )
-    if tool == "jupyter_notebook":
-        return Pre(
-            Code(args.get("code", ""), cls="language-python"),
-            cls="tool-code-block",
-        )
-    return Pre(
-        json.dumps(args, indent=2, ensure_ascii=False),
-        cls="tool-code-block",
-    )
-
-
-def ToolResultDisplay(result: str, attachments: list):
-    parts = []
-    if result:
-        if "|" in result and "\n" in result:
-            parts.append(Div(MarkdownTable(result), cls="tool-output-block"))
-        else:
-            parts.append(Pre(result, cls="tool-output-block"))
-    for att in attachments:
-        parts.append(Img(src=f"/uploads/{att['path']}", cls="tool-output-asset"))
-    if not parts:
-        return Span("No output", cls="tool-empty")
-    return Div(*parts, cls="flex flex-col gap-2")
 
 
 def TextBlock(content: str, shell: "TerminalInteractiveShell | None" = None):
@@ -505,6 +278,32 @@ def TextBlock(content: str, shell: "TerminalInteractiveShell | None" = None):
 
 def ErrorBlock(message: str):
     return Div(f"Error: {message}", cls="text-error text-sm mb-4")
+
+
+def ChatProgressStart():
+    return Div(
+        GameOfLifeAnimation(run=True),
+        id="chat-progress",
+        cls="chat-progress",
+        hx_swap_oob="outerHTML:#chat-progress",
+    )
+
+
+def ChatProgressEnd():
+    return Div(
+        GameOfLifeAnimation(run=False),
+        id="chat-progress",
+        cls="chat-progress",
+        hx_swap_oob="outerHTML:#chat-progress",
+    )
+
+
+def ChatProgressPlaceholder():
+    return Div(
+        GameOfLifeAnimation(run=False),
+        id="chat-progress",
+        cls="chat-progress",
+    )
 
 
 def ChatHeader(chat: "Chat | None"):
@@ -568,6 +367,9 @@ def ChatDropdownItem(chat: "Chat"):
     )
 
 
+# --- Markdown rendering ---
+
+
 def render_markdown_blocks(
     content: str, shell: "TerminalInteractiveShell | None" = None
 ):
@@ -624,45 +426,26 @@ def _missing_placeholder(kind: str, name: str):
     )
 
 
-# TODO: remove MarkdownTable function and replace with DataTable rendering instead. Or user mistletoe to render the markdown table.
-def MarkdownTable(content: str):
-    lines = [line for line in content.splitlines() if line.strip()]
-    if not lines:
-        return Pre(content, cls="text-xs overflow-x-auto mt-2")
-
-    title = None
-    if lines[0].startswith("df.") and len(lines) > 1:
-        title = lines.pop(0)
-
-    rows = [line.split("|") for line in lines]
-    if not rows:
-        return Pre(content, cls="text-xs overflow-x-auto mt-2")
-
-    header = rows[0]
-    body = rows[1:]
-
-    return Div(
-        Div(title, cls="text-xs text-base-content/50 mb-1") if title else None,
-        Div(
-            Table(
-                Thead(Tr(*[Th(cell.strip()) for cell in header])),
-                Tbody(*[Tr(*[Td(cell.strip()) for cell in row]) for row in body]),
-                cls="table table-xs",
-            ),
-            cls="overflow-x-auto bg-base-200/60 p-2 rounded",
-        ),
-        cls="mt-2",
-    )
+# --- Turn / model part rendering ---
 
 
-def _render_model_parts(parts, shell: "TerminalInteractiveShell | None" = None):
+def _render_model_parts(
+    parts,
+    shell: "TerminalInteractiveShell | None" = None,
+    connected: bool = True,
+):
     rendered = []
     tool_calls = []
 
     def flush_tool_calls():
         nonlocal tool_calls
         if tool_calls:
-            rendered.append(ToolCallsGroup(tool_calls))
+            rendered.append(
+                ToolCallsGroup(
+                    tool_calls,
+                    connected=connected,
+                )
+            )
             tool_calls = []
 
     for part in parts:
@@ -676,84 +459,58 @@ def _render_model_parts(parts, shell: "TerminalInteractiveShell | None" = None):
             tool_calls.append(
                 _tool_call_item(
                     tool=part.tool_name,
-                    args=_parse_args(part.args),
+                    args=part.args or {},
                     result="",
                     attachments=[],
                     status="running",
+                    call_id=part.tool_call_id,
                 )
             )
     flush_tool_calls()
     return rendered
 
 
-def _tool_call_item(
-    tool: str,
-    args: dict,
-    result: str = "",
-    attachments: list | None = None,
-    status: str = "running",
+def _render_turn_messages(
+    msgs: list[ModelResponse | ModelRequest],
+    shell: "TerminalInteractiveShell | None" = None,
 ):
-    return {
-        "tool": tool,
-        "args": args,
-        "result": result,
-        "attachments": attachments or [],
-        "status": status,
-    }
+    from varro.chat.agent_run import cache_tool_calls
 
+    parts = []
+    reasoning_sequence: list[dict] = []
+    reasoning_tool_returns: list[ToolReturnPart] = []
 
-def _format_tool_label(tool: str) -> str:
-    label = tool.replace("_", " ").replace("-", " ").strip()
-    return label.title() if label else "Tool"
+    def flush_reasoning():
+        nonlocal reasoning_sequence, reasoning_tool_returns
+        if reasoning_sequence:
+            block = ReasoningBlock(
+                reasoning_sequence,
+                reasoning_tool_returns,
+                shell=shell,
+            )
+            if block:
+                parts.append(block)
+        reasoning_sequence = []
+        reasoning_tool_returns = []
 
-
-def _tool_arg_summary(args: dict) -> str:
-    if not args:
-        return "No input"
-    keys = [str(key) for key in args.keys() if key]
-    if not keys:
-        return "No input"
-    shown = ", ".join(keys[:3])
-    if len(keys) > 3:
-        shown = f"{shown} +{len(keys) - 3} more"
-    return f"Input: {shown}"
-
-
-def _tool_result_summary(content) -> str:
-    if content is None:
-        return "No output"
-    if isinstance(content, list):
-        items = [item for item in content if not isinstance(item, BinaryContent)]
-        if not items:
-            return "No output"
-        return f"Output: {len(items)} items"
-    text = str(content).strip()
-    if not text:
-        return "No output"
-    preview = text.replace("\n", " ")
-    if len(preview) > 80:
-        preview = f"{preview[:77]}..."
-    return f"Output: {preview}"
-
-
-def _tool_result_status(result_text: str) -> str:
-    if result_text and result_text.strip().lower().startswith("error"):
-        return "error"
-    return "success"
-
-
-def _parse_args(args) -> dict:
-    if isinstance(args, dict):
-        return args
-    if isinstance(args, str):
-        return json.loads(args or "{}")
-    return {}
-
-
-def _format_tool_result(content) -> str:
-    if content is None:
-        return ""
-    if isinstance(content, list):
-        items = [item for item in content if not isinstance(item, BinaryContent)]
-        return "\n".join(str(item) for item in items if str(item).strip())
-    return str(content)
+    for msg in msgs:
+        if isinstance(msg, ModelRequest):
+            for part in msg.parts:
+                if isinstance(part, ToolReturnPart):
+                    reasoning_tool_returns.append(part)
+            continue
+        if not isinstance(msg, ModelResponse):
+            continue
+        if msg.finish_reason == "stop":
+            flush_reasoning()
+            parts.extend(
+                _render_model_parts(
+                    msg.parts,
+                    shell=shell,
+                    connected=False,
+                )
+            )
+        else:
+            cache_tool_calls(msg.parts, reasoning_sequence)
+    flush_reasoning()
+    return parts

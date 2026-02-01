@@ -17,6 +17,8 @@ from ui.app.chat import (
     ChatDropdown,
     ErrorBlock,
     ChatMessages,
+    ChatProgressStart,
+    ChatProgressEnd,
 )
 from varro.chat.session import sessions
 from varro.chat.agent_run import run_agent
@@ -29,23 +31,22 @@ ar = APIRouter()
 async def on_conn(ws, send, sess, req):
     """Called when websocket connects."""
     user_id = sess.get("user_id")
-    sid = None
-    if req is not None and getattr(req, "query_params", None) is not None:
-        sid = req.query_params.get("sid")
-    if not sid and getattr(ws, "query_params", None) is not None:
-        sid = ws.query_params.get("sid")
-    if not sid:
-        qs = ws.scope.get("query_string", b"").decode()
-        sid = parse_qs(qs).get("sid", [None])[0]
+
+    # Extract sid from query params (try multiple sources)
+    sid = (
+        getattr(req, "query_params", {}).get("sid")
+        or getattr(ws, "query_params", {}).get("sid")
+        or parse_qs(ws.scope.get("query_string", b"").decode()).get("sid", [None])[0]
+    )
     if not sid:
         await ws.close()
         return
+
     chats = crud.chat.for_user(user_id)
     session = await sessions.create(user_id, sid, chats, send, ws)
     session.touch()
 
-    chat_id = sess.get("chat_id")
-    if chat_id:
+    if chat_id := sess.get("chat_id"):
         await session.start_chat(chat_id)
 
 
@@ -97,10 +98,16 @@ async def on_message(
             )
 
     await s.send(ChatFormDisabled(chat_id))
+    await s.send(ChatProgressStart())
 
     async for block in run_agent(msg, s):
-        await s.send(Div(block, hx_swap_oob="beforeend:#chat-messages"))
+        attrs = getattr(block, "attrs", None)
+        if isinstance(attrs, dict) and "hx-swap-oob" in attrs:
+            await s.send(block)
+        else:
+            await s.send(Div(block, hx_swap_oob="beforebegin:#chat-progress"))
 
+    await s.send(ChatProgressEnd())
     await s.send(ChatFormEnabled(chat_id))
 
 

@@ -200,11 +200,85 @@ h6 { font-size: 0.875rem !important; font-weight: 600 !important; margin-bottom:
   transition: transform 150ms ease;
 }
 
+.tool-call-text {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.tool-call-text .prose {
+  font-size: 0.875rem;
+}
+
+.tool-call-text .mb-4 {
+  margin-bottom: 0;
+}
+
 .tool-steps {
   margin-top: 0.5rem;
   margin-left: 0.5rem;
   padding-left: 1rem;
   border-left: 1px solid var(--color-base-300);
+}
+
+.tool-steps-final {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: none;
+}
+
+.tool-steps-final .tool-step::before {
+  display: none;
+}
+
+.tool-step-note {
+  padding-top: 0.15rem;
+}
+
+.tool-step-note::before {
+  background: var(--color-base-300);
+  box-shadow: 0 0 0 1px var(--color-base-300);
+}
+
+.tool-note-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.6;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.tool-note-body {
+  font-size: 0.85rem;
+  color: var(--color-base-content);
+}
+
+.tool-note-thinking {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.tool-note-body .mb-4 {
+  margin-bottom: 0;
+}
+
+.chat-progress {
+  margin: 0.5rem 0 0.75rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.chat-progress .gol-animation {
+  background: transparent;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0;
+}
+
+.chat-progress .gol-canvas {
+  display: block;
+  border-radius: 0.35rem;
 }
 
 .tool-step {
