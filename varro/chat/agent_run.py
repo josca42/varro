@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from typing import AsyncIterator
 
@@ -10,6 +11,8 @@ from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
 from varro.agent.assistant import agent
 from varro.chat.session import UserSession
+from varro.db.models.chat import Chat
+from varro.db import crud
 
 
 @dataclass
@@ -25,8 +28,11 @@ class ReasoningState:
 
     def build_block(self, shell) -> object | None:
         block = ReasoningBlock(
-            self.sequence, self.returns,
-            shell=shell, block_id=self.block_id, swap_oob=self.sent,
+            self.sequence,
+            self.returns,
+            shell=shell,
+            block_id=self.block_id,
+            swap_oob=self.sent,
         )
         if block:
             self.sent = True
@@ -49,6 +55,27 @@ async def run_agent(user_text: str, session: UserSession) -> AsyncIterator[objec
 
     new_msgs = run.result.new_messages()
     session.save_turn(new_msgs, user_text)
+
+    if session.turn_idx == 1:
+        asyncio.create_task(_set_chat_title(session.chat_id, user_text))
+
+
+_title_agent = Agent(
+    "anthropic:claude-haiku-4-5",
+    system_prompt=(
+        "Generate a short chat title (4-5 words) for a conversation that starts with "
+        "the user message below. Return ONLY the title, no quotes or punctuation."
+    ),
+)
+
+
+async def _set_chat_title(chat_id: int, user_text: str) -> None:
+    try:
+        result = await _title_agent.run(user_text)
+        title = result.output.strip()[:100]
+        crud.chat.update(Chat(id=chat_id, title=title))
+    except Exception:
+        pass
 
 
 def node_to_blocks(
