@@ -135,7 +135,7 @@ def cache_tool_calls(
                 {
                     "kind": "tool_call",
                     "tool": part.tool_name,
-                    "args": part.args or {},
+                    "args": part.args_as_dict(),
                     "call_id": part.tool_call_id,
                 }
             )

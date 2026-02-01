@@ -7,9 +7,10 @@ from pathlib import Path
 from typing import Awaitable, Callable
 from types import SimpleNamespace
 
+import json
 import msgpack
 import zstandard as zstd
-from pydantic_ai.messages import ModelMessage, ModelResponse, BaseToolCallPart
+from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, BaseToolCallPart
 from pydantic_ai import ModelMessagesTypeAdapter, ModelRetry
 from pydantic_core import to_jsonable_python
 from varro.agent.ipython_shell import (
@@ -74,6 +75,7 @@ class UserSession:
         """Save a completed turn to disk and database."""
         fp = self._turn_filepath()
         self._save_turn(new_msgs, fp)
+        self._save_render_cache(new_msgs, fp)
 
         crud.turn.create(
             Turn(
@@ -91,6 +93,7 @@ class UserSession:
         """Delete turns from idx onwards (for edit functionality)."""
         for fp in crud.turn.delete_from_idx(self.chat_id, idx):
             Path(fp).unlink(missing_ok=True)
+            Path(fp).with_suffix(".cache.json").unlink(missing_ok=True)
 
         chat = self.chats.get(self.chat_id, with_turns=True)
         self.msgs = self._load_msgs(chat.turns)
@@ -147,7 +150,7 @@ class UserSession:
                 if not isinstance(part, BaseToolCallPart):
                     continue
 
-                kwargs = part.args
+                kwargs = part.args_as_dict()
                 if part.tool_name == "sql_query":
                     if "df_name" in kwargs:
                         sql_query(ctx, **kwargs)
@@ -157,6 +160,56 @@ class UserSession:
                         await jupyter_notebook(ctx, **kwargs)
                     except ModelRetry as e:
                         continue
+
+    def _save_render_cache(self, msgs: list[ModelMessage], fp: Path) -> None:
+        """Cache rendered HTML for fig/df placeholders so historic loads work."""
+        from fasthtml.common import to_xml
+        from varro.dashboard.parser import parse_dashboard_md, ComponentNode
+        from ui.components import DataTable, Figure
+        import pandas as pd
+        from plotly.basedatatypes import BaseFigure
+
+        cache = {}
+        for msg in msgs:
+            if not isinstance(msg, ModelResponse) or msg.finish_reason != "stop":
+                continue
+            for part in msg.parts:
+                if not isinstance(part, TextPart):
+                    continue
+                nodes = parse_dashboard_md(part.content)
+                for node in self._iter_component_nodes(nodes):
+                    name = (node.attrs.get("name") or "").strip()
+                    if not name or node.type not in ("fig", "df"):
+                        continue
+                    obj = self.shell.user_ns.get(name)
+                    if obj is None:
+                        continue
+                    key = f"{node.type}:{name}"
+                    if key in cache:
+                        continue
+                    if node.type == "fig" and isinstance(obj, BaseFigure):
+                        html = obj.to_html(include_plotlyjs=False, full_html=False)
+                        cache[key] = html
+                    elif node.type == "df" and isinstance(obj, pd.DataFrame):
+                        df = obj
+                        if not isinstance(df.index, pd.RangeIndex):
+                            df = df.reset_index()
+                        cache[key] = to_xml(DataTable(df, cls="my-2"))
+        if cache:
+            fp.with_suffix(".cache.json").write_text(
+                json.dumps(cache, ensure_ascii=False)
+            )
+
+    @staticmethod
+    def _iter_component_nodes(nodes):
+        """Recursively yield ComponentNode instances from parsed nodes."""
+        from varro.dashboard.parser import ComponentNode, ContainerNode
+
+        for node in nodes:
+            if isinstance(node, ComponentNode):
+                yield node
+            elif isinstance(node, ContainerNode):
+                yield from UserSession._iter_component_nodes(node.children)
 
     @staticmethod
     def _save_turn(msgs: list[ModelMessage], fp: Path) -> None:

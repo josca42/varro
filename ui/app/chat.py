@@ -49,6 +49,12 @@ if TYPE_CHECKING:
     from varro.agent.ipython_shell import TerminalInteractiveShell
 
 
+class _CacheShell:
+    """Lightweight stand-in for shell that serves cached HTML for fig/df placeholders."""
+    def __init__(self, cache: dict):
+        self.user_ns = cache
+
+
 def ChatPage(chat: "Chat | None", shell: "TerminalInteractiveShell | None" = None):
     turns = chat.turns if chat else []
     chat_id = chat.id if chat else None
@@ -80,12 +86,25 @@ def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None)
     from pathlib import Path
     from varro.chat.session import UserSession
 
-    parts = [UserMessage(turn.user_text)]
+    fp = Path(turn.obj_fp)
+    msgs = UserSession._load_turn(fp)
+    if shell is None:
+        cache = _load_render_cache(fp)
+        if cache:
+            shell = _CacheShell(cache)
 
-    msgs = UserSession._load_turn(Path(turn.obj_fp))
+    parts = [UserMessage(turn.user_text)]
     parts.extend(_render_turn_messages(msgs, shell=shell))
 
     return Div(*parts, id=f"turn-{turn.idx}", cls="mb-6")
+
+
+def _load_render_cache(turn_fp) -> dict:
+    import json
+    cache_fp = turn_fp.with_suffix(".cache.json")
+    if cache_fp.exists():
+        return json.loads(cache_fp.read_text())
+    return {}
 
 
 def ChatForm(chat_id: int | None = None, disabled: bool = False):
@@ -399,20 +418,23 @@ def _render_chat_nodes(nodes, shell: "TerminalInteractiveShell | None" = None):
 def _render_placeholder(
     kind: str, name: str, shell: "TerminalInteractiveShell | None" = None
 ):
-    if shell is None:
-        return _missing_placeholder(kind, name)
-    obj = shell.user_ns.get(name)
-    if obj is None:
+    if isinstance(shell, _CacheShell):
+        cached_html = shell.user_ns.get(f"{kind}:{name}")
+        if cached_html:
+            return Div(NotStr(cached_html), cls="my-2")
         return _missing_placeholder(kind, name)
 
-    if kind == "df":
-        if isinstance(obj, pd.DataFrame):
+    if shell is None:
+        return _missing_placeholder(kind, name)
+
+    obj = shell.user_ns.get(name)
+    if obj is not None:
+        if kind == "df" and isinstance(obj, pd.DataFrame):
             df = obj
             if not isinstance(df.index, pd.RangeIndex):
                 df = df.reset_index()
             return DataTable(df, cls="my-2")
-    elif kind == "fig":
-        if isinstance(obj, BaseFigure):
+        elif kind == "fig" and isinstance(obj, BaseFigure):
             return Div(Figure(obj), cls="my-2")
 
     return _missing_placeholder(kind, name)
@@ -459,7 +481,7 @@ def _render_model_parts(
             tool_calls.append(
                 _tool_call_item(
                     tool=part.tool_name,
-                    args=part.args or {},
+                    args=part.args_as_dict(),
                     result="",
                     attachments=[],
                     status="running",
