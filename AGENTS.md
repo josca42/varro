@@ -35,3 +35,13 @@ url-design: docs/libs/url_design.txt
 When writing code then only include essential comments. Otherwise leave comments out.
 
 Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
+
+# Inspecting app
+
+You can run the app by doing
+
+```bash
+python app/main.py
+```
+
+The app will then be running at http://0.0.0.0:5001/

@@ -1,3 +1,4 @@
+---
 name: sql
 description: Query the fact/dim schemas in Postgres from any shell
 ---

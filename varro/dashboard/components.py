@@ -79,6 +79,7 @@ def render_placeholder(dash_name: str, output_type: str, output_name: str) -> An
             hx_include="#filters",
             hx_trigger="load, filtersChanged from:body",
             hx_swap="innerHTML",
+            hx_target="this",
         ),
         variant="border",
     )

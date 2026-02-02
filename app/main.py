@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
-from fasthtml.common import Beforeware
+from fasthtml.common import Beforeware, serve
 
 from ui.core import daisy_app
 from ui.app.layout import AppShell, WelcomePage, OverviewPage, SettingsPage
@@ -29,7 +29,7 @@ def before(req, sess):
 
 beforeware = Beforeware(before, skip=STATIC_SKIP)
 
-app, rt = daisy_app(exts="ws", before=beforeware)
+app, rt = daisy_app(exts="ws", before=beforeware, live=True)
 
 mount_dashboard_routes(app, Path("example_dashboard_folder"), engine)
 chat_routes.to_app(app)
@@ -70,6 +70,4 @@ async def stop_session_cleanup():
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=5001)
+    serve()
