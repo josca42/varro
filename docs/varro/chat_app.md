@@ -1,6 +1,6 @@
 # Chat App Architecture
 
-A WebSocket-based chat application using FastHTML, HTMX, and Pydantic-AI.
+A WebSocket-based chat system embedded in the unified app shell. Built with FastHTML, HTMX, and Pydantic-AI.
 
 ## Overview
 
@@ -37,13 +37,14 @@ WebSocket Connection
 
 | File | Purpose |
 |------|---------|
-| `app/main_chat.py` | App entry, beforeware setup |
-| `app/routes/chat.py` | WebSocket handlers, HTTP routes |
+| `app/main.py` | Unified app entrypoint + beforeware |
+| `app/routes/chat.py` | WebSocket handlers, OOB chat routes |
+| `ui/app/layout.py` | AppShell layout (chat panel lives here) |
+| `ui/app/chat.py` | ChatPanel + chat UI components |
 | `varro/chat/session.py` | UserSession, SessionManager |
 | `varro/chat/agent_run.py` | Agent iteration, node→HTML conversion |
 | `varro/db/models/chat.py` | Chat, Turn SQLModel definitions |
 | `varro/db/crud/chat.py` | CrudChat, CrudTurn |
-| `ui/app/chat.py` | UI components for rendering |
 | `varro/dashboard/parser.py` | Shared markdown parser for chat/dashboard tags |
 
 ## Data Model
@@ -74,12 +75,22 @@ Chat (1) ──────< Turn (N)
 ## Session Lifecycle
 
 ```python
-session = sessions.create(user, chats, send)  # On connect
+session = sessions.create(user_id, sid, chats, send, ws)  # On connect
 await session.start_chat(chat_id)              # Load/restore chat
 session.save_turn(new_msgs, user_text)         # After agent completes
 session.delete_from_idx(idx)                   # On message edit
 session.cleanup()                              # On disconnect
 ```
+
+## Embedded UI
+
+Chat is embedded in the left panel of the AppShell. The chat panel is rendered by `ChatPanel` and updated via HTMX OOB swaps. The URL never affects chat state.
+
+Key pieces:
+- `ChatPanel` renders header, messages, and form (`ui/app/chat.py`)
+- `ChatClientScript` attaches `ws-connect="/ws?sid=..."` to `#chat-root`
+- `/chat/new` and `/chat/switch/{id}` return OOB swaps for `#chat-panel`
+- `/chat` redirects to `/` (no standalone chat page)
 
 ## Agent→HTML Mapping
 

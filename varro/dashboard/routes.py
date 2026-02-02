@@ -26,6 +26,7 @@ from varro.dashboard.components import (
     render_figure,
 )
 from varro.dashboard.filters import Filter, SelectFilter
+from ui.app.layout import AppShell, ContentNavbar
 
 # Module-level configuration
 _dashboards_dir: Path | None = None
@@ -116,7 +117,7 @@ def build_filter_url(
 
 
 @ar("/dash/{name}", methods=["GET"])
-def dashboard_shell(name: str, req):
+def dashboard_shell(name: str, req, sess):
     dash = get_dashboard(name)
     if not dash:
         return Response("Dashboard not found", status_code=404)
@@ -128,7 +129,21 @@ def dashboard_shell(name: str, req):
         if isinstance(f, SelectFilter) and f.options_query:
             options[f.name] = execute_options_query(dash, f, _engine)
 
-    return render_shell(dash, filters, options)
+    content = Div(
+        ContentNavbar(
+            title=dash.name.replace("_", " ").title(),
+            subtitle="Dashboard",
+        ),
+        render_shell(dash, filters, options),
+    )
+
+    if req.headers.get("HX-Request"):
+        return content
+
+    chat = None
+    if chat_id := sess.get("chat_id"):
+        chat = req.state.chats.get(chat_id, with_turns=True)
+    return AppShell(chat, content)
 
 
 @ar("/dash/{name}/_/filters", methods=["GET"])

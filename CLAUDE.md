@@ -25,10 +25,11 @@ stack: pandas, pydantic-ai, SQLModel, SQLAlchemy, plotly, fasthtml, HTMX, mistle
 
 I have gathered a set of useful docs
 
-fasthtml: agent/docs/fasthtml.txt, agent/docs/fasthtml_best_practices.md
-daisy-ui: agent/docs/daisy-ui.txt
-alpine.js: agent/docs/alpine_js/*
-url-design: agent/docs/url_design.txt
+fasthtml: docs/libs/fasthtml.txt, docs/libs/fasthtml_best_practices.md
+daisy-ui: docs/libs/daisy-ui.txt
+alpine.js: docs/libs/alpine_js/*
+url-design: docs/libs/url_design.txt
+
 
 # Code style
 When writing code then only include essential comments. Otherwise leave comments out.

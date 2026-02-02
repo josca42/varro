@@ -56,16 +56,29 @@ class _CacheShell:
 
 
 def ChatPage(chat: "Chat | None", shell: "TerminalInteractiveShell | None" = None):
-    turns = chat.turns if chat else []
-    chat_id = chat.id if chat else None
     return Main(
-        ChatHeader(chat),
-        ChatMessages(turns, shell=shell),
-        ChatForm(chat_id=chat_id),
+        ChatPanel(chat, shell=shell),
         ChatClientScript(),
         cls="flex flex-col h-screen",
         id="chat-root",
         hx_ext="ws",
+    )
+
+
+def ChatPanel(
+    chat: "Chat | None",
+    shell: "TerminalInteractiveShell | None" = None,
+    **attrs,
+):
+    turns = chat.turns if chat else []
+    chat_id = chat.id if chat else None
+    return Div(
+        ChatHeader(chat),
+        ChatMessages(turns, shell=shell),
+        ChatForm(chat_id=chat_id),
+        cls="flex flex-col min-h-0 h-full",
+        id="chat-panel",
+        **attrs,
     )
 
 
@@ -332,7 +345,13 @@ def ChatHeader(chat: "Chat | None"):
             ChatDropdownTrigger(chat),
             cls="flex items-center gap-4",
         ),
-        A("New Chat", href="/chat/new", cls="btn btn-primary btn-sm"),
+        Button(
+            "New Chat",
+            type="button",
+            hx_get="/chat/new",
+            hx_swap="none",
+            cls="btn btn-primary btn-sm",
+        ),
         cls="flex justify-between items-center px-4 py-3 border-b",
     )
 
@@ -373,6 +392,8 @@ def ChatDropdownItem(chat: "Chat"):
                     cls="text-xs text-base-content/50",
                 ),
                 href=f"/chat/switch/{chat.id}",
+                hx_get=f"/chat/switch/{chat.id}",
+                hx_swap="none",
                 cls="flex flex-col",
             ),
             Button(

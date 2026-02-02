@@ -9,6 +9,7 @@ used in `main.py`.
 from ui.app.navbar import Navbar
 from ui.app.chat import (
     ChatPage,
+    ChatPanel,
     ChatMessages,
     TurnComponent,
     ChatForm,
@@ -25,6 +26,7 @@ from ui.app.chat import (
     ChatDropdown,
     ChatDropdownItem,
 )
+from ui.app.layout import AppShell, ContentNavbar, WelcomePage, OverviewPage, SettingsPage
 from ui.app.tool import (
     ThinkingBlock,
     ToolCallBlock,
@@ -51,6 +53,7 @@ __all__ = [
     "Navbar",
     # Chat
     "ChatPage",
+    "ChatPanel",
     "ChatMessages",
     "TurnComponent",
     "ChatForm",
@@ -72,6 +75,12 @@ __all__ = [
     "ChatDropdownTrigger",
     "ChatDropdown",
     "ChatDropdownItem",
+    # Layout
+    "AppShell",
+    "ContentNavbar",
+    "WelcomePage",
+    "OverviewPage",
+    "SettingsPage",
     # Dashboard
     "MetricCard",
     "ChartShell",

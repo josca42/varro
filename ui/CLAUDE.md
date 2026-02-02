@@ -33,7 +33,8 @@ ui/
 │   └── textarea.py  # Textarea
 └── app/             # App-specific compositions (demo/reference)
     ├── navbar.py    # Navbar
-    ├── chat.py      # UserMessage, AssistantMessage, ChatInput
+    ├── chat.py      # ChatPanel + chat UI components
+    ├── layout.py    # AppShell, ContentNavbar, Welcome/Overview/Settings
     └── dashboard.py # MetricCard, ChartShell, DashboardPanel
 ```
 

@@ -11,11 +11,10 @@ from fasthtml.common import (
 )
 
 from ui.app.chat import (
-    ChatPage,
+    ChatPanel,
     ChatFormDisabled,
     ChatFormEnabled,
     ChatDropdown,
-    ErrorBlock,
     ChatMessages,
     ChatProgressStart,
     ChatProgressEnd,
@@ -112,11 +111,8 @@ async def on_message(
 
 
 @ar.get("/chat")
-def chat_page(req, sess):
-    """Render the main chat page."""
-    chat_id = sess.get("chat_id")
-    chat = req.state.chats.get(chat_id, with_turns=True) if chat_id else None
-    return ChatPage(chat, shell=None)
+def chat_page():
+    return RedirectResponse("/", status_code=303)
 
 
 @ar.post("/chat/heartbeat")
@@ -132,20 +128,20 @@ async def chat_close(sid: str, sess):
 
 
 @ar.get("/chat/new")
-def chat_new(sess):
+def chat_new(req, sess):
     """Start a new chat."""
     sess.pop("chat_id", None)
-    return RedirectResponse("/chat", status_code=303)
+    return ChatPanel(None, shell=None, hx_swap_oob="outerHTML:#chat-panel")
 
 
 @ar.get("/chat/switch/{chat_id}")
-async def chat_switch(chat_id: int, req, sess):
+def chat_switch(chat_id: int, req, sess):
     """Switch to a different chat."""
-    chat = req.state.chats.get(chat_id)
+    chat = req.state.chats.get(chat_id, with_turns=True)
     if not chat:
         return Response(status_code=404)
     sess["chat_id"] = chat_id
-    return RedirectResponse("/chat", status_code=303)
+    return ChatPanel(chat, shell=None, hx_swap_oob="outerHTML:#chat-panel")
 
 
 @ar.get("/chat/history")

@@ -22,11 +22,11 @@ dashboards/
 │   └── dashboard.md
 ```
 
-App scans `dashboards/` at startup. Each subfolder containing `dashboard.md` becomes a route at `/dash/{folder_name}`. **All three items are required** (`queries/` folder, `outputs.py`, `dashboard.md`)—missing items cause an error.
+Dashboards are loaded from a configured directory. In this repo the app mounts dashboards from `example_dashboard_folder/` in `app/main.py`. Each subfolder containing `dashboard.md` becomes a route at `/dash/{folder_name}`. **All three items are required** (`queries/` folder, `outputs.py`, `dashboard.md`)—missing items cause an error.
 
 Database connection is global, configured in `db.py`. **PostgreSQL is assumed.**
 
-The framework is a **separate installable package** (`dashboard/`) that the main app imports.
+The framework lives in `varro/dashboard/` and is mounted by the main app.
 
 ---
 
@@ -412,7 +412,7 @@ Browser                          Server
    │                                │  3. Render shell with:
    │                                │     - Populated filter form
    │                                │     - Placeholder cards with spinners
-   │  <html>                        │
+   │  <html> (AppShell)             │
    │  <─────────────────────────────│
    │                                │
    │  GET /dash/sales/_/figure/     │
@@ -488,7 +488,7 @@ Browser                          Server
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /dash/{name}` | Dashboard shell (filters + placeholders) |
+| `GET /dash/{name}` | Dashboard shell (filters + placeholders); returns fragment for HTMX requests |
 | `GET /dash/{name}/_/filters` | Filter sync (updates URL, triggers reload) |
 | `GET /dash/{name}/_/figure/{output_name}` | Render Plotly figure |
 | `GET /dash/{name}/_/table/{output_name}` | Render DataFrame table |
@@ -502,9 +502,14 @@ All `/_/figure`, `/_/table`, `/_/metric` endpoints:
 
 **No dashboard index page** at `/dash/` for v1.
 
+## 9. App Integration
+
+- `/dash/{name}` is dual-mode: full AppShell for normal requests, content fragment for HTMX swaps.
+- Dashboards are wrapped with `ContentNavbar` (title + quick links) in `varro/dashboard/routes.py`.
+
 ---
 
-## 9. Rendering
+## 10. Rendering
 
 ### Figures (Plotly)
 
