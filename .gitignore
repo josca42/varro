@@ -12,7 +12,6 @@ wheels/
 /data
 /notebooks
 /docs/llm_docs/alpine_js/*
-/evidence-template/node_modules/
 /node_modules/
 /mnt/
-.evidence/
+/docs/tasks/
