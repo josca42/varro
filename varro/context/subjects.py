@@ -12,7 +12,7 @@ import pandas as pd
 from typing import Callable
 from varro.db.db import engine
 from sqlalchemy import inspect
-from varro.config import COLUMN_VALUES_DIR, TABLES_DOCS_DIR, SUBJECTS_DOCS_DIR
+from varro.config import COLUMN_VALUES_DIR, FACTS_DIR, SUBJECTS_DIR
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
 insp = inspect(engine)
@@ -40,11 +40,20 @@ def walk(node: int, path: list[str], apply_function: Callable) -> None:
 
 
 def create_subject_data(path: list[str], tables: list[str]):
-    subject_dir = SUBJECTS_DOCS_DIR.joinpath(*[x for x in path if x != "dst"])
-    subject_dir.mkdir(parents=True, exist_ok=True)
+    subject_path = [x for x in path if x != "dst"]
+    if not subject_path:
+        return
+
+    subject_file = SUBJECTS_DIR.joinpath(
+        *subject_path[:-1], f"{subject_path[-1]}.md"
+    )
+    subject_file.parent.mkdir(parents=True, exist_ok=True)
 
     subject_readme = create_subject_readme(tables)
-    dump_markdown_to_file(subject_dir / "README.md", subject_readme)
+    dump_markdown_to_file(subject_file, subject_readme)
+
+    fact_leaf_dir = FACTS_DIR.joinpath(*subject_path)
+    fact_leaf_dir.mkdir(parents=True, exist_ok=True)
 
     for table in tables:
         table_id = table.lower()
@@ -53,7 +62,9 @@ def create_subject_data(path: list[str], tables: list[str]):
             continue
 
         table_overview_md = create_table_readme(table_id)
-        dump_markdown_to_file(TABLES_DOCS_DIR / f"{table_id}.md", table_overview_md)
+        dump_markdown_to_file(
+            fact_leaf_dir / f"{table_id}.md", table_overview_md
+        )
         dump_unique_col_vals_and_titles_to_parquet(table_id)
 
 
