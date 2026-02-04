@@ -8,6 +8,7 @@ from ui.app.layout import AppShell, WelcomePage, OverviewPage, SettingsPage
 from varro.dashboard.routes import mount_dashboard_routes
 from varro.db.db import engine
 from app.routes.chat import ar as chat_routes
+from app.routes.commands import ar as command_routes
 from varro.chat.session import sessions
 from varro.db import crud
 
@@ -33,6 +34,7 @@ app, rt = daisy_app(exts="ws", before=beforeware, live=True)
 
 mount_dashboard_routes(app, Path("example_dashboard_folder"), engine)
 chat_routes.to_app(app)
+command_routes.to_app(app)
 
 
 def _app_or_fragment(req, sess, content):

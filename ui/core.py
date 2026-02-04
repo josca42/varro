@@ -90,6 +90,10 @@ alpine_hdrs = (
     Script(src="https://unpkg.com/@alpinejs/focus@3.15.3/dist/cdn.min.js", defer=True),
     Script(src="https://unpkg.com/alpinejs@3.15.3/dist/cdn.min.js", defer=True),
 )
+lucid_icons_hdr = [
+    Script(src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"),
+    Script("lucide.createIcons();", defer=True),
+]
 # Theme CSS
 here = Path(__file__).resolve().parent
 css_content = (here / "theme.css").read_text(encoding="utf-8")
@@ -109,6 +113,7 @@ ui_hdrs = (
     plotly_hdr,
     sse_hdr,
     *alpine_hdrs,
+    *lucid_icons_hdr,
     theme_css,
     prose_css,
 )
@@ -116,7 +121,13 @@ ui_hdrs = (
 
 def daisy_app(*args, **kwargs):
     hdrs = kwargs.pop("hdrs", ())
-    return fast_app(hdrs=(*ui_hdrs, *hdrs), pico=False, **kwargs)
+    return fast_app(
+        *args,
+        hdrs=(*ui_hdrs, *hdrs),
+        pico=False,
+        htmlkw={"data_theme": DEFAULT_THEME},
+        **kwargs,
+    )
 
 
 # -----------------------------------------------------------------------------

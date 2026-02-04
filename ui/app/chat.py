@@ -12,7 +12,6 @@ from fasthtml.common import (
     Textarea,
     Main,
     Script,
-    H1,
     Header,
     Ul,
     Li,
@@ -51,6 +50,7 @@ if TYPE_CHECKING:
 
 class _CacheShell:
     """Lightweight stand-in for shell that serves cached HTML for fig/df placeholders."""
+
     def __init__(self, cache: dict):
         self.user_ns = cache
 
@@ -114,6 +114,7 @@ def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None)
 
 def _load_render_cache(turn_fp) -> dict:
     import json
+
     cache_fp = turn_fp.with_suffix(".cache.json")
     if cache_fp.exists():
         return json.loads(cache_fp.read_text())
@@ -129,15 +130,25 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
                 placeholder="Ask about Danish statistics...",
                 rows="1",
                 disabled=disabled,
-                cls="textarea textarea-bordered w-full resize-none",
+                cls="border-none bg-transparent w-full resize-none focus:outline-none text-sm placeholder:text-base-content/50",
+                x_data="",
+                x_init="$el.style.height = $el.scrollHeight + 'px'",
+                **{
+                    "@input": "$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                },
             ),
-            Button(
-                "Send",
-                type="submit",
-                disabled=disabled,
-                cls="btn btn-primary btn-sm",
+            Div(
+                Button(
+                    NotStr(
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'
+                    ),
+                    type="submit",
+                    disabled=disabled,
+                    cls="btn btn-circle btn-sm btn-primary",
+                ),
+                cls="flex justify-end",
             ),
-            cls="flex gap-2 items-end",
+            cls="bg-base-100 rounded-box p-3 flex flex-col gap-2 border border-base-300",
         ),
         Input(type="hidden", name="sid", value=""),
         Input(type="hidden", name="chat_id", value=chat_id)
@@ -145,7 +156,7 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
         else None,
         ws_send=True,
         id="chat-form",
-        cls="px-4 py-3 border-t",
+        cls="px-4 py-3",
     )
 
 
@@ -263,7 +274,7 @@ def ChatClientScript():
 
 def UserMessage(content: str):
     return Div(
-        Div(content, cls="bg-base-200 px-4 py-3 rounded-box max-w-[85%]"),
+        Div(content, cls="bg-base-300 px-4 py-3 rounded-full max-w-[85%] text-sm"),
         cls="flex justify-end mb-4",
     )
 
@@ -340,19 +351,17 @@ def ChatProgressPlaceholder():
 
 def ChatHeader(chat: "Chat | None"):
     return Header(
-        Div(
-            H1("Rigsstatistikeren", cls="text-xl font-semibold"),
-            ChatDropdownTrigger(chat),
-            cls="flex items-center gap-4",
-        ),
+        ChatDropdownTrigger(chat),
         Button(
-            "New Chat",
+            NotStr(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+            ),
             type="button",
             hx_get="/chat/new",
             hx_swap="none",
-            cls="btn btn-primary btn-sm",
+            cls="btn btn-ghost btn-sm btn-circle absolute right-4",
         ),
-        cls="flex justify-between items-center px-4 py-3 border-b",
+        cls="relative flex justify-center items-center px-4 min-h-14 border-b border-base-300 bg-base-200",
     )
 
 
@@ -362,14 +371,14 @@ def ChatDropdownTrigger(chat: "Chat | None"):
         Button(
             title,
             Span("v", cls="ml-2 text-xs"),
-            cls="btn btn-ghost btn-sm",
+            cls="btn btn-ghost btn-sm bg-base-100",
             **{"@click": "open = !open"},
         ),
         Div(
             id="chat-dropdown",
             hx_get="/chat/history",
             hx_trigger="click from:previous",
-            cls="absolute mt-2 w-64 bg-base-100 shadow-lg rounded-box z-50",
+            cls="absolute left-1/2 -translate-x-1/2 mt-2 w-90 max-h-96 overflow-y-auto bg-base-100 shadow-lg rounded-box z-50 border border-base-300",
             x_show="open",
             **{"@click.outside": "open = false"},
         ),
@@ -394,15 +403,15 @@ def ChatDropdownItem(chat: "Chat"):
                 href=f"/chat/switch/{chat.id}",
                 hx_get=f"/chat/switch/{chat.id}",
                 hx_swap="none",
-                cls="flex flex-col",
+                cls="flex flex-col min-w-0 flex-1",
             ),
             Button(
                 "x",
                 hx_delete=f"/chat/delete/{chat.id}",
                 hx_confirm="Delete?",
-                cls="btn btn-ghost btn-xs",
+                cls="btn btn-ghost btn-xs shrink-0",
             ),
-            cls="flex justify-between items-center",
+            cls="flex items-center gap-2 w-full",
         )
     )
 

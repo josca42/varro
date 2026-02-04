@@ -5,56 +5,16 @@ Split-panel application shell for chat + URL-driven content.
 
 from __future__ import annotations
 
-from fasthtml.common import Div, H1, H2, P, A, Script
+from fasthtml.common import Div, H1, P, Script
 
 from ui.core import cn
 from ui.app.chat import ChatPanel, ChatClientScript
 from ui.app.navbar import Navbar
-
-
-def ContentNavbar(
-    title: str = "Dashboard",
-    subtitle: str | None = None,
-):
-    subtitle = subtitle or "Analytics overview"
-    return Div(
-        Div(
-            H2(title, cls="text-lg font-semibold"),
-            P(subtitle, cls="text-sm text-base-content/60"),
-            cls="flex flex-col",
-        ),
-        Div(
-            A(
-                "Overview",
-                href="/dash/overview",
-                cls="btn btn-ghost btn-sm",
-                hx_get="/dash/overview",
-                hx_target="#content-panel",
-                hx_swap="innerHTML",
-                hx_push_url="true",
-            ),
-            A(
-                "Settings",
-                href="/settings",
-                cls="btn btn-ghost btn-sm",
-                hx_get="/settings",
-                hx_target="#content-panel",
-                hx_swap="innerHTML",
-                hx_push_url="true",
-            ),
-            cls="flex items-center gap-2",
-        ),
-        cls="flex items-center justify-between px-6 py-4 border-b border-base-300 bg-base-100",
-        data_slot="content-navbar",
-    )
+from ui.app.command_palette import CommandPalette, CommandPaletteScript
 
 
 def WelcomePage():
     return Div(
-        ContentNavbar(
-            title="Welcome",
-            subtitle="Choose a dashboard or ask the assistant.",
-        ),
         Div(
             H1("Welcome", cls="text-2xl font-semibold mb-2"),
             P(
@@ -69,10 +29,6 @@ def WelcomePage():
 
 def OverviewPage():
     return Div(
-        ContentNavbar(
-            title="Overview",
-            subtitle="All dashboards at a glance.",
-        ),
         Div(
             H1("Dashboard Overview", cls="text-2xl font-semibold mb-2"),
             P("Overview page placeholder.", cls="text-base-content/70"),
@@ -84,10 +40,6 @@ def OverviewPage():
 
 def SettingsPage():
     return Div(
-        ContentNavbar(
-            title="Settings",
-            subtitle="App preferences and defaults.",
-        ),
         Div(
             H1("Settings", cls="text-2xl font-semibold mb-2"),
             P("Settings page placeholder.", cls="text-base-content/70"),
@@ -108,7 +60,7 @@ document.addEventListener('alpine:init', () => {
       const panel = this.$el.querySelector('#chat-root');
       if (!handle || !panel) return;
       const min = 280;
-      const max = 520;
+      const max = 1200;
       handle.addEventListener('pointerdown', (e) => {
         this.dragging = true;
         handle.setPointerCapture(e.pointerId);
@@ -138,7 +90,7 @@ def AppShell(
         ChatClientScript(),
         id="chat-root",
         hx_ext="ws",
-        cls="flex flex-col min-h-0 h-full shrink-0 border-r border-base-300 bg-base-100 min-w-[280px] max-w-[520px] w-[360px]",
+        cls="flex flex-col min-h-0 h-full shrink-0 border-r border-base-300 bg-base-200 min-w-[280px] max-w-[1200px] w-[700px]",
         data_slot="chat-root",
     )
 
@@ -153,27 +105,23 @@ def AppShell(
         data_slot="content-panel",
     )
 
-    body = Div(
+    return Div(
         chat_root,
         Div(
             id="resize-handle",
-            cls="w-1 bg-base-200 hover:bg-base-300 cursor-col-resize",
+            cls="w-1 bg-base-300 hover:bg-primary/30 cursor-col-resize",
             data_slot="resize-handle",
         ),
         Div(
+            Navbar(),
             content_panel,
             cls="flex flex-col min-h-0 flex-1",
             data_slot="content-wrap",
         ),
-        x_data="splitResizer()",
-        cls="flex flex-1 min-h-0",
-        data_slot="app-body",
-    )
-
-    return Div(
-        Navbar(),
-        body,
+        CommandPalette(),
+        CommandPaletteScript(),
         ResizerScript(),
-        cls=cn("h-screen flex flex-col bg-base-100"),
+        x_data="splitResizer()",
+        cls=cn("h-screen flex bg-base-100"),
         data_slot="app-shell",
     )

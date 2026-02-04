@@ -42,16 +42,17 @@ def MetricValue(
     change_el = None
     if change is not None:
         sign = "+" if change >= 0 else ""
+        arrow = "↑" if change >= 0 else "↓"
         color = "text-success" if change >= 0 else "text-error"
         change_el = Div(
-            Span(f"{sign}{change:.1%}", cls=color),
-            Span(change_label or "", cls="text-base-content/50 ml-1") if change_label else None,
-            cls="text-sm mt-2",
+            Span(f"{arrow} {sign}{change:.1%}", cls=cn(color, "text-xs font-medium")),
+            Span(change_label or "vs last period", cls="text-base-content/50 text-xs ml-1"),
+            cls="mt-2 flex items-center",
         )
 
     return Div(
-        Div(label, cls="text-sm text-base-content/60") if label else None,
-        Div(formatted, cls="text-2xl font-semibold mt-1"),
+        Div(label, cls="text-xs font-medium text-base-content/60") if label else None,
+        Div(formatted, cls="text-2xl font-bold tracking-tight mt-1"),
         change_el,
         cls=cn(cls),
         data_slot="metric-value",

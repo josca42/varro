@@ -26,7 +26,7 @@ from varro.dashboard.components import (
     render_figure,
 )
 from varro.dashboard.filters import Filter, SelectFilter
-from ui.app.layout import AppShell, ContentNavbar
+from ui.app.layout import AppShell
 
 # Module-level configuration
 _dashboards_dir: Path | None = None
@@ -130,10 +130,6 @@ def dashboard_shell(name: str, req, sess):
             options[f.name] = execute_options_query(dash, f, _engine)
 
     content = Div(
-        ContentNavbar(
-            title=dash.name.replace("_", " ").title(),
-            subtitle="Dashboard",
-        ),
         render_shell(dash, filters, options),
     )
 

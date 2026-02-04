@@ -14,4 +14,5 @@ wheels/
 /docs/llm_docs/alpine_js/*
 /node_modules/
 /mnt/
+/mnt_1/
 /docs/tasks/

@@ -179,7 +179,7 @@ def render_ast(
                         hx_get=f"/dash/{dash.name}/_/filters",
                         hx_trigger="change delay:500ms",
                         hx_swap="none",
-                        cls="flex flex-wrap gap-4 items-end mb-6 p-4 bg-base-200/50 rounded-box",
+                        cls="flex flex-wrap gap-4 items-end mb-6 p-4 bg-base-200 rounded-box",
                     )
                 )
 
