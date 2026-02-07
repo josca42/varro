@@ -8,23 +8,23 @@ from __future__ import annotations
 import hashlib
 import inspect
 import json
-from typing import Any, Literal
+from typing import Any
 
 import pandas as pd
-from sqlalchemy import text, bindparam, String, Date
+from sqlalchemy import text, bindparam, String, Date, Boolean
 from sqlalchemy.engine import Engine
 
 from varro.dashboard.loader import Dashboard, extract_params
 from varro.dashboard.models import Metric
 from varro.dashboard.filters import SelectFilter
 
-
-OutputType = Literal["figure", "table", "metric"]
 _query_cache: dict[tuple[str, str], pd.DataFrame] = {}
 
 
-def _infer_param_type(name: str):
+def _infer_param_type(name: str, value: Any = None):
     """Infer SQLAlchemy type from parameter name."""
+    if isinstance(value, bool):
+        return Boolean
     if "date" in name or "from" in name or "to" in name:
         return Date
     return String
@@ -41,14 +41,16 @@ def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.Dat
 
     # Build params dict, converting 'all' to None
     bound: dict[str, Any] = {}
+    param_types: dict[str, Any] = {}
     for param in params_needed:
         value = filters.get(param)
         bound[param] = None if value == "all" or value is None else value
+        param_types[param] = _infer_param_type(param, bound[param])
 
     # Create typed bindparams for NULL handling
     stmt = text(query)
     for param in params_needed:
-        stmt = stmt.bindparams(bindparam(param, type_=_infer_param_type(param)))
+        stmt = stmt.bindparams(bindparam(param, type_=param_types[param]))
 
     with engine.connect() as conn:
         return pd.read_sql(stmt, conn, params=bound)
@@ -96,10 +98,10 @@ def execute_output(
     output_name: str,
     filters: dict[str, Any],
     engine: Engine,
-) -> tuple[OutputType, Any]:
+) -> Any:
     """Execute an @output function.
 
-    Returns (type, result).
+    Returns the output function result.
     """
     if output_name not in dash.outputs:
         raise ValueError(f"Unknown output: {output_name}")

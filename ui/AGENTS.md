@@ -101,8 +101,8 @@ Button("Wide", cls="w-full mt-4")
 2. Follow the variant/size pattern with `cn()` for class building
 3. Use `data_slot` for the component name
 4. Export from `components/__init__.py` and `ui/__init__.py`
-5. Use primitives from `daisy.py` as building blocks. Docs on daisy-ui can be found at agent/docs/daisy-ui.txt
-6. For client side interactivity use alpine.js . Docs and examples on alpine.js can be found at agent/docs/alpine_js/*
+5. Use primitives from `daisy.py` as building blocks. Docs on daisy-ui can be found at `docs/libs/daisy-ui.txt`
+6. For client side interactivity use alpine.js. Docs and examples on alpine.js can be found at `docs/libs/alpine_js/*`
 
 ## Theme
 

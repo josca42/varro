@@ -9,14 +9,14 @@ Always consult the specs before making updates to dashboard functionality
 
 ```
 dashboard.md  →  parser.py  →  AST  →  components.py  →  FastHTML
-queries.sql   →  loader.py  →  dict[name, sql]
+queries/*.sql →  loader.py  →  dict[name, sql]
 outputs.py    →  loader.py  →  dict[name, callable]
 ```
 
 ## Flow
 
 1. `mount_dashboard_routes(app, dashboards_dir, engine)` mounts routes
-2. Each folder needs: `queries.sql`, `outputs.py`, `dashboard.md`
+2. Each folder needs: `queries/` (with `.sql` files), `outputs.py`, `dashboard.md`
 3. `GET /dash/{name}` renders shell with placeholder cards (fragment for HTMX requests)
 4. Placeholders lazy-load via `hx_trigger="load, filtersChanged from:body"`
 5. Filter changes → `/_/filters` → `HX-Replace-Url` + `HX-Trigger: filtersChanged`
@@ -27,7 +27,7 @@ outputs.py    →  loader.py  →  dict[name, callable]
 |------|---------|
 | `models.py` | `Metric` pydantic model, `@output` marker decorator |
 | `parser.py` | Stack-based parser for `:::` containers and `<tag />` components |
-| `loader.py` | Load folder, parse `-- @query: name` from SQL |
+| `loader.py` | Load folder, read `queries/*.sql`, and load outputs |
 | `executor.py` | Inject query results into `@output` functions by param name |
 | `routes.py` | `/dash/{name}`, `/_/filters`, `/_/{type}/{output}` (dual-mode for HTMX) |
 | `components.py` | Render AST to FastHTML, format metrics |

@@ -59,11 +59,13 @@ queries/
 ### Example
 
 **queries/regions.sql**
+
 ```sql
 SELECT DISTINCT region FROM sales ORDER BY region;
 ```
 
 **queries/monthly_revenue.sql**
+
 ```sql
 SELECT
     date_trunc('month', date) as month,
@@ -77,6 +79,7 @@ ORDER BY 1;
 ```
 
 **queries/top_products.sql**
+
 ```sql
 SELECT
     product_name,
@@ -108,7 +111,7 @@ def revenue_trend(monthly_revenue, filters):
     return px.line(monthly_revenue, x="month", y="revenue", title="Revenue Trend")
 ```
 
-**`@output` is a simple marker** with no configuration arguments. Function name must **exactly match** the `name` attribute in `<fig />`, `<df />`, or `<metric />` tags.
+`**@output` is a simple marker** with no configuration arguments. Function name must **exactly match** the `name` attribute in `<fig />`, `<df />`, or `<metric />` tags.
 
 ### Dependency Injection
 
@@ -122,11 +125,13 @@ def revenue_trend(monthly_revenue, filters):
 
 Three return types are supported:
 
-| Return Type | Rendered As | Markdown Tag |
-|-------------|-------------|--------------|
-| `pd.DataFrame` | DaisyUI table | `<df />` |
-| `plotly.graph_objects.Figure` | Plotly chart | `<fig />` |
-| `Metric` | Metric card | `<metric />` |
+
+| Return Type                   | Rendered As   | Markdown Tag |
+| ----------------------------- | ------------- | ------------ |
+| `pd.DataFrame`                | DaisyUI table | `<df />`     |
+| `plotly.graph_objects.Figure` | Plotly chart  | `<fig />`    |
+| `Metric`                      | Metric card   | `<metric />` |
+
 
 ### Metric Model
 
@@ -142,6 +147,7 @@ class Metric(BaseModel):
 ```
 
 **Formatting rules:**
+
 - `currency`: Fixed format as `kr.` (e.g., `1.2M kr.`)
 - `number`: Abbreviated with K/M/B suffixes (e.g., `1.2M`)
 - `percent`: Percentage with % suffix
@@ -235,12 +241,14 @@ Containers use `:::` fence syntax (Docusaurus/VuePress style). **Parsed using th
 
 ### Available Containers
 
-| Container | Attributes | Description |
-|-----------|------------|-------------|
-| `filters` | none | Wraps filter components in a form |
-| `grid` | `cols` (default: 2) | CSS grid layout |
-| `tabs` | none | Tab container (Alpine.js controlled) |
-| `tab` | `name` | Individual tab panel |
+
+| Container | Attributes          | Description                          |
+| --------- | ------------------- | ------------------------------------ |
+| `filters` | none                | Wraps filter components in a form    |
+| `grid`    | `cols` (default: 2) | CSS grid layout                      |
+| `tabs`    | none                | Tab container (Alpine.js controlled) |
+| `tab`     | `name`              | Individual tab panel                 |
+
 
 ### Nesting
 
@@ -260,28 +268,33 @@ Maximum one level of nesting is supported. Primary use case: grid inside tab. **
 ### Container Details
 
 **filters**
+
 ```markdown
 ::: filters
 <filter-select ... />
 <filter-date ... />
 :::
 ```
+
 - Renders as `<form id="filters">`
 - All output placeholders use `hx-include="#filters"`
 - Filter changes trigger URL update and `filtersChanged` event
 - **Styling delegated to ui library** (request filter component from ui/)
 
 **grid**
+
 ```markdown
 ::: grid cols=3
 content
 :::
 ```
+
 - Renders as Tailwind CSS grid: `<div class="grid grid-cols-{cols} gap-4">`
 - `cols` attribute sets column count (default: 2)
 - **Fixed columns**—not responsive (always N columns regardless of screen size)
 
 **tabs / tab**
+
 ```markdown
 ::: tabs
 ::: tab name="Overview"
@@ -292,6 +305,7 @@ content
 :::
 :::
 ```
+
 - Tab switching is client-side only via Alpine.js
 - Tab state is NOT persisted in URL
 - **First tab shown by default**
@@ -305,14 +319,16 @@ Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 
 ### Available Tags
 
-| Tag | Attributes | Description |
-|-----|------------|-------------|
-| `fig` | `name` | Plotly chart placeholder |
-| `df` | `name` | DataFrame table placeholder |
-| `metric` | `name` | Metric card placeholder |
-| `filter-select` | `name`, `label`, `options`, `default` | Dropdown filter |
-| `filter-date` | `name`, `label`, `default` or `default_from`/`default_to` | Date range filter |
-| `filter-checkbox` | `name`, `label`, `default` | Boolean filter |
+
+| Tag               | Attributes                                                | Description                 |
+| ----------------- | --------------------------------------------------------- | --------------------------- |
+| `fig`             | `name`                                                    | Plotly chart placeholder    |
+| `df`              | `name`                                                    | DataFrame table placeholder |
+| `metric`          | `name`                                                    | Metric card placeholder     |
+| `filter-select`   | `name`, `label`, `options`, `default`                     | Dropdown filter             |
+| `filter-date`     | `name`, `label`, `default` or `default_from`/`default_to` | Date range filter           |
+| `filter-checkbox` | `name`, `label`, `default`                                | Boolean filter              |
+
 
 ### Output Tags (fig, df, metric)
 
@@ -330,9 +346,11 @@ Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 ### Filter Tags
 
 **filter-select**
+
 ```markdown
 <filter-select name="region" label="Region" options="query:regions" default="all" />
 ```
+
 - `name`: URL parameter name and SQL parameter name
 - `label`: Display label
 - `options`: `query:{query_name}` references a query returning **single column** (same value for display and submission)
@@ -340,10 +358,12 @@ Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 - **Empty options queries render an empty dropdown**
 
 **filter-date**
+
 ```markdown
 <filter-date name="period" label="Period" default="all" />
 <filter-date name="period" label="Period" default_from="2025-01-01" default_to="2025-12-31" />
 ```
+
 - `name`: Base name; produces `{name}_from` and `{name}_to` URL/SQL parameters
 - `label`: Display label
 - `default="all"`: Both from/to are NULL (no date filter)
@@ -352,9 +372,11 @@ Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 - **Date picker UI delegated to ui library**
 
 **filter-checkbox**
+
 ```markdown
 <filter-checkbox name="include_pending" label="Include Pending" default=false />
 ```
+
 - `name`: URL parameter name and SQL parameter name
 - `label`: Display label
 - `default`: `true` or `false`
@@ -379,11 +401,13 @@ Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 
 ### Parameter Mapping
 
-| Filter Type | URL Parameters |
-|-------------|----------------|
-| filter-select | `?{name}={value}` |
-| filter-date | `?{name}_from={date}&{name}_to={date}` (independent) |
-| filter-checkbox | `?{name}=true` or `?{name}=false` |
+
+| Filter Type     | URL Parameters                                       |
+| --------------- | ---------------------------------------------------- |
+| filter-select   | `?{name}={value}`                                    |
+| filter-date     | `?{name}_from={date}&{name}_to={date}` (independent) |
+| filter-checkbox | `?{name}=true` or `?{name}=false`                    |
+
 
 ### Defaults
 
@@ -486,15 +510,18 @@ Browser                          Server
 
 ## 8. Endpoints
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /dash/{name}` | Dashboard shell (filters + placeholders); returns fragment for HTMX requests |
-| `GET /dash/{name}/_/filters` | Filter sync (updates URL, triggers reload) |
-| `GET /dash/{name}/_/figure/{output_name}` | Render Plotly figure |
-| `GET /dash/{name}/_/table/{output_name}` | Render DataFrame table |
-| `GET /dash/{name}/_/metric/{output_name}` | Render metric card |
+
+| Endpoint                                  | Purpose                                                                      |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| `GET /dash/{name}`                        | Dashboard shell (filters + placeholders); returns fragment for HTMX requests |
+| `GET /dash/{name}/_/filters`              | Filter sync (updates URL, triggers reload)                                   |
+| `GET /dash/{name}/_/figure/{output_name}` | Render Plotly figure                                                         |
+| `GET /dash/{name}/_/table/{output_name}`  | Render DataFrame table                                                       |
+| `GET /dash/{name}/_/metric/{output_name}` | Render metric card                                                           |
+
 
 All `/_/figure`, `/_/table`, `/_/metric` endpoints:
+
 - Receive filter values as query parameters
 - Execute required SQL queries (introspect query for params, only bind those found)
 - Call the `@output` function
@@ -591,8 +618,8 @@ def execute_query(query: str, params: dict) -> pd.DataFrame:
 2. Load queries from `queries/` folder → dict of named query strings (filename = query name)
 3. Import `outputs.py` → dict of `@output` functions with their dependencies
 4. Parse `dashboard.md` (stack parser):
-   - Extract filter definitions (including `options="query:..."` references)
-   - Build component tree (stack-based container closing)
+  - Extract filter definitions (including `options="query:..."` references)
+  - Build component tree (stack-based container closing)
 5. Execute options queries (no filter params, always fresh)
 6. Render shell HTML with populated filters and placeholders
 
@@ -703,14 +730,16 @@ def top_products_table(top_products, filters):
 
 ## 14. Implementation Modules
 
-| Module | Responsibility |
-|--------|----------------|
-| `dashboard/loader.py` | Load dashboard folder, load queries from queries/ folder, import outputs.py |
-| `dashboard/parser.py` | Stack parser for `:::` containers and `<tag />` components |
-| `dashboard/executor.py` | Execute queries, call @output functions, detect return types |
-| `dashboard/routes.py` | FastHTML routes for shell, filters, figure/table/metric endpoints |
-| `dashboard/models.py` | Pydantic models (`Metric`), `@output` decorator |
-| `dashboard/components.py` | UI components for rendering (delegates to ui/ library) |
+
+| Module                    | Responsibility                                                              |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `dashboard/loader.py`     | Load dashboard folder, load queries from queries/ folder, import outputs.py |
+| `dashboard/parser.py`     | Stack parser for `:::` containers and `<tag />` components                  |
+| `dashboard/executor.py`   | Execute queries, call @output functions, detect return types                |
+| `dashboard/routes.py`     | FastHTML routes for shell, filters, figure/table/metric endpoints           |
+| `dashboard/models.py`     | Pydantic models (`Metric`), `@output` decorator                             |
+| `dashboard/components.py` | UI components for rendering (delegates to ui/ library)                      |
+
 
 ---
 
@@ -725,20 +754,3 @@ The following components are needed from the ui/ library:
 - **Placeholder card** (with spinner, appropriate heights)
 - **Tabs** (Alpine.js tab component)
 
----
-
-## 16. Future Considerations (Not in v1)
-
-- Verbose error handling (dev mode with tracebacks)
-- Query result caching
-- Dashboard index page (`/dash/`)
-- Collapse container
-- Variable interpolation (`{{ filters.region }}`)
-- Multi-database support
-- Refresh intervals
-- Search filter with debouncing
-- Slider filter
-- Hot reload for development
-- CLI scaffolding
-- Async database support
-- Request cancellation for rapid filter changes

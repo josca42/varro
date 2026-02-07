@@ -184,7 +184,7 @@ def render_table_endpoint(name: str, output_name: str, req):
     filters = parse_filters_from_request(req, dash.filters)
 
     try:
-        _, result = execute_output(dash, output_name, filters, _engine)
+        result = execute_output(dash, output_name, filters, _engine)
         return render_table(result)
     except Exception:
         return Div("Error loading table", cls="text-error text-center p-4")

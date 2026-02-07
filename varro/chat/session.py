@@ -44,6 +44,7 @@ class UserSession:
     msgs: list[ModelMessage] = field(default_factory=list, init=False)
     turn_idx: int = field(default=0, init=False)
     cached_prompts: dict[str, str] = field(default_factory=dict, init=False)
+    bash_cwd: str = field(default="/", init=False)
 
     def __post_init__(self):
         self.shell = get_shell()
@@ -127,6 +128,7 @@ class UserSession:
         self.chat_id = None
         self.msgs = []
         self.turn_idx = 0
+        self.bash_cwd = "/"
         if self.shell:
             self.shell.reset(new_session=True)
             self.shell.run_cell(JUPYTER_INITIAL_IMPORTS)

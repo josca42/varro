@@ -3792,6 +3792,19 @@ wheels = [
 ]
 
 [[package]]
+name = "safecmd"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastcore" },
+    { name = "shfmt-py" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/e4/8f275f894f549fd02d12b3054ee052cd7d36c63803f765b5f2ac0e79a6f1/safecmd-0.1.1.tar.gz", hash = "sha256:b4a37c494c7a5b565884cf5983108715fa19d5799d88d7efc724826fcb7f2651", size = 22248, upload-time = "2026-01-25T11:03:56.189Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/98/d4e5747951c90122a1d7a77280e9287ded42457a7228f13666dcb88f7622/safecmd-0.1.1-py3-none-any.whl", hash = "sha256:e24e6fa915a120c556d5d0a17483f40dedd21e2b678b358b98a6b4c832baf036", size = 18713, upload-time = "2026-01-25T11:03:54.467Z" },
+]
+
+[[package]]
 name = "secretstorage"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3812,6 +3825,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/58/15/8b3609fd3830ef7b2
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e0/f9/0595336914c5619e5f28a1fb793285925a8cd4b432c9da0a987836c7f822/shellingham-1.5.4-py2.py3-none-any.whl", hash = "sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686", size = 9755, upload-time = "2023-10-24T04:13:38.866Z" },
 ]
+
+[[package]]
+name = "shfmt-py"
+version = "3.12.0.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/d9/a1ea26749bd19467e9fbfe7b34e6c8df517e01de4028a45b954eebe8c03b/shfmt_py-3.12.0.2.tar.gz", hash = "sha256:6a0dc675b37d000eb236609cf15aedd9e7a538927ea02c57b617908b6f237e9c", size = 4467, upload-time = "2025-07-08T06:54:40.396Z" }
 
 [[package]]
 name = "six"
@@ -4187,6 +4206,7 @@ dependencies = [
     { name = "python-fasthtml" },
     { name = "rapidfuzz" },
     { name = "resend" },
+    { name = "safecmd" },
     { name = "sqlmodel" },
     { name = "tabulate" },
     { name = "zstandard" },
@@ -4220,6 +4240,7 @@ requires-dist = [
     { name = "python-fasthtml", specifier = ">=0.12.37" },
     { name = "rapidfuzz", specifier = ">=3.14.3" },
     { name = "resend", specifier = ">=2.19.0" },
+    { name = "safecmd", specifier = ">=0.1.1" },
     { name = "sqlmodel", specifier = ">=0.0.27" },
     { name = "tabulate", specifier = ">=0.9.0" },
     { name = "zstandard", specifier = ">=0.25.0" },

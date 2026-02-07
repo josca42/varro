@@ -122,11 +122,10 @@ def CheckboxFilter(
 
     return Div(
         Label(
-            Checkbox(name=name, checked=checked, value="true", **kw),
+            Checkbox(name=name, checked=checked, **kw),
             Span(display_label, cls="ml-2"),
             cls="flex items-center cursor-pointer",
         ),
         cls=cn("flex items-end pb-1", cls),
         data_slot="checkbox-filter",
     )
-

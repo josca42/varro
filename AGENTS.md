@@ -30,6 +30,11 @@ daisy-ui: docs/libs/daisy-ui.txt
 alpine.js: docs/libs/alpine_js/*
 url-design: docs/libs/url_design.txt
 
+# Agent notes
+
+Use the `agents/` folder for project notes and learnings.
+The notes index is [index.md](agents/index.md).
+
 
 # Code style
 When writing code then only include essential comments. Otherwise leave comments out.
@@ -41,7 +46,9 @@ Prefer simple and concise code. Do not implement a lot of try/except instead let
 You can run the app by doing
 
 ```bash
-python app/main.py
+uv run python app/main.py
 ```
 
 The app will then be running at http://0.0.0.0:5001/
+
+In general use uv run python to run python scripts and code
