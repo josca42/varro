@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from urllib.parse import parse_qs
 
 from fasthtml.common import (
@@ -20,6 +19,7 @@ from ui.app.chat import (
     ChatProgressEnd,
 )
 from varro.chat.session import sessions
+from varro.config import DATA_DIR
 from varro.chat.agent_run import run_agent
 from varro.db.models import Chat
 from varro.db import crud
@@ -157,7 +157,7 @@ def chat_delete(chat_id: int, req, sess):
     if not chat:
         return Response(status_code=404)
 
-    turn_paths = [Path(turn.obj_fp) for turn in chat.turns]
+    turn_paths = [DATA_DIR / turn.obj_fp for turn in chat.turns]
 
     req.state.chats.delete(chat)
 

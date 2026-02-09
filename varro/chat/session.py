@@ -21,6 +21,7 @@ from varro.agent.ipython_shell import (
 from varro.db.crud.chat import CrudChat
 from varro.db.models.chat import Chat, Turn
 from varro.db import crud
+from varro.config import DATA_DIR
 
 zstd_compressor = zstd.ZstdCompressor(level=3)
 zstd_decompressor = zstd.ZstdDecompressor()
@@ -82,7 +83,7 @@ class UserSession:
             Turn(
                 chat_id=self.chat_id,
                 user_text=user_text,
-                obj_fp=str(fp),
+                obj_fp=str(fp.relative_to(DATA_DIR)),
                 idx=self.turn_idx,
             )
         )
@@ -93,8 +94,9 @@ class UserSession:
     def delete_from_idx(self, idx: int) -> None:
         """Delete turns from idx onwards (for edit functionality)."""
         for fp in crud.turn.delete_from_idx(self.chat_id, idx):
-            Path(fp).unlink(missing_ok=True)
-            Path(fp).with_suffix(".cache.json").unlink(missing_ok=True)
+            turn_fp = DATA_DIR / fp
+            turn_fp.unlink(missing_ok=True)
+            turn_fp.with_suffix(".cache.json").unlink(missing_ok=True)
 
         chat = self.chats.get(self.chat_id, with_turns=True)
         self.msgs = self._load_msgs(chat.turns)
@@ -120,7 +122,7 @@ class UserSession:
     def _load_msgs(self, turns) -> list[ModelMessage]:
         msgs = []
         for turn in turns:
-            msgs.extend(self._load_turn(Path(turn.obj_fp)))
+            msgs.extend(self._load_turn(DATA_DIR / turn.obj_fp))
         return msgs
 
     def _reset_chat_state(self) -> None:
@@ -135,13 +137,13 @@ class UserSession:
 
     def _turn_filepath(self) -> Path:
         """Generate filepath for current turn."""
-        base = Path(f"data/chats/{self.user_id}/{self.chat_id}")
+        base = DATA_DIR / "chats" / f"{self.user_id}/{self.chat_id}"
         base.mkdir(parents=True, exist_ok=True)
         return base / f"{self.turn_idx}.mpk"
 
     async def _restore_shell_namespace(self) -> None:
         """Re-run tool calls to restore shell state."""
-        from varro.agent.assistant import sql_query, jupyter_notebook
+        from varro.agent.assistant import Sql, Jupyter
 
         ctx = SimpleNamespace(deps=self)
         for msg in self.msgs:
@@ -153,14 +155,14 @@ class UserSession:
                     continue
 
                 kwargs = part.args_as_dict()
-                if part.tool_name == "sql_query":
-                    if "df_name" in kwargs:
-                        sql_query(ctx, **kwargs)
+                if part.tool_name == "Sql":
+                    if kwargs.get("df_name"):
+                        Sql(ctx, **kwargs)
 
-                elif part.tool_name == "jupyter_notebook":
+                elif part.tool_name == "Jupyter":
                     try:
-                        await jupyter_notebook(ctx, **kwargs)
-                    except ModelRetry as e:
+                        await Jupyter(ctx, **kwargs)
+                    except ModelRetry:
                         continue
 
     def _save_render_cache(self, msgs: list[ModelMessage], fp: Path) -> None:

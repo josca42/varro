@@ -1,3 +1,4 @@
+import argparse
 from datetime import timedelta
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from app.routes.chat import ar as chat_routes
 from app.routes.commands import ar as command_routes
 from varro.chat.session import sessions
 from varro.db import crud
+from varro.agent.workspace import ensure_user_workspace
 
 STATIC_SKIP = [
     r"/favicon\.ico",
@@ -25,6 +27,7 @@ DEMO_USER_ID = 1
 def before(req, sess):
     user_id = sess.get("user_id", DEMO_USER_ID)
     sess["user_id"] = user_id
+    ensure_user_workspace(user_id)
     req.state.chats = crud.chat.for_user(user_id)
 
 
@@ -72,4 +75,7 @@ async def stop_session_cleanup():
 
 
 if __name__ == "__main__":
-    serve()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=5001)
+    args = parser.parse_args()
+    serve(port=args.port)

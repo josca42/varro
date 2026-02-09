@@ -40,6 +40,7 @@ from varro.dashboard.parser import (
     ComponentNode,
     ContainerNode,
 )
+from varro.config import DATA_DIR
 from plotly.basedatatypes import BaseFigure
 import pandas as pd
 
@@ -96,10 +97,9 @@ def ChatMessages(
 
 def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None):
     """Render a complete turn from stored data."""
-    from pathlib import Path
     from varro.chat.session import UserSession
 
-    fp = Path(turn.obj_fp)
+    fp = DATA_DIR / turn.obj_fp
     msgs = UserSession._load_turn(fp)
     if shell is None:
         cache = _load_render_cache(fp)

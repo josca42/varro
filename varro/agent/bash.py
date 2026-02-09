@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from safecmd.bashxtract import extract_commands
 
-from varro.config import DATA_DIR
+from varro.agent.workspace import ensure_user_workspace
 
 BASH_TIMEOUT_SECONDS = 30
 USE_BWRAP = True
@@ -99,9 +99,7 @@ BASH_DELETE_COMMANDS = {"rm", "rmdir", "unlink"}
 
 
 def _user_workdir(user_id: int) -> Path:
-    root = DATA_DIR / "user" / str(user_id)
-    root.mkdir(parents=True, exist_ok=True)
-    return root
+    return ensure_user_workspace(user_id)
 
 
 def _sanitize_cwd_rel(cwd_rel: str) -> str:

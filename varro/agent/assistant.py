@@ -164,17 +164,18 @@ async def Jupyter(ctx: RunContext[UserSession], code: str, show: list[str] = [])
     return ToolReturn(return_value=res.stdout, content=elements_rendered)
 
 
-@agent.tool_plain(docstring_format="google")
+@agent.tool(docstring_format="google")
 def Read(
+    ctx: RunContext[UserSession],
     file_path: str,
     offset: int | None = None,
     limit: int | None = None,
 ) -> str:
-    """Reads a file from the local filesystem. You can access any file directly by using this tool.
-    Assume this tool is able to read all files on the machine. If the User provides a path to a file assume that path is valid. It is okay to read a file that does not exist; an error will be returned.
+    """Reads a file from the sandboxed local filesystem rooted at `/`.
 
     Usage:
-    - The file_path parameter must be an absolute path, not a relative path
+    - The file_path parameter must be an absolute path, not a relative path.
+    - Paths are resolved from the sandbox root (`/`) within the current user's workspace.
     - By default, it reads up to 2000 lines starting from the beginning of the file
     - You can optionally specify a line offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters
     - Any lines longer than 2000 characters will be truncated
@@ -189,14 +190,15 @@ def Read(
         offset: The line number to start reading from. Only provide if the file is too large to read at once
         limit: The number of lines to read. Only provide if the file is too large to read at once.
     """
-    return read_file(file_path, offset=offset, limit=limit)
+    return read_file(file_path, offset=offset, limit=limit, user_id=ctx.deps.user_id)
 
 
-@agent.tool_plain(docstring_format="google")
-def Write(file_path: str, content: str) -> str:
-    """Writes a file to the local filesystem.
+@agent.tool(docstring_format="google")
+def Write(ctx: RunContext[UserSession], file_path: str, content: str) -> str:
+    """Writes a file to the sandboxed local filesystem rooted at `/`.
 
     Usage:
+    - Paths are resolved from the sandbox root (`/`) within the current user's workspace.
     - This tool will overwrite the existing file if there is one at the provided path.
     - If this is an existing file, you MUST use the Read tool first to read the file's contents. This tool will fail if you did not read the file first.
     - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
@@ -207,16 +209,21 @@ def Write(file_path: str, content: str) -> str:
         file_path: The absolute path to the file to write (must be absolute, not relative)
         content: The content to write to the file
     """
-    return write_file(file_path, content)
+    return write_file(file_path, content, user_id=ctx.deps.user_id)
 
 
-@agent.tool_plain(docstring_format="google")
+@agent.tool(docstring_format="google")
 def Edit(
-    file_path: str, old_string: str, new_string: str, replace_all: bool = False
+    ctx: RunContext[UserSession],
+    file_path: str,
+    old_string: str,
+    new_string: str,
+    replace_all: bool = False,
 ) -> str:
     """Performs exact string replacements in files.
 
     Usage:
+    - Paths are resolved from the sandbox root (`/`) within the current user's workspace.
     - You must use your `Read` tool at least once in the conversation before editing. This tool will error if you attempt an edit without reading the file.
     - When editing text from Read tool output, ensure you preserve the exact indentation (tabs/spaces) as it appears AFTER the line number prefix. The line number prefix format is: spaces + line number + tab. Everything after that tab is the actual file content to match. Never include any part of the line number prefix in the old_string or new_string.
     - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
@@ -235,6 +242,7 @@ def Edit(
         old_string=old_string,
         new_string=new_string,
         replace_all=replace_all,
+        user_id=ctx.deps.user_id,
     )
 
 

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic_ai import BinaryContent
 from pydantic_ai.messages import ToolReturn
-from itertools import islice
+from varro.agent.workspace import DEMO_USER_ID, resolve_user_path
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 IMAGE_EXTENSIONS = {".png"}
@@ -15,11 +15,16 @@ def _error(message: str) -> str:
 
 
 def read_file(
-    file_path: str, offset: int | None = None, limit: int | None = None
+    file_path: str,
+    offset: int | None = None,
+    limit: int | None = None,
+    user_id: int = DEMO_USER_ID,
 ) -> str | ToolReturn:
-    path = Path(file_path)
-    if not path.is_absolute():
-        return _error("file_path must be an absolute path")
+    resolved = resolve_user_path(user_id=user_id, file_path=file_path)
+    if isinstance(resolved, str):
+        return _error(resolved)
+    path = Path(resolved)
+
     if path.exists() and path.is_dir():
         return _error("path is a directory")
     if not path.exists():
@@ -59,10 +64,12 @@ def read_file(
     return "\n".join(lines)
 
 
-def write_file(file_path: str, content: str) -> str:
-    path = Path(file_path)
-    if not path.is_absolute():
-        return _error("file_path must be an absolute path")
+def write_file(file_path: str, content: str, user_id: int = DEMO_USER_ID) -> str:
+    resolved = resolve_user_path(user_id=user_id, file_path=file_path)
+    if isinstance(resolved, str):
+        return _error(resolved)
+    path = Path(resolved)
+
     if path.exists() and path.is_dir():
         return _error("path is a directory")
     if not path.parent.exists():
@@ -79,10 +86,13 @@ def edit_file(
     old_string: str,
     new_string: str,
     replace_all: bool = False,
+    user_id: int = DEMO_USER_ID,
 ) -> str:
-    path = Path(file_path)
-    if not path.is_absolute():
-        return _error("file_path must be an absolute path")
+    resolved = resolve_user_path(user_id=user_id, file_path=file_path)
+    if isinstance(resolved, str):
+        return _error(resolved)
+    path = Path(resolved)
+
     if path.exists() and path.is_dir():
         return _error("path is a directory")
     if not path.exists():

@@ -1,5 +1,14 @@
 This project aims to create the danish AI state statistician. An expert AI analyst that help users understand data about denmark.
 
+# Agent notes
+
+Use the `agents/` folder for project notes and learnings.
+The notes index is [index.md](agents/index.md).
+
+Do not keep backwards compability unless specifically requested. Always assume that backward compability is not important. What's important is simple and concise code.
+
+
+
 # The project consists of 3 parts:
 
 **ui**: A ui library in the ui/ folder. The ui library is structured to follow the code style and organisation of shadcn-ui, where larger app components are in ui/app and more specific components are in ui/components. Custom css is in ui/theme.css.
@@ -30,16 +39,13 @@ daisy-ui: docs/libs/daisy-ui.txt
 alpine.js: docs/libs/alpine_js/*
 url-design: docs/libs/url_design.txt
 
-# Agent notes
-
-Use the `agents/` folder for project notes and learnings.
-The notes index is [index.md](agents/index.md).
-
 
 # Code style
 When writing code then only include essential comments. Otherwise leave comments out.
 
 Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
+
+Convention over configuration.
 
 # Inspecting app
 
