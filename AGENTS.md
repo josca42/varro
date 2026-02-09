@@ -5,9 +5,21 @@ This project aims to create the danish AI state statistician. An expert AI analy
 Use the `agents/` folder for project notes and learnings.
 The notes index is [index.md](agents/index.md).
 
+If you have learned something during a conversation then update the notes in the `agents/` folder, so you can use these learnings in a future work session.
+If new features are implemented or existing features changed then also update notes accordingly.
+
+If you have deleted a feature then remove corresponding notes to keep notes up to date.
+
+Not everything needs to be written down. Use your judgement
+
+# Code style
+When writing code then only include essential comments. Otherwise leave comments out.
+
+Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
+
+Convention over configuration.
+
 Do not keep backwards compability unless specifically requested. Always assume that backward compability is not important. What's important is simple and concise code.
-
-
 
 # The project consists of 3 parts:
 
@@ -29,23 +41,6 @@ stack: fasthtml, HTMX
 - /config.py: Central configuration for data directories and paths.
 
 stack: pandas, pydantic-ai, SQLModel, SQLAlchemy, plotly, fasthtml, HTMX, mistletoe, postgres
-
-# Docs
-
-I have gathered a set of useful docs
-
-fasthtml: docs/libs/fasthtml.txt, docs/libs/fasthtml_best_practices.md
-daisy-ui: docs/libs/daisy-ui.txt
-alpine.js: docs/libs/alpine_js/*
-url-design: docs/libs/url_design.txt
-
-
-# Code style
-When writing code then only include essential comments. Otherwise leave comments out.
-
-Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
-
-Convention over configuration.
 
 # Inspecting app
 
