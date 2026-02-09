@@ -26,7 +26,13 @@ from ui.app.chat import (
     ChatDropdown,
     ChatDropdownItem,
 )
-from ui.app.layout import AppShell, WelcomePage, OverviewPage, SettingsPage
+from ui.app.layout import (
+    AppShell,
+    DashboardOverviewPage,
+    WelcomePage,
+    OverviewPage,
+    SettingsPage,
+)
 from ui.app.command_palette import CommandPalette, CommandPaletteScript
 from ui.app.tool import (
     ThinkingBlock,
@@ -80,6 +86,7 @@ __all__ = [
     "AppShell",
     "CommandPalette",
     "CommandPaletteScript",
+    "DashboardOverviewPage",
 
     "WelcomePage",
     "OverviewPage",

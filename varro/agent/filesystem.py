@@ -4,7 +4,6 @@ from pydantic_ai import BinaryContent
 from pydantic_ai.messages import ToolReturn
 from varro.agent.workspace import DEMO_USER_ID, resolve_user_path
 
-TEXT_EXTENSIONS = {".md", ".txt"}
 IMAGE_EXTENSIONS = {".png"}
 MAX_LINES_DEFAULT = 2000
 MAX_LINE_LENGTH = 2000
@@ -14,6 +13,7 @@ def _error(message: str) -> str:
     return f"Error: {message}"
 
 
+# TODO: Add support for reading .parquet files, where df_preview(df) is used to return a string representation of the dataframe.
 def read_file(
     file_path: str,
     offset: int | None = None,
@@ -41,9 +41,6 @@ def read_file(
             content=[BinaryContent(data=data, media_type="image/png")],
         )
 
-    if suffix not in TEXT_EXTENSIONS:
-        return _error("unsupported file type")
-
     if path.stat().st_size == 0:
         return "Warning: file is empty."
 
@@ -58,7 +55,7 @@ def read_file(
                 if len(lines) >= max_lines:
                     break
                 lines.append(f"{line_no:>6}\t{line.rstrip('\n')[:MAX_LINE_LENGTH]}")
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         return _error(str(exc))
 
     return "\n".join(lines)

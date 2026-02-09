@@ -49,6 +49,36 @@ def test_read_file_uses_demo_user_workspace_root(tmp_path: Path, monkeypatch) ->
     assert (data_dir / "user" / "1" / "subjects" / "topic.md").exists()
 
 
+def test_read_file_allows_text_files_without_extension_allowlist(
+    tmp_path: Path, monkeypatch
+) -> None:
+    data_dir = tmp_path / "data"
+    _seed_docs_template(data_dir)
+    _patch_workspace_paths(monkeypatch, data_dir)
+    py_file = data_dir / "user" / "1" / "subjects" / "script.py"
+    py_file.parent.mkdir(parents=True, exist_ok=True)
+    py_file.write_text("print('hej')\n", encoding="utf-8")
+
+    filesystem = importlib.import_module("varro.agent.filesystem")
+    output = filesystem.read_file("/subjects/script.py", user_id=1)
+
+    assert "print('hej')" in output
+
+
+def test_read_file_returns_error_for_binary_content(tmp_path: Path, monkeypatch) -> None:
+    data_dir = tmp_path / "data"
+    _seed_docs_template(data_dir)
+    _patch_workspace_paths(monkeypatch, data_dir)
+    parquet_file = data_dir / "user" / "1" / "subjects" / "table.parquet"
+    parquet_file.parent.mkdir(parents=True, exist_ok=True)
+    parquet_file.write_bytes(b"\xff\xfe\x00\x01")
+
+    filesystem = importlib.import_module("varro.agent.filesystem")
+    output = filesystem.read_file("/subjects/table.parquet", user_id=1)
+
+    assert output.startswith("Error:")
+
+
 def test_write_and_edit_file_use_user_workspace_root(
     tmp_path: Path, monkeypatch
 ) -> None:

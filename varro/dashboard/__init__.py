@@ -31,20 +31,24 @@ if TYPE_CHECKING:
 def mount_dashboards(
     app,
     engine: "Engine",
-    dashboards_dir: str | Path = "dashboards",
+    dashboards_root: str | Path = "mnt",
+    user_id: int = 1,
 ) -> dict[str, Dashboard]:
     """Load all dashboards and mount routes.
 
     Args:
         app: FastHTML app
         engine: SQLAlchemy engine
-        dashboards_dir: Path to dashboards folder
+        dashboards_root: Path to data root containing user workspaces
+        user_id: User ID to pre-load dashboards for
 
     Returns:
         Dict mapping dashboard names to Dashboard objects
     """
     from varro.dashboard.routes import mount_dashboard_routes
 
+    root = Path(dashboards_root)
+    dashboards_dir = root / "user" / str(user_id) / "dashboards"
     dashboards = load_dashboards(dashboards_dir)
-    mount_dashboard_routes(app, dashboards_dir, engine)
+    mount_dashboard_routes(app, root, engine)
     return dashboards

@@ -1,18 +1,18 @@
 import argparse
 from datetime import timedelta
-from pathlib import Path
 
 from fasthtml.common import Beforeware, serve
 
 from ui.core import daisy_app
-from ui.app.layout import AppShell, WelcomePage, OverviewPage, SettingsPage
-from varro.dashboard.routes import mount_dashboard_routes
+from ui.app.layout import AppShell, DashboardOverviewPage, SettingsPage
+from varro.dashboard.routes import mount_dashboard_routes, list_dashboards
 from varro.db.db import engine
 from app.routes.chat import ar as chat_routes
 from app.routes.commands import ar as command_routes
 from varro.chat.session import sessions
 from varro.db import crud
 from varro.agent.workspace import ensure_user_workspace
+from varro.config import DATA_DIR
 
 STATIC_SKIP = [
     r"/favicon\.ico",
@@ -35,7 +35,7 @@ beforeware = Beforeware(before, skip=STATIC_SKIP)
 
 app, rt = daisy_app(exts="ws", before=beforeware, live=True)
 
-mount_dashboard_routes(app, Path("example_dashboard_folder"), engine)
+mount_dashboard_routes(app, DATA_DIR, engine)
 chat_routes.to_app(app)
 command_routes.to_app(app)
 
@@ -51,12 +51,9 @@ def _app_or_fragment(req, sess, content):
 
 @app.get("/")
 def index(req, sess):
-    return _app_or_fragment(req, sess, WelcomePage())
-
-
-@app.get("/dash/overview")
-def dash_overview(req, sess):
-    return _app_or_fragment(req, sess, OverviewPage())
+    user_id = sess.get("user_id", DEMO_USER_ID)
+    dashboards = list_dashboards(user_id)
+    return _app_or_fragment(req, sess, DashboardOverviewPage(dashboards))
 
 
 @app.get("/settings")

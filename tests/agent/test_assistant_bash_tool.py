@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import importlib
+import json
 from types import SimpleNamespace
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 
@@ -54,3 +56,38 @@ def test_bash_uses_root_cwd_when_session_has_no_bash_cwd(assistant_module, monke
     assert output == "pwd output"
     assert ctx.deps.bash_cwd == "/"
     assert calls == [(9, "/", "pwd")]
+
+
+def test_update_url_merges_params_and_updates_session_url(assistant_module):
+    ctx = SimpleNamespace(deps=SimpleNamespace(current_url="/dashboard/sales?region=North"))
+
+    output = assistant_module.UpdateUrl(
+        ctx,
+        params={"region": "South", "period_from": "2024-01-01"},
+        replace=True,
+    )
+
+    assert output.startswith("UPDATE_URL ")
+    payload = json.loads(output.removeprefix("UPDATE_URL ").strip())
+    parsed = urlparse(payload["url"])
+    assert parsed.path == "/dashboard/sales"
+    assert parse_qs(parsed.query) == {
+        "region": ["South"],
+        "period_from": ["2024-01-01"],
+    }
+    assert payload["replace"] is True
+    assert ctx.deps.current_url == payload["url"]
+
+
+def test_update_url_removes_params_with_none(assistant_module):
+    ctx = SimpleNamespace(deps=SimpleNamespace(current_url="/dashboard/sales?region=North&period_to=2024-12-31"))
+
+    output = assistant_module.UpdateUrl(
+        ctx,
+        params={"region": None, "period_to": ""},
+    )
+
+    payload = json.loads(output.removeprefix("UPDATE_URL ").strip())
+    assert payload["url"] == "/dashboard/sales"
+    assert payload["replace"] is False
+    assert ctx.deps.current_url == "/dashboard/sales"

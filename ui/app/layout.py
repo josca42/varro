@@ -5,7 +5,7 @@ Split-panel application shell for chat + URL-driven content.
 
 from __future__ import annotations
 
-from fasthtml.common import Div, H1, P, Script
+from fasthtml.common import A, Div, H1, Li, P, Script, Ul
 
 from ui.core import cn
 from ui.app.chat import ChatPanel, ChatClientScript
@@ -13,29 +13,40 @@ from ui.app.navbar import Navbar
 from ui.app.command_palette import CommandPalette, CommandPaletteScript
 
 
-def WelcomePage():
+def DashboardOverviewPage(dashboard_slugs: list[str]):
+    items = [
+        Li(
+            A(
+                slug,
+                href=f"/dashboard/{slug}",
+                cls="link link-hover font-medium",
+            )
+        )
+        for slug in dashboard_slugs
+    ]
+
     return Div(
         Div(
-            H1("Welcome", cls="text-2xl font-semibold mb-2"),
+            H1("Dashboards", cls="text-2xl font-semibold mb-2"),
             P(
-                "Choose a dashboard or ask the assistant to navigate for you.",
+                "Select a dashboard. URL state is shareable and bookmarkable.",
                 cls="text-base-content/70",
             ),
+            Ul(*items, cls="list-disc pl-6 mt-4")
+            if items
+            else P("No dashboards found for this user.", cls="mt-4 text-base-content/70"),
             cls="p-6",
         ),
-        data_slot="welcome-page",
+        data_slot="dashboard-overview-page",
     )
+
+
+def WelcomePage():
+    return DashboardOverviewPage([])
 
 
 def OverviewPage():
-    return Div(
-        Div(
-            H1("Dashboard Overview", cls="text-2xl font-semibold mb-2"),
-            P("Overview page placeholder.", cls="text-base-content/70"),
-            cls="p-6",
-        ),
-        data_slot="overview-page",
-    )
+    return DashboardOverviewPage([])
 
 
 def SettingsPage():
@@ -81,6 +92,45 @@ document.addEventListener('alpine:init', () => {
     )
 
 
+def UrlStateScript():
+    return Script(
+        """
+(() => {
+  if (window.__varroNavigate) return;
+  const appliedUpdateCalls = new Set();
+
+  function isValidPath(url) {
+    return typeof url === 'string' && url.startsWith('/');
+  }
+
+  window.__varroNavigate = function(url, opts = {}) {
+    if (!isValidPath(url) || !window.htmx) return false;
+    const target = opts.target || '#content-panel';
+    const swap = opts.swap || 'innerHTML';
+    htmx.ajax('GET', url, { target, swap });
+    if (swap !== 'none') {
+      if (opts.replace) {
+        history.replaceState({}, '', url);
+      } else {
+        history.pushState({}, '', url);
+      }
+    }
+    return true;
+  };
+
+  window.__varroApplyUpdateUrl = function(callId, payload) {
+    if (!payload || typeof payload !== 'object') return false;
+    if (!isValidPath(payload.url)) return false;
+    if (callId && appliedUpdateCalls.has(callId)) return false;
+    const ok = window.__varroNavigate(payload.url, { replace: !!payload.replace });
+    if (ok && callId) appliedUpdateCalls.add(callId);
+    return ok;
+  };
+})();
+"""
+    )
+
+
 def AppShell(
     chat,
     content,
@@ -119,6 +169,7 @@ def AppShell(
             data_slot="content-wrap",
         ),
         CommandPalette(),
+        UrlStateScript(),
         CommandPaletteScript(),
         ResizerScript(),
         x_data="splitResizer()",

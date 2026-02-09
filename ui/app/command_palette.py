@@ -93,10 +93,13 @@ def CommandPaletteScript():
     const target = a.dataset.target;
     const swap = a.dataset.swap;
     dlg.close();
-    if (href) {
-      htmx.ajax('GET', href, { target: target, swap: swap });
-      if (swap !== 'none') history.pushState({}, '', href);
+    if (!href) return;
+    if (window.__varroNavigate) {
+      window.__varroNavigate(href, { target: target, swap: swap });
+      return;
     }
+    htmx.ajax('GET', href, { target: target, swap: swap });
+    if (swap !== 'none') history.pushState({}, '', href);
   }
 
   // Cmd+K / Ctrl+K toggle

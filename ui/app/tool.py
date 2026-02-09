@@ -8,6 +8,7 @@ from fasthtml.common import (
     Pre,
     Code,
     Img,
+    Script,
     Table,
     Thead,
     Tbody,
@@ -248,6 +249,7 @@ def ToolCallStep(
     label = _format_tool_label(tool)
     summary = _tool_arg_summary(args) if args else _tool_result_summary_text(result)
     pending = status == "running"
+    update_url_payload = _parse_update_url_payload(tool, result) if call_id else None
     attrs = {"data_status": status}
     if call_id:
         attrs["id"] = f"tool-step-{call_id}"
@@ -278,6 +280,11 @@ def ToolCallStep(
             x_show="open",
             x_collapse=True,
         ),
+        Script(
+            f"window.__varroApplyUpdateUrl({json.dumps(call_id)}, {json.dumps(update_url_payload)});"
+        )
+        if update_url_payload
+        else None,
         x_data="{open: false}",
         cls="tool-step",
         **attrs,
@@ -460,6 +467,27 @@ def _tool_result_status(result_text: str) -> str:
     if result_text and result_text.strip().lower().startswith("error"):
         return "error"
     return "success"
+
+
+def _parse_update_url_payload(tool: str, result: str) -> dict | None:
+    if tool != "UpdateUrl":
+        return None
+    text = (result or "").strip()
+    if not text.startswith("UPDATE_URL "):
+        return None
+    raw_json = text.removeprefix("UPDATE_URL ").strip()
+    if not raw_json:
+        return None
+    try:
+        payload = json.loads(raw_json)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    url = payload.get("url")
+    if not isinstance(url, str) or not url.startswith("/"):
+        return None
+    return {"url": url, "replace": bool(payload.get("replace", False))}
 
 
 def _format_tool_result(content) -> str:

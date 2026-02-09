@@ -75,7 +75,7 @@ def render_placeholder(dash_name: str, output_type: str, output_name: str) -> An
                 Span(cls="loading loading-spinner"),
                 cls="flex justify-center items-center h-32",
             ),
-            hx_get=f"/dash/{dash_name}/_/{output_type}/{output_name}",
+            hx_get=f"/dashboard/{dash_name}/_/{output_type}/{output_name}",
             hx_include="#filters",
             hx_trigger="load, filtersChanged from:body",
             hx_swap="innerHTML",
@@ -176,7 +176,7 @@ def render_ast(
                     HtmlForm(
                         *filter_elements,
                         id="filters",
-                        hx_get=f"/dash/{dash.name}/_/filters",
+                        hx_get=f"/dashboard/{dash.name}/_/filters",
                         hx_trigger="change delay:500ms",
                         hx_swap="none",
                         cls="flex flex-wrap gap-4 items-end mb-6 p-4 bg-base-200 rounded-box",

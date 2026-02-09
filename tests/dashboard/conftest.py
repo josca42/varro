@@ -19,16 +19,17 @@ from varro.db.db import POSTGRES_SQLALCHEMY_URI
 class DashboardTestEnv:
     client: TestClient
     engine: Engine
-    dashboards_dir: Path
+    dashboards_root: Path
     dashboard_name: str
+    user_id: int = 1
 
     @property
     def dashboard_path(self) -> Path:
-        return self.dashboards_dir / self.dashboard_name
+        return self.dashboards_root / "user" / str(self.user_id) / "dashboards" / self.dashboard_name
 
     @property
     def base_url(self) -> str:
-        return f"/dash/{self.dashboard_name}"
+        return f"/dashboard/{self.dashboard_name}"
 
 
 def _seed_db(engine: Engine, table_name: str) -> None:
@@ -173,19 +174,22 @@ def dashboard_env(tmp_path: Path) -> DashboardTestEnv:
     table_name = f"dashboard_test_population_{uuid4().hex[:10]}"
     _seed_db(engine, table_name)
 
-    dashboards_dir = tmp_path / "dashboards"
+    user_id = 1
+    dashboards_root = tmp_path
     dashboard_name = "population"
+    dashboards_dir = dashboards_root / "user" / str(user_id) / "dashboards"
     _write_dashboard(dashboards_dir / dashboard_name, table_name)
 
     app, _ = daisy_app()
-    mount_dashboard_routes(app, dashboards_dir, engine)
+    mount_dashboard_routes(app, dashboards_root, engine)
     client = TestClient(app)
 
     yield DashboardTestEnv(
         client=client,
         engine=engine,
-        dashboards_dir=dashboards_dir,
+        dashboards_root=dashboards_root,
         dashboard_name=dashboard_name,
+        user_id=user_id,
     )
 
     client.close()

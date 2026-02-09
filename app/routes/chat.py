@@ -62,6 +62,7 @@ async def on_message(
     chat_id: int | None = None,
     edit_idx: int | None = None,
     sid: str | None = None,
+    current_url: str | None = None,
 ):
     """
     Handle incoming chat messages.
@@ -77,6 +78,8 @@ async def on_message(
     if not s:
         return
     s.touch()
+    if current_url and current_url.startswith("/"):
+        s.current_url = current_url
 
     if chat_id is None:
         chat = s.chats.create(Chat())

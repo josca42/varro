@@ -87,6 +87,10 @@ Jupyter("fig = px.line(df, x='tid', y='indhold')", show=["fig"])
 
 **Bash(command, description?)** — Sandboxed shell. Use for `ls`, `find`, `grep`, `tree` to navigate the filesystem.
 
+### Navigation Tool
+
+**UpdateUrl(path?, params?)** — Update the app URL state. Use this to navigate content (`/`, `/dashboard/{slug}`, `/settings`) and to update dashboard filter query params in the URL.
+
 ### Built-in
 
 Web search is available for questions about current events or context beyond the database.
@@ -119,7 +123,7 @@ Retrieved dataframes and figures are not automatically visible to users. You mus
 </output_format>
 
 <dashboards>
-Dashboards are persistent analyses saved at `/dashboards/{name}/`. Three required files: `queries/*.sql`, `outputs.py`, `dashboard.md`.
+Dashboards are persistent analyses saved at `/dashboards/{name}/` in the workspace and rendered in the app at `/dashboard/{name}`. Three required files: `queries/*.sql`, `outputs.py`, `dashboard.md`.
 
 For detailed instructions, read `/skills/dashboard_creation.md`.
 

@@ -1,5 +1,7 @@
 from datetime import datetime
+import json
 import pandas as pd
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic_ai import (
     Agent,
@@ -287,3 +289,49 @@ def Bash(ctx: RunContext[UserSession], command: str, description: str | None = N
     output, new_cwd = run_bash_command(ctx.deps.user_id, cwd_rel, command)
     ctx.deps.bash_cwd = new_cwd
     return output
+
+
+@agent.tool(docstring_format="google")
+def UpdateUrl(
+    ctx: RunContext[UserSession],
+    path: str | None = None,
+    params: dict[str, str | bool | None] | None = None,
+):
+    """Build and apply a URL update for the content panel.
+
+    Args:
+        path: Optional absolute app path (for example `/dashboard/sales`). If omitted, uses current content URL.
+        params: Query parameters to merge. `None` or empty values remove keys.
+    """
+    source = (path or getattr(ctx.deps, "current_url", "/") or "/").strip()
+    if not source.startswith("/"):
+        raise ModelRetry("path must start with '/'")
+
+    parsed = urlsplit(source)
+    if parsed.scheme or parsed.netloc:
+        raise ModelRetry("path must be relative to this app")
+
+    query: dict[str, str] = dict(parse_qsl(parsed.query, keep_blank_values=False))
+    if params:
+        for key, value in params.items():
+            key = (key or "").strip()
+            if not key:
+                continue
+            if value is None:
+                query.pop(key, None)
+                continue
+            if isinstance(value, bool):
+                query[key] = "true" if value else "false"
+                continue
+            text = str(value).strip()
+            if text:
+                query[key] = text
+            else:
+                query.pop(key, None)
+
+    merged_query = urlencode(query)
+    next_url = urlunsplit(("", "", parsed.path or "/", merged_query, ""))
+    ctx.deps.current_url = next_url
+
+    payload = {"url": next_url, "replace": False}
+    return f"UPDATE_URL {json.dumps(payload, ensure_ascii=False)}"

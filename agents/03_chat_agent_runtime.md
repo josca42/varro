@@ -24,7 +24,7 @@ Flow:
 `ui/app/chat.py::ChatClientScript()`:
 
 - creates per-tab sid in `sessionStorage`,
-- writes sid to websocket url and hidden inputs,
+- writes sid to websocket url and hidden inputs (`sid`, `current_url`),
 - sends heartbeat (`/chat/heartbeat`) while active/visible,
 - sends close beacon on unload (`/chat/close`).
 
@@ -36,6 +36,7 @@ State fields:
 - stateful IPython shell (`TerminalInteractiveShell`),
 - `cached_prompts`,
 - persisted bash working directory (`bash_cwd`).
+- current URL state (`current_url`) for assistant navigation.
 
 Turn persistence:
 
@@ -64,6 +65,7 @@ Turn persistence:
   - `Jupyter`
   - `Read` / `Write` / `Edit`
   - `Bash`
+  - `UpdateUrl`
 
 ## Agent prompt (`varro/prompts/agent/rigsstatistiker.j2`)
 
@@ -72,7 +74,7 @@ Structured as:
 1. **Role** — Rigsstatistikeren identity + current date.
 2. **Environment** — Sandboxed filesystem layout (`/subjects/`, `/fact/`, `/dim/`, `/dashboards/`, `/skills/`).
 3. **Database schema** — dim/fact schema, join pattern.
-4. **Tools** — Documents all 7 registered tools by their exact names.
+4. **Tools** — Documents all registered tools by their exact names.
 5. **Workflow** — Step-by-step: identify subject → read docs → check values → query → analyze.
 6. **Output format** — `<df />` and `<fig />` embedding tags.
 7. **Dashboards** — Brief pointer to `/skills/dashboard_creation.md`.
@@ -86,6 +88,13 @@ The agent accesses table docs and subject overviews via `Read` and `Bash` on the
 - `varro/agent/utils.py`: dataframe/figure rendering helpers.
 - `varro/agent/playwright_render.py`: persistent headless browser for plotly png snapshots.
 - `varro/agent/bash.py`: sandboxed command execution with allowlist and per-user working root.
+
+## URL-state navigation flow
+
+- `UpdateUrl(path?, params?, replace?)` builds app-relative URLs and stores the latest URL in session state.
+- Tool output uses the marker format `UPDATE_URL {json_payload}`.
+- `ui/app/tool.py` detects `UpdateUrl` results and emits a script call to `window.__varroApplyUpdateUrl(callId, payload)`.
+- `ui/app/layout.py::UrlStateScript()` applies navigation via HTMX (`#content-panel`) and updates browser history (`pushState`/`replaceState`).
 
 ## Chat UI rendering
 
@@ -103,3 +112,4 @@ The agent accesses table docs and subject overviews via `Read` and `Bash` on the
 - History replay attempts to re-run prior tool calls to rebuild shell state.
 - Chat edit flow removes turns >= `edit_idx` from DB and disk.
 - Progress indicator uses Game of Life canvas and OOB swaps.
+- `Read` tool uses fail-on-read behavior for non-images: it tries UTF-8 text reads for files regardless of extension (e.g. `.py`, `.sql`, `.html`) and returns an error from the read/decode attempt for binary files (e.g. `.parquet`), instead of extension allowlisting.

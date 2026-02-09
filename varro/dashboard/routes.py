@@ -28,8 +28,10 @@ from varro.dashboard.components import (
 from varro.dashboard.filters import Filter, SelectFilter
 from ui.app.layout import AppShell
 
+# TODO: remove the sess.get("user_id", 1) and use the user_id from the session directly. With no default value.
+
 # Module-level configuration
-_dashboards_dir: Path | None = None
+_dashboards_root: Path | None = None
 _engine: Engine | None = None
 
 
@@ -39,23 +41,40 @@ class CachedDashboard:
     mtimes: tuple[float, ...]
 
 
-_cache: dict[str, CachedDashboard] = {}
+_cache: dict[tuple[int, str], CachedDashboard] = {}
 
 ar = APIRouter()
 
 
-def configure(dashboards_dir: Path | str, engine: Engine) -> None:
-    """Configure dashboard routes with directory and database engine."""
-    global _dashboards_dir, _engine, _cache
-    _dashboards_dir = Path(dashboards_dir)
+def configure(dashboards_root: Path | str, engine: Engine) -> None:
+    """Configure dashboard routes with dashboards root and database engine."""
+    global _dashboards_root, _engine, _cache
+    _dashboards_root = Path(dashboards_root)
     _engine = engine
     _cache = {}
 
 
-def mount_dashboard_routes(app, dashboards_dir: Path | str, engine: Engine) -> None:
+def mount_dashboard_routes(app, dashboards_root: Path | str, engine: Engine) -> None:
     """Configure and mount dashboard routes on the app."""
-    configure(dashboards_dir, engine)
+    configure(dashboards_root, engine)
     ar.to_app(app)
+
+
+def _dashboards_dir(user_id: int) -> Path | None:
+    if _dashboards_root is None:
+        return None
+    return _dashboards_root / "user" / str(user_id) / "dashboards"
+
+
+def list_dashboards(user_id: int) -> list[str]:
+    path = _dashboards_dir(user_id)
+    if path is None or not path.exists():
+        return []
+    slugs = []
+    for folder in sorted(path.iterdir()):
+        if folder.is_dir() and (folder / "dashboard.md").exists():
+            slugs.append(folder.name)
+    return slugs
 
 
 def get_mtimes(folder: Path) -> tuple[float, ...]:
@@ -66,22 +85,24 @@ def get_mtimes(folder: Path) -> tuple[float, ...]:
     return tuple(f.stat().st_mtime for f in files)
 
 
-def get_dashboard(name: str) -> Dashboard | None:
+def get_dashboard(name: str, user_id: int) -> Dashboard | None:
     """Load a dashboard on-demand with caching."""
-    if _dashboards_dir is None:
+    dashboards_dir = _dashboards_dir(user_id)
+    if dashboards_dir is None:
         return None
-    path = _dashboards_dir / name
+    path = dashboards_dir / name
     if not (path / "dashboard.md").exists():
         return None
 
+    cache_key = (user_id, name)
     mtimes = get_mtimes(path)
-    cached = _cache.get(name)
+    cached = _cache.get(cache_key)
     if cached and cached.mtimes == mtimes:
         return cached.dashboard
 
     clear_query_cache()
     dash = load_dashboard(path)
-    _cache[name] = CachedDashboard(dashboard=dash, mtimes=mtimes)
+    _cache[cache_key] = CachedDashboard(dashboard=dash, mtimes=mtimes)
     return dash
 
 
@@ -110,15 +131,16 @@ def build_filter_url(
     for f in filters:
         params.update(f.url_params(values))
 
-    base = f"/dash/{dash_name}"
+    base = f"/dashboard/{dash_name}"
     if params:
         return f"{base}?{urlencode(params)}"
     return base
 
 
-@ar("/dash/{name}", methods=["GET"])
+@ar("/dashboard/{name}", methods=["GET"])
 def dashboard_shell(name: str, req, sess):
-    dash = get_dashboard(name)
+    user_id = sess.get("user_id", 1)
+    dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
@@ -142,9 +164,10 @@ def dashboard_shell(name: str, req, sess):
     return AppShell(chat, content)
 
 
-@ar("/dash/{name}/_/filters", methods=["GET"])
-def filter_sync(name: str, req):
-    dash = get_dashboard(name)
+@ar("/dashboard/{name}/_/filters", methods=["GET"])
+def filter_sync(name: str, req, sess):
+    user_id = sess.get("user_id", 1)
+    dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
@@ -160,9 +183,10 @@ def filter_sync(name: str, req):
     )
 
 
-@ar("/dash/{name}/_/figure/{output_name}", methods=["GET"])
-def render_figure_endpoint(name: str, output_name: str, req):
-    dash = get_dashboard(name)
+@ar("/dashboard/{name}/_/figure/{output_name}", methods=["GET"])
+def render_figure_endpoint(name: str, output_name: str, req, sess):
+    user_id = sess.get("user_id", 1)
+    dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
@@ -175,9 +199,10 @@ def render_figure_endpoint(name: str, output_name: str, req):
         return Div("Error loading chart", cls="text-error text-center p-4")
 
 
-@ar("/dash/{name}/_/table/{output_name}", methods=["GET"])
-def render_table_endpoint(name: str, output_name: str, req):
-    dash = get_dashboard(name)
+@ar("/dashboard/{name}/_/table/{output_name}", methods=["GET"])
+def render_table_endpoint(name: str, output_name: str, req, sess):
+    user_id = sess.get("user_id", 1)
+    dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
@@ -190,9 +215,10 @@ def render_table_endpoint(name: str, output_name: str, req):
         return Div("Error loading table", cls="text-error text-center p-4")
 
 
-@ar("/dash/{name}/_/metric/{output_name}", methods=["GET"])
-def render_metric_endpoint(name: str, output_name: str, req):
-    dash = get_dashboard(name)
+@ar("/dashboard/{name}/_/metric/{output_name}", methods=["GET"])
+def render_metric_endpoint(name: str, output_name: str, req, sess):
+    user_id = sess.get("user_id", 1)
+    dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 

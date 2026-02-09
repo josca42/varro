@@ -10,6 +10,7 @@
   - dashboard routes via `mount_dashboard_routes(...)`,
   - chat routes via `app.routes.chat`,
   - command palette search route via `app.routes.commands`.
+  - dashboard routes are user-scoped (`DATA_DIR/user/{id}/dashboards`).
 - Starts/stops idle websocket session cleanup on startup/shutdown.
 
 ## Shell layout (`ui/app/layout.py`)
@@ -28,9 +29,8 @@ Content panel behavior:
 
 ## Main routes
 
-- `/` -> welcome content (full shell or fragment for HTMX)
-- `/dash/{name}` -> dashboard (owned by `varro/dashboard/routes.py`)
-- `/dash/overview` -> placeholder overview page
+- `/` -> dashboard overview content (full shell or fragment for HTMX)
+- `/dashboard/{name}` -> dashboard (owned by `varro/dashboard/routes.py`)
 - `/settings` -> placeholder settings page
 
 ## Chat routes (`app/routes/chat.py`)

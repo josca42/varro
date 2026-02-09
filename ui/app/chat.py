@@ -151,6 +151,7 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
             cls="bg-base-100 rounded-box p-3 flex flex-col gap-2 border border-base-300",
         ),
         Input(type="hidden", name="sid", value=""),
+        Input(type="hidden", name="current_url", value=""),
         Input(type="hidden", name="chat_id", value=chat_id)
         if chat_id is not None
         else None,
@@ -216,19 +217,25 @@ def ChatClientScript():
     }
   }
 
-  const setSidInputs = () => {
+  const setHiddenInputs = () => {
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
     for (const input of document.querySelectorAll("input[name='sid']")) {
       input.value = sid;
     }
+    for (const input of document.querySelectorAll("input[name='current_url']")) {
+      input.value = currentUrl;
+    }
   };
 
-  setSidInputs();
+  setHiddenInputs();
   document.body.addEventListener("htmx:afterSwap", () => {
-    setSidInputs();
+    setHiddenInputs();
     if (window.__golRefresh) {
       window.__golRefresh();
     }
   });
+
+  window.addEventListener("popstate", setHiddenInputs);
 
   if (window.__golRefresh) {
     window.__golRefresh();

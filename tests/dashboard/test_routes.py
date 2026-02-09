@@ -90,7 +90,7 @@ def test_table_endpoint_renders_dataframe_fragment(dashboard_env) -> None:
 
 def test_unknown_dashboard_returns_404(dashboard_env) -> None:
     response = dashboard_env.client.get(
-        "/dash/does-not-exist",
+        "/dashboard/does-not-exist",
         headers={"HX-Request": "true"},
     )
     assert response.status_code == 404

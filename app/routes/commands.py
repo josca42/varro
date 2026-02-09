@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fasthtml.common import APIRouter, Li, A, Ul, Span, NotStr
 
-from varro.dashboard.routes import _dashboards_dir
+from varro.dashboard.routes import list_dashboards
 
 ar = APIRouter()
 
@@ -19,32 +19,27 @@ def _icon(name: str) -> NotStr:
     return NotStr(f'<span class="w-4 h-4 shrink-0 opacity-60">{ICONS[name]}</span>')
 
 
-def _discover_dashboards() -> list[dict]:
-    if _dashboards_dir is None or not _dashboards_dir.exists():
-        return []
+def _discover_dashboards(user_id: int) -> list[dict]:
     items = []
-    for p in sorted(_dashboards_dir.iterdir()):
-        if (p / "dashboard.md").exists():
-            name = p.name
-            label = name.replace("_", " ").replace("-", " ").title()
-            items.append(dict(
-                id=f"dash-{name}",
-                label=f"{label} Dashboard",
-                icon="bar-chart",
-                href=f"/dash/{name}",
-                target="#content-panel",
-                swap="innerHTML",
-            ))
+    for slug in list_dashboards(user_id):
+        label = slug.replace("_", " ").replace("-", " ").title()
+        items.append(dict(
+            id=f"dashboard-{slug}",
+            label=f"{label} Dashboard",
+            icon="bar-chart",
+            href=f"/dashboard/{slug}",
+            target="#content-panel",
+            swap="innerHTML",
+        ))
     return items
 
 
-def _build_commands() -> list[dict]:
+def _build_commands(user_id: int) -> list[dict]:
     pages = [
         dict(id="home", label="Home", icon="home", href="/", target="#content-panel", swap="innerHTML"),
-        dict(id="overview", label="Overview", icon="grid", href="/dash/overview", target="#content-panel", swap="innerHTML"),
         dict(id="settings", label="Settings", icon="settings", href="/settings", target="#content-panel", swap="innerHTML"),
     ]
-    dashboards = _discover_dashboards()
+    dashboards = _discover_dashboards(user_id)
     actions = [
         dict(id="new-chat", label="New Chat", icon="plus", href="/chat/new", target="body", swap="none"),
     ]
@@ -92,8 +87,9 @@ def _render_items(groups) -> list:
 
 
 @ar.get("/commands/search")
-def search_commands(q: str = ""):
-    groups = _build_commands()
+def search_commands(q: str = "", sess=None):
+    user_id = sess.get("user_id", 1) if sess else 1
+    groups = _build_commands(user_id)
     filtered = _filter_groups(groups, q)
     if not filtered:
         return Li(Span("No results found.", cls="px-4 py-8 text-sm text-base-content/50 text-center block"))

@@ -46,6 +46,7 @@ class UserSession:
     turn_idx: int = field(default=0, init=False)
     cached_prompts: dict[str, str] = field(default_factory=dict, init=False)
     bash_cwd: str = field(default="/", init=False)
+    current_url: str = field(default="/", init=False)
 
     def __post_init__(self):
         self.shell = get_shell()

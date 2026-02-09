@@ -61,29 +61,30 @@ Output execution:
 - Renders AST to FastHTML.
 - Filter container renders `<form id="filters">`.
 - Figures/tables/metrics are lazy placeholders with:
-  - `hx_get="/dash/{name}/_/{type}/{output}"`
+  - `hx_get="/dashboard/{name}/_/{type}/{output}"`
   - `hx_include="#filters"`
   - `hx_trigger="load, filtersChanged from:body"`
 - Tabs rendered with Alpine state `active`.
 
 ## Routes (`routes.py`)
 
-- `GET /dash/{name}`:
+- `GET /dashboard/{name}`:
   - HTMX request -> content fragment
   - full request -> wraps in `AppShell`
-- `GET /dash/{name}/_/filters`:
+- `GET /dashboard/{name}/_/filters`:
   - returns empty body with:
     - `HX-Replace-Url`
     - `HX-Trigger: {"filtersChanged": {}}`
-- `GET /dash/{name}/_/figure/{output}`
-- `GET /dash/{name}/_/table/{output}`
-- `GET /dash/{name}/_/metric/{output}`
+- `GET /dashboard/{name}/_/figure/{output}`
+- `GET /dashboard/{name}/_/table/{output}`
+- `GET /dashboard/{name}/_/metric/{output}`
 
 Dashboards are cached by file mtimes (`dashboard.md`, `outputs.py`, all query files).
+Dashboards are discovered per-user from `DATA_DIR/user/{user_id}/dashboards/{slug}`.
 
 ## Example dashboard
 
-- path: `example_dashboard_folder/sales/`
+- path: `mnt/user/1/dashboards/sales/`
 - includes filters + metrics + tabs + figure/table outputs.
 
 ## Test coverage
