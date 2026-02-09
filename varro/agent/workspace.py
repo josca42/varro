@@ -15,7 +15,6 @@ def user_workspace_root(user_id: int) -> Path:
 def ensure_user_workspace(user_id: int) -> Path:
     root = user_workspace_root(user_id)
     root.mkdir(parents=True, exist_ok=True)
-
     if not DOCS_DIR.exists():
         return root
 
