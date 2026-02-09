@@ -112,4 +112,6 @@ The agent accesses table docs and subject overviews via `Read` and `Bash` on the
 - History replay attempts to re-run prior tool calls to rebuild shell state.
 - Chat edit flow removes turns >= `edit_idx` from DB and disk.
 - Progress indicator uses Game of Life canvas and OOB swaps.
+- Chat form hidden fields (`sid`, `current_url`) are initially set by `ChatClientScript`, and each turn replaces `#chat-form` via websocket OOB swaps (`ChatFormDisabled`/`ChatFormEnabled`).
+- `ChatClientScript` now re-applies hidden values on both `htmx:afterSwap` and `htmx:oobAfterSwap`, preventing follow-up messages from dropping `sid` and being ignored by `on_message`.
 - `Read` tool uses fail-on-read behavior for non-images: it tries UTF-8 text reads for files regardless of extension (e.g. `.py`, `.sql`, `.html`) and returns an error from the read/decode attempt for binary files (e.g. `.parquet`), instead of extension allowlisting.

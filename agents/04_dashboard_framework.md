@@ -93,3 +93,16 @@ Dashboards are discovered per-user from `DATA_DIR/user/{user_id}/dashboards/{slu
 - `tests/dashboard/test_executor.py`
 - `tests/dashboard/test_routes.py`
 - `tests/dashboard/conftest.py`
+
+## Source editing constraints (2026-02-09)
+
+- `parse_dashboard_md` is render-oriented, not round-trip safe for rewriting `dashboard.md`:
+  - it strips markdown buffers before building `MarkdownNode` (`text.strip()` in `parser.py`),
+  - whitespace and exact original formatting are not preserved.
+- For file-over-app editing with protected dashboard syntax, use raw-source segmentation instead of AST re-serialization:
+  - lock custom syntax segments (`:::` container lines and component tag lines),
+  - expose only markdown segments as editable fields,
+  - reconstruct file by interleaving edited markdown with original locked segments.
+- Add optimistic concurrency guard for saves:
+  - include a file hash/etag in the edit form,
+  - reject save if current file hash changed since editor load.

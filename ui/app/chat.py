@@ -228,12 +228,14 @@ def ChatClientScript():
   };
 
   setHiddenInputs();
-  document.body.addEventListener("htmx:afterSwap", () => {
+  const onSwap = () => {
     setHiddenInputs();
     if (window.__golRefresh) {
       window.__golRefresh();
     }
-  });
+  };
+  document.body.addEventListener("htmx:afterSwap", onSwap);
+  document.body.addEventListener("htmx:oobAfterSwap", onSwap);
 
   window.addEventListener("popstate", setHiddenInputs);
 

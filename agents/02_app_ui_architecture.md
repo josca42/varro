@@ -64,3 +64,18 @@ Content panel behavior:
 
 - Auth routes and UI exist (`app/routes/auth.py`, `ui/app/auth.py`).
 - In current `app/main.py`, auth routes are not mounted.
+
+## Markdown-first editing pattern (2026-02-09)
+
+- Prefer file-backed pages for user-facing content:
+  - welcome page source at `DATA_DIR/user/{user_id}/welcome.md`,
+  - dashboard source at `DATA_DIR/user/{user_id}/dashboards/{slug}/dashboard.md`.
+- Keep HTMX navigation URL-first:
+  - `/dashboard/{slug}` for rendered dashboard,
+  - `/dashboard/{slug}/code` for source editing,
+  - `/` (or `/welcome`) for rendered welcome page,
+  - `/welcome/code` for editing welcome markdown.
+- Follow HTMX click-to-edit flow:
+  - view fragment with `hx-get` to load editor fragment,
+  - editor form with `hx-put` to save and swap back rendered fragment,
+  - optional autosave with `hx-trigger="keyup changed delay:1000ms"` and `hx-sync="closest form:replace"` to avoid save races.
