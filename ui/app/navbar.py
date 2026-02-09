@@ -24,28 +24,68 @@ _ICONS = {
 }
 
 _TAB_ITEMS = [
-    ("dashboard", "Dashboard"),
-    ("code", "Code"),
-    ("overview", "Overview"),
+    ("dashboard", "Dashboard", "dashboard"),
+    ("code", "Code", "code"),
+    ("overview", "Overview", "overview"),
 ]
 
 
-def _nav_tab(icon_key: str, label: str):
+def _nav_tab(icon_key: str, label: str, action: str):
     return ft_hx(
         "button",
         NotStr(f'<span class="w-4 h-4 shrink-0">{_ICONS[icon_key]}</span>'),
-        Span(
-            label,
-            cls="text-sm whitespace-nowrap overflow-hidden transition-all duration-200",
-            **{
-                ":class": "$tab.isSelected ? 'max-w-24 opacity-100' : 'max-w-0 opacity-0'"
-            },
-        ),
+        Span(label, cls="text-sm whitespace-nowrap overflow-hidden"),
         cls="btn btn-ghost btn-sm h-8 min-h-0 min-w-8 px-2 gap-1.5 transition-all duration-200 rounded-lg border border-transparent",
-        **{
-            "x-tabs:tab": True,
-            ":class": "$tab.isSelected ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-base-200'",
-        },
+        onclick=f"window.__varroNavTab('{action}')",
+    )
+
+
+def NavbarNavScript():
+    return Script(
+        """
+(() => {
+  if (window.__varroNavTab) return;
+
+  function dashboardSlug(pathname) {
+    const match = pathname.match(/^\\/dashboard\\/([^/]+?)(?:\\/code)?$/);
+    if (!match) return null;
+    try {
+      return decodeURIComponent(match[1]);
+    } catch {
+      return match[1];
+    }
+  }
+
+  function pathFor(tab) {
+    const pathname = window.location.pathname || '/';
+    const slug = dashboardSlug(pathname);
+    if (tab === 'dashboard') {
+      return slug ? `/dashboard/${encodeURIComponent(slug)}` : '/';
+    }
+    if (tab === 'code') {
+      return slug ? `/dashboard/${encodeURIComponent(slug)}/code` : '/welcome/code';
+    }
+    return '/';
+  }
+
+  window.__varroNavTab = function(tab) {
+    const url = pathFor(tab);
+    if (!url) return;
+    const current = `${window.location.pathname}${window.location.search || ''}`;
+    if (url === current) return;
+    if (window.__varroNavigate) {
+      window.__varroNavigate(url, { target: '#content-panel', swap: 'innerHTML' });
+      return;
+    }
+    if (window.htmx) {
+      htmx.ajax('GET', url, { target: '#content-panel', swap: 'innerHTML' });
+      history.pushState({}, '', url);
+      return;
+    }
+    window.location.assign(url);
+  };
+})();
+"""
     )
 
 
@@ -58,12 +98,8 @@ def Navbar(
     """Top navigation bar."""
 
     tabs = Div(
-        Div(
-            *[_nav_tab(icon, label) for icon, label in _TAB_ITEMS],
-            cls="flex gap-1",
-            **{"x-tabs:list": True},
-        ),
-        **{"x-tabs": True, "default-index": "0", "x-cloak": True},
+        *[_nav_tab(icon, label, action) for icon, label, action in _TAB_ITEMS],
+        cls="flex gap-1",
     )
 
     start = NavbarStart(tabs)
@@ -92,6 +128,7 @@ def Navbar(
         start,
         center,
         end,
+        NavbarNavScript(),
         cls=cn("navbar bg-base-200 px-4 min-h-14 border-b border-base-300", cls),
         data_slot="app-navbar",
         **kw,

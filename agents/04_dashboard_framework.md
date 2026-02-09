@@ -106,3 +106,20 @@ Dashboards are discovered per-user from `DATA_DIR/user/{user_id}/dashboards/{slu
 - Add optimistic concurrency guard for saves:
   - include a file hash/etag in the edit form,
   - reject save if current file hash changed since editor load.
+
+### Implemented dashboard source editor (2026-02-09)
+
+- New routes in `varro/dashboard/routes.py`:
+  - `GET /dashboard/{name}/code`
+  - `PUT /dashboard/{name}/code`
+- Editor behavior:
+  - code mode exposes raw source files in tabs:
+    - `dashboard.md`
+    - `outputs.py`
+    - `queries/*.sql` (sorted)
+  - selected file is edited in a single textarea,
+  - all syntax is editable (standard markdown + custom dashboard syntax).
+  - no inline syntax highlighting in editor; textarea is used for simple editable flow.
+- Save safeguards:
+  - file hash mismatch returns editor with conflict notice and latest file content,
+  - successful save clears dashboard cache entry for `(user_id, dashboard_name)`.

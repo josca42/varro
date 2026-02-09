@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from urllib.parse import parse_qs, urlparse
 
+from varro.dashboard.routes import _content_hash
+
 
 def test_dashboard_shell_fragment_renders_filters_and_placeholders(dashboard_env) -> None:
     response = dashboard_env.client.get(
@@ -94,3 +96,71 @@ def test_unknown_dashboard_returns_404(dashboard_env) -> None:
         headers={"HX-Request": "true"},
     )
     assert response.status_code == 404
+
+
+def test_dashboard_code_editor_fragment_renders(dashboard_env) -> None:
+    response = dashboard_env.client.get(
+        f"{dashboard_env.base_url}/code",
+        headers={"HX-Request": "true"},
+    )
+    assert response.status_code == 200
+    assert f'hx-put="{dashboard_env.base_url}/code"' in response.text
+    assert 'name="content"' in response.text
+    assert "dashboard.md" in response.text
+    assert "outputs.py" in response.text
+    assert "queries/regions.sql" in response.text
+    assert 'name="file"' in response.text
+
+
+def test_dashboard_code_editor_can_load_outputs_file(dashboard_env) -> None:
+    response = dashboard_env.client.get(
+        f"{dashboard_env.base_url}/code",
+        params={"file": "outputs.py"},
+        headers={"HX-Request": "true"},
+    )
+    assert response.status_code == 200
+    assert 'value="outputs.py"' in response.text
+    assert "def total_population" in response.text
+
+
+def test_dashboard_code_put_updates_selected_file(dashboard_env) -> None:
+    outputs_file = dashboard_env.dashboard_path / "outputs.py"
+    original = outputs_file.read_text(encoding="utf-8")
+    updated_content = original.replace("Total Population", "Total Population Updated")
+    payload = {
+        "file": "outputs.py",
+        "file_hash": _content_hash(original),
+        "content": updated_content,
+    }
+
+    response = dashboard_env.client.put(
+        f"{dashboard_env.base_url}/code",
+        data=payload,
+        headers={"HX-Request": "true"},
+    )
+    assert response.status_code == 200
+
+    updated = outputs_file.read_text(encoding="utf-8")
+    assert "Total Population Updated" in updated
+
+
+def test_dashboard_code_put_detects_hash_conflict(dashboard_env) -> None:
+    dashboard_md = dashboard_env.dashboard_path / "dashboard.md"
+    original = dashboard_md.read_text(encoding="utf-8")
+    external_change = original + "\nExternal change\n"
+    dashboard_md.write_text(external_change, encoding="utf-8")
+
+    payload = {
+        "file": "dashboard.md",
+        "file_hash": _content_hash(original),
+        "content": original,
+    }
+
+    response = dashboard_env.client.put(
+        f"{dashboard_env.base_url}/code",
+        data=payload,
+        headers={"HX-Request": "true"},
+    )
+    assert response.status_code == 200
+    assert 'name="content"' in response.text
+    assert dashboard_md.read_text(encoding="utf-8") == external_change

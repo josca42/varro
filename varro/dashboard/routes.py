@@ -5,12 +5,13 @@ FastHTML routes for dashboards with on-demand loading.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
 
-from fasthtml.common import APIRouter, Div, Response
+from fasthtml.common import APIRouter, A, Button, Div, Form, Input, Response, Textarea
 from sqlalchemy.engine import Engine
 
 from varro.dashboard.loader import Dashboard, load_dashboard
@@ -106,6 +107,109 @@ def get_dashboard(name: str, user_id: int) -> Dashboard | None:
     return dash
 
 
+def _dashboard_dir(name: str, user_id: int) -> Path | None:
+    dashboards_dir = _dashboards_dir(user_id)
+    if dashboards_dir is None:
+        return None
+    folder = dashboards_dir / name
+    if not (folder / "dashboard.md").exists():
+        return None
+    return folder
+
+
+def _dashboard_code_files(folder: Path) -> list[str]:
+    files: list[str] = []
+    if (folder / "dashboard.md").exists():
+        files.append("dashboard.md")
+    if (folder / "outputs.py").exists():
+        files.append("outputs.py")
+    queries_dir = folder / "queries"
+    if queries_dir.exists() and queries_dir.is_dir():
+        for path in sorted(queries_dir.glob("*.sql")):
+            files.append(f"queries/{path.name}")
+    return files
+
+
+def _resolve_dashboard_code_file(folder: Path, files: list[str], file_name: str) -> Path | None:
+    if file_name not in files:
+        return None
+    path = (folder / file_name).resolve()
+    try:
+        path.relative_to(folder.resolve())
+    except ValueError:
+        return None
+    if not path.exists() or not path.is_file():
+        return None
+    return path
+
+
+def _shell_or_fragment(req, sess, content):
+    if req.headers.get("HX-Request"):
+        return content
+
+    chat = None
+    chats = getattr(req.state, "chats", None)
+    if chats and (chat_id := sess.get("chat_id")):
+        chat = chats.get(chat_id, with_turns=True)
+    return AppShell(chat, content)
+
+
+def _content_hash(content: str) -> str:
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def _render_dashboard_code_editor(
+    name: str,
+    files: list[str],
+    selected_file: str,
+    content: str,
+):
+    tabs = [
+        A(
+            file_name,
+            href=f"/dashboard/{name}/code?{urlencode({'file': file_name})}",
+            cls="tab tab-active" if file_name == selected_file else "tab",
+            hx_get=f"/dashboard/{name}/code?{urlencode({'file': file_name})}",
+            hx_target="#content-panel",
+            hx_swap="innerHTML",
+            hx_push_url="true",
+        )
+        for file_name in files
+    ]
+
+    return Div(
+        Div(*tabs, cls="tabs tabs-box"),
+        Form(
+            Input(type="hidden", name="file_hash", value=_content_hash(content)),
+            Input(type="hidden", name="file", value=selected_file),
+            Textarea(
+                content,
+                name="content",
+                cls="textarea textarea-bordered w-full font-mono text-sm min-h-[28rem]",
+            ),
+            Div(
+                Button("Save", type="submit", cls="btn btn-primary"),
+                A(
+                    "View dashboard",
+                    href=f"/dashboard/{name}",
+                    cls="btn btn-ghost",
+                    hx_get=f"/dashboard/{name}",
+                    hx_target="#content-panel",
+                    hx_swap="innerHTML",
+                    hx_push_url="true",
+                ),
+                cls="flex items-center gap-2",
+            ),
+            hx_put=f"/dashboard/{name}/code",
+            hx_target="#content-panel",
+            hx_swap="innerHTML",
+            cls="space-y-4",
+        ),
+        cls="p-6 space-y-4",
+        data_slot="dashboard-code-page",
+    )
+
+
 def parse_filters_from_request(
     req: Any,
     filters: list[Filter],
@@ -155,13 +259,69 @@ def dashboard_shell(name: str, req, sess):
         render_shell(dash, filters, options),
     )
 
-    if req.headers.get("HX-Request"):
-        return content
+    return _shell_or_fragment(req, sess, content)
 
-    chat = None
-    if chat_id := sess.get("chat_id"):
-        chat = req.state.chats.get(chat_id, with_turns=True)
-    return AppShell(chat, content)
+
+@ar("/dashboard/{name}/code", methods=["GET"])
+def dashboard_code(name: str, req, sess):
+    user_id = sess.get("user_id", 1)
+    folder = _dashboard_dir(name, user_id=user_id)
+    if folder is None:
+        return Response("Dashboard not found", status_code=404)
+
+    files = _dashboard_code_files(folder)
+    if not files:
+        return Response("Dashboard source files not found", status_code=404)
+
+    selected_file = req.query_params.get("file", "dashboard.md")
+    if selected_file not in files:
+        selected_file = files[0]
+    path = _resolve_dashboard_code_file(folder, files, selected_file)
+    if path is None:
+        return Response("File not found", status_code=404)
+
+    content = _render_dashboard_code_editor(
+        name,
+        files,
+        selected_file,
+        path.read_text(encoding="utf-8"),
+    )
+    return _shell_or_fragment(req, sess, content)
+
+
+@ar("/dashboard/{name}/code", methods=["PUT"])
+async def dashboard_code_save(name: str, req, sess):
+    user_id = sess.get("user_id", 1)
+    folder = _dashboard_dir(name, user_id=user_id)
+    if folder is None:
+        return Response("Dashboard not found", status_code=404)
+
+    files = _dashboard_code_files(folder)
+    if not files:
+        return Response("Dashboard source files not found", status_code=404)
+
+    form = await req.form()
+    selected_file = str(form.get("file", "dashboard.md"))
+    if selected_file not in files:
+        selected_file = files[0]
+    path = _resolve_dashboard_code_file(folder, files, selected_file)
+    if path is None:
+        return Response("File not found", status_code=404)
+
+    current_content = path.read_text(encoding="utf-8")
+    form_hash = str(form.get("file_hash", ""))
+    next_content = str(form.get("content", "")).replace("\r\n", "\n")
+
+    if form_hash != _content_hash(current_content):
+        content = _render_dashboard_code_editor(name, files, selected_file, current_content)
+        return _shell_or_fragment(req, sess, content)
+
+    path.write_text(next_content, encoding="utf-8")
+    _cache.pop((user_id, name), None)
+    clear_query_cache()
+
+    content = _render_dashboard_code_editor(name, files, selected_file, next_content)
+    return _shell_or_fragment(req, sess, content)
 
 
 @ar("/dashboard/{name}/_/filters", methods=["GET"])

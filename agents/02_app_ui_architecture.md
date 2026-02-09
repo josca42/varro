@@ -79,3 +79,13 @@ Content panel behavior:
   - view fragment with `hx-get` to load editor fragment,
   - editor form with `hx-put` to save and swap back rendered fragment,
   - optional autosave with `hx-trigger="keyup changed delay:1000ms"` and `hx-sync="closest form:replace"` to avoid save races.
+
+### Implemented in app (2026-02-09)
+
+- `/` now renders markdown from `DATA_DIR/user/{id}/welcome.md` (auto-created if missing).
+- `{{dashboard_list}}` placeholder in `welcome.md` is replaced at render time with markdown links to available dashboards.
+- `/welcome/code` provides textarea editor with `PUT` save and file-hash conflict guard.
+- Welcome code editor UI is minimal: raw textarea + `Save` + `View welcome page`.
+- Navbar tabs now perform URL-based HTMX navigation:
+  - `Code` routes to `/welcome/code` or `/dashboard/{slug}/code` based on current URL.
+- Dashboard code mode includes file tabs (`dashboard.md`, `outputs.py`, `queries/*.sql`) and edits the selected file in a textarea.
