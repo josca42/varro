@@ -24,6 +24,7 @@ from varro.context.tools import generate_hierarchy
 from sqlalchemy import text
 from varro.chat.session import UserSession
 from varro.agent.bash import run_bash_command
+from varro.agent.snapshot import snapshot_dashboard_url
 import logfire
 
 logfire.configure(scrubbing=False)
@@ -292,16 +293,38 @@ def Bash(ctx: RunContext[UserSession], command: str, description: str | None = N
 
 
 @agent.tool(docstring_format="google")
+async def Snapshot(ctx: RunContext[UserSession], url: str | None = None) -> str:
+    """Snapshot a dashboard URL to disk so files can be inspected.
+
+    Args:
+        url: Optional dashboard URL path. If omitted, uses current content URL.
+    """
+    target_url = (url or getattr(ctx.deps, "current_url", "") or "").strip()
+    if not target_url:
+        raise ModelRetry("No URL available. Provide url or open a dashboard first.")
+
+    try:
+        result = await snapshot_dashboard_url(ctx.deps.user_id, target_url)
+    except Exception as exc:
+        raise ModelRetry(str(exc))
+
+    ctx.deps.current_url = result.url
+    return result.url
+
+
+@agent.tool(docstring_format="google")
 def UpdateUrl(
     ctx: RunContext[UserSession],
     path: str | None = None,
     params: dict[str, str | bool | None] | None = None,
+    replace: bool = False,
 ):
     """Build and apply a URL update for the content panel.
 
     Args:
         path: Optional absolute app path (for example `/dashboard/sales`). If omitted, uses current content URL.
         params: Query parameters to merge. `None` or empty values remove keys.
+        replace: If true, update URL via replaceState instead of pushState.
     """
     source = (path or getattr(ctx.deps, "current_url", "/") or "/").strip()
     if not source.startswith("/"):
@@ -333,5 +356,5 @@ def UpdateUrl(
     next_url = urlunsplit(("", "", parsed.path or "/", merged_query, ""))
     ctx.deps.current_url = next_url
 
-    payload = {"url": next_url, "replace": False}
+    payload = {"url": next_url, "replace": replace}
     return f"UPDATE_URL {json.dumps(payload, ensure_ascii=False)}"

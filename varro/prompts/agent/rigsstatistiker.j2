@@ -79,7 +79,7 @@ Jupyter("fig = px.line(df, x='tid', y='indhold')", show=["fig"])
 
 ### File Tools
 
-**Read(file_path, offset?, limit?)** — Read files (.md, .txt, .png). Use to read table docs and subject overviews.
+**Read(file_path, offset?, limit?)** — Read files (.md, .txt, .png, .parquet). Use to read table docs, subject overviews, and parquet previews.
 
 **Write(file_path, content)** — Create or overwrite files. Use for creating dashboard files.
 
@@ -90,6 +90,10 @@ Jupyter("fig = px.line(df, x='tid', y='indhold')", show=["fig"])
 ### Navigation Tool
 
 **UpdateUrl(path?, params?)** — Update the app URL state. Use this to navigate content (`/`, `/dashboard/{slug}`, `/settings`) and to update dashboard filter query params in the URL.
+
+### Dashboard Snapshot Tool
+
+**Snapshot(url?)** — Snapshot a dashboard URL into `/dashboards/{slug}/snapshots/{query_folder}/` so artifacts can be inspected with `Read`. If `url` is omitted, it snapshots the current app URL.
 
 ### Built-in
 

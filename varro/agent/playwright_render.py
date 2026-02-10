@@ -1,6 +1,5 @@
 import asyncio
 from playwright.async_api import async_playwright, Browser
-from playwright.async_api import Error
 
 
 # Global singletons
@@ -64,7 +63,8 @@ async def html_to_png(html: str, *, width: int = 600, height: int = 400) -> byte
         await start_browser()
 
     page = await _browser.new_page(  # type: ignore[arg-type]
-        viewport={"width": width, "height": height}
+        viewport={"width": width, "height": height},
+        device_scale_factor=1,
     )
 
     try:
@@ -82,7 +82,48 @@ async def html_to_png(html: str, *, width: int = 600, height: int = 400) -> byte
         # Optional tiny extra delay if you ever see partial renders:
         # await page.wait_for_timeout(100)
 
-        png_bytes = await page.screenshot(type="png")
+        png_bytes = await page.screenshot(type="png", scale="css")
+        return png_bytes
+    finally:
+        await page.close()
+
+
+async def url_to_png(
+    url: str,
+    *,
+    width: int = 1600,
+    height: int = 1200,
+    wait_selector: str | None = None,
+    plotly_wait_selector: str | None = None,
+    full_page: bool = True,
+) -> bytes:
+    if _browser is None:
+        await start_browser()
+
+    page = await _browser.new_page(  # type: ignore[arg-type]
+        viewport={"width": width, "height": height},
+        device_scale_factor=1,
+    )
+
+    try:
+        await page.goto(url, wait_until="networkidle")
+        if wait_selector:
+            await page.wait_for_selector(
+                wait_selector,
+                timeout=10_000,
+                state="visible",
+            )
+        if plotly_wait_selector and await page.locator(".plotly-graph-div").count():
+            await page.wait_for_selector(
+                plotly_wait_selector,
+                timeout=10_000,
+                state="visible",
+            )
+        png_bytes = await page.screenshot(
+            type="png",
+            full_page=full_page,
+            scale="css",
+        )
         return png_bytes
     finally:
         await page.close()

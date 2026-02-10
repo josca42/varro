@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib
 from pathlib import Path
 
+import pandas as pd
+
 
 def _seed_docs_template(data_dir: Path) -> Path:
     docs_dir = data_dir / "docs_template"
@@ -77,6 +79,23 @@ def test_read_file_returns_error_for_binary_content(tmp_path: Path, monkeypatch)
     output = filesystem.read_file("/subjects/table.parquet", user_id=1)
 
     assert output.startswith("Error:")
+
+
+def test_read_file_returns_parquet_preview(tmp_path: Path, monkeypatch) -> None:
+    data_dir = tmp_path / "data"
+    _seed_docs_template(data_dir)
+    _patch_workspace_paths(monkeypatch, data_dir)
+    parquet_file = data_dir / "user" / "1" / "subjects" / "table.parquet"
+    parquet_file.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({"region": ["North", "South"], "value": [1, 2]}).to_parquet(
+        parquet_file, index=False
+    )
+
+    filesystem = importlib.import_module("varro.agent.filesystem")
+    output = filesystem.read_file("/subjects/table.parquet", user_id=1)
+
+    assert "region|value" in output
+    assert "North|1" in output
 
 
 def test_write_and_edit_file_use_user_workspace_root(

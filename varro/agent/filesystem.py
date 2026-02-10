@@ -1,10 +1,13 @@
 from pathlib import Path
 
+import pandas as pd
 from pydantic_ai import BinaryContent
 from pydantic_ai.messages import ToolReturn
+from varro.data.utils import df_preview
 from varro.agent.workspace import DEMO_USER_ID, resolve_user_path
 
 IMAGE_EXTENSIONS = {".png"}
+PARQUET_EXTENSIONS = {".parquet"}
 MAX_LINES_DEFAULT = 2000
 MAX_LINE_LENGTH = 2000
 
@@ -13,7 +16,6 @@ def _error(message: str) -> str:
     return f"Error: {message}"
 
 
-# TODO: Add support for reading .parquet files, where df_preview(df) is used to return a string representation of the dataframe.
 def read_file(
     file_path: str,
     offset: int | None = None,
@@ -40,6 +42,12 @@ def read_file(
             return_value=f"Read image: {path.name}",
             content=[BinaryContent(data=data, media_type="image/png")],
         )
+    if suffix in PARQUET_EXTENSIONS:
+        try:
+            df = pd.read_parquet(path)
+        except Exception as exc:
+            return _error(str(exc))
+        return df_preview(df, max_rows=30, name=path.stem)
 
     if path.stat().st_size == 0:
         return "Warning: file is empty."

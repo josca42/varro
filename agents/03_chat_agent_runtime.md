@@ -65,6 +65,7 @@ Turn persistence:
   - `Jupyter`
   - `Read` / `Write` / `Edit`
   - `Bash`
+  - `Snapshot`
   - `UpdateUrl`
 
 ## Agent prompt (`varro/prompts/agent/rigsstatistiker.j2`)
@@ -86,12 +87,15 @@ The agent accesses table docs and subject overviews via `Read` and `Bash` on the
 
 - `varro/agent/ipython_shell.py`: patched shell `run_cell`, timeout support.
 - `varro/agent/utils.py`: dataframe/figure rendering helpers.
-- `varro/agent/playwright_render.py`: persistent headless browser for plotly png snapshots.
+- `varro/agent/snapshot.py`: dashboard URL snapshot service (`dashboard.png`, `figures/*.png`, `tables/*.parquet`, `metrics.json`, `context.url`, date marker).
+- `varro/agent/playwright_render.py`: persistent headless browser for plotly and dashboard snapshots.
 - `varro/agent/bash.py`: sandboxed command execution with allowlist and per-user working root.
+- `varro/agent/images.py`: shared PNG optimization/downscale pipeline with per-call max pixel caps.
 
 ## URL-state navigation flow
 
 - `UpdateUrl(path?, params?, replace?)` builds app-relative URLs and stores the latest URL in session state.
+- `Snapshot(url?)` snapshots `/dashboard/{slug}` URLs to `/dashboards/{slug}/snapshots/{query_folder}/`; omitted `url` falls back to `current_url`.
 - Tool output uses the marker format `UPDATE_URL {json_payload}`.
 - `ui/app/tool.py` detects `UpdateUrl` results and emits a script call to `window.__varroApplyUpdateUrl(callId, payload)`.
 - `ui/app/layout.py::UrlStateScript()` applies navigation via HTMX (`#content-panel`) and updates browser history (`pushState`/`replaceState`).
@@ -114,4 +118,4 @@ The agent accesses table docs and subject overviews via `Read` and `Bash` on the
 - Progress indicator uses Game of Life canvas and OOB swaps.
 - Chat form hidden fields (`sid`, `current_url`) are initially set by `ChatClientScript`, and each turn replaces `#chat-form` via websocket OOB swaps (`ChatFormDisabled`/`ChatFormEnabled`).
 - `ChatClientScript` now re-applies hidden values on both `htmx:afterSwap` and `htmx:oobAfterSwap`, preventing follow-up messages from dropping `sid` and being ignored by `on_message`.
-- `Read` tool uses fail-on-read behavior for non-images: it tries UTF-8 text reads for files regardless of extension (e.g. `.py`, `.sql`, `.html`) and returns an error from the read/decode attempt for binary files (e.g. `.parquet`), instead of extension allowlisting.
+- `Read` tool supports `.parquet` by loading via pandas and returning a `df_preview(...)` string; other non-image files still use UTF-8 text reads and return read/decode errors for binary content.

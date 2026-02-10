@@ -4,6 +4,11 @@ from pydantic_ai import BinaryContent
 import plotly.io as pio
 import plotly.graph_objects as go
 from varro.agent.playwright_render import html_to_png
+from varro.agent.images import (
+    optimize_png_bytes,
+    SNAPSHOT_MAX_PIXELS,
+    JUPYTER_SHOW_MAX_PIXELS,
+)
 from varro.data.utils import df_preview
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -29,7 +34,9 @@ async def show_element(element) -> Any | None:
     if isinstance(element, pd.DataFrame):
         return df_preview(element, max_rows=30)
     if isinstance(element, go.Figure):
-        png_bytes = await plotly_figure_to_png(element)
+        png_bytes = await plotly_figure_to_png(
+            element, max_pixels=JUPYTER_SHOW_MAX_PIXELS
+        )
         return BinaryContent(data=png_bytes, media_type="image/png")
     if isinstance(element, plt.Figure):
         png_bytes = matplotlib_figure_to_png(element)
@@ -45,6 +52,9 @@ def matplotlib_figure_to_png(fig: plt.Figure) -> bytes:
     return buf.getvalue()
 
 
-async def plotly_figure_to_png(fig: go.Figure) -> bytes:
+async def plotly_figure_to_png(
+    fig: go.Figure, *, max_pixels: int = SNAPSHOT_MAX_PIXELS
+) -> bytes:
     html_str = pio.to_html(fig, full_html=True, include_plotlyjs="cdn")
-    return await html_to_png(html_str, width=600, height=600)
+    png_bytes = await html_to_png(html_str, width=600, height=600)
+    return optimize_png_bytes(png_bytes, max_pixels=max_pixels)
