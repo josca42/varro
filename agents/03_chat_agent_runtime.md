@@ -14,10 +14,11 @@ Flow:
 2. `SessionManager.create(...)` allocates a `UserSession`.
 3. Incoming message:
   - create chat if needed,
-  - disable chat form + start progress animation,
-  - run agent and stream blocks,
-  - persist the new turn,
-  - stop progress animation + re-enable form.
+  - switch send button into stop mode + start progress animation,
+  - run agent in a cancellable task and stream blocks,
+  - on completion: persist the new turn, stop progress, restore send mode,
+  - on cancel: rollback to the pre-turn chat state and discard streamed partial output.
+4. `/chat/cancel` cancels the active run for `{user_id, sid, run_id}`.
 
 ## Browser session identity
 
@@ -26,6 +27,7 @@ Flow:
 - creates per-tab sid in `sessionStorage`,
 - writes sid to websocket URL and hidden inputs (`sid`, `current_url`),
 - refreshes hidden values on initial load, HTMX swaps, popstate, and form submit,
+- chat composer keyboard behavior is Enter-to-send, Shift+Enter for newline, with whitespace-only submits blocked and IME-safe Enter handling,
 - sends heartbeat (`/chat/heartbeat`) while active/visible,
 - sends close beacon on unload (`/chat/close`).
 
@@ -36,6 +38,7 @@ Flow:
 - `user_id`, `sid`, `send`, `ws`, `chats`
 - stateful IPython shell (`TerminalInteractiveShell`)
 - `shell_chat_id` to track which chat shell state currently represents
+- `active_run` to track cancellable in-flight turn execution (`run_id`, chat ids, task)
 
 No per-session chat history state is stored (`msgs`, `turn_idx`, `current_url`, `bash_cwd`, `cached_prompts` removed).
 
@@ -80,6 +83,13 @@ Helpers:
 
 `touch`, `evict_idle`, `find_by_ws`, `get`, `create`, and `remove` use entry metadata; `last_seen` is no longer on `UserSession`.
 
+`UserSession` run lifecycle methods:
+
+- `start_run(...)` reserves the active turn slot.
+- `attach_run_task(...)` links the asyncio task to that run id.
+- `cancel_active_run(run_id)` cancels in-flight work (idempotent/stale-safe).
+- `clear_run(run_id)` clears tracking after completion/cancel.
+
 ## Assistant deps and tool runtime
 
 `varro/agent/assistant.py` uses:
@@ -104,6 +114,7 @@ Tool changes:
 
 - `/chat/switch/{chat_id}` returns full `ChatPanel(...)` from persisted turns.
 - WebSocket message path streams only new blocks for the active run.
+- Cancel path (`/chat/cancel`) triggers rollback by re-sending a full OOB `ChatPanel(...)`.
 - Edit-message flow is removed.
 
 ## Important runtime notes
@@ -114,6 +125,9 @@ Tool changes:
 - Full-history vs incremental rendering is route-driven, not inferred:
   - `/chat/switch/{chat_id}` returns full `ChatPanel(...)`.
   - WebSocket `on_message` streams only new blocks for the active run.
+- Cancel rollback semantics:
+  - existing chat run: keep chat id, discard in-flight UI via full panel re-render.
+  - newly created chat run: delete created chat + turn/cache/runtime artifacts and restore previous chat selection.
 - `request_current_url()` is a request-snapshot of browser URL captured client-side at send time; server tools cannot execute browser JavaScript mid-tool-call.
 - Concurrent `Bash` tool calls for the same chat are accepted with last-writer-wins semantics for persisted `bash_cwd`.
 

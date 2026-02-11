@@ -25,6 +25,15 @@ class _ShellReplayDeps:
 
 
 @dataclass
+class ActiveRun:
+    run_id: str
+    chat_id: int
+    previous_chat_id: int | None
+    created_chat: bool
+    task: asyncio.Task | None = None
+
+
+@dataclass
 class UserSession:
     """In-memory session for one websocket tab."""
 
@@ -36,6 +45,7 @@ class UserSession:
 
     shell: TerminalInteractiveShell = field(init=False)
     shell_chat_id: int | None = field(default=None, init=False)
+    active_run: ActiveRun | None = field(default=None, init=False)
 
     def __post_init__(self):
         self.shell = get_shell()
@@ -56,7 +66,54 @@ class UserSession:
             await restore_shell_namespace(self.shell, deps, msgs)
         self.shell_chat_id = chat_id
 
+    def start_run(
+        self,
+        *,
+        run_id: str,
+        chat_id: int,
+        previous_chat_id: int | None,
+        created_chat: bool,
+    ) -> bool:
+        active = self.active_run
+        if active:
+            if active.task is None or not active.task.done():
+                return False
+        self.active_run = ActiveRun(
+            run_id=run_id,
+            chat_id=chat_id,
+            previous_chat_id=previous_chat_id,
+            created_chat=created_chat,
+        )
+        return True
+
+    def attach_run_task(self, run_id: str, task: asyncio.Task) -> None:
+        active = self.active_run
+        if not active or active.run_id != run_id:
+            task.cancel()
+            return
+        active.task = task
+
+    def cancel_active_run(self, run_id: str | None = None) -> bool:
+        active = self.active_run
+        if not active:
+            return False
+        if run_id is not None and active.run_id != run_id:
+            return False
+        if active.task and not active.task.done():
+            active.task.cancel()
+            return True
+        return False
+
+    def clear_run(self, run_id: str | None = None) -> None:
+        if self.active_run is None:
+            return
+        if run_id is not None and self.active_run.run_id != run_id:
+            return
+        self.active_run = None
+
     def cleanup(self) -> None:
+        self.cancel_active_run()
+        self.clear_run()
         if self.shell:
             self.shell.reset(new_session=False)
             if self.shell.history_manager:

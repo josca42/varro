@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+from uuid import uuid4
 from urllib.parse import parse_qs
 
 from fasthtml.common import (
@@ -11,13 +13,13 @@ from fasthtml.common import (
 
 from ui.app.chat import (
     ChatPanel,
-    ChatFormDisabled,
+    ChatFormRunning,
     ChatFormEnabled,
     ChatDropdown,
     ChatProgressStart,
     ChatProgressEnd,
 )
-from varro.chat.session import sessions
+from varro.chat.session import ActiveRun, sessions
 from varro.chat.runtime_state import runtime_state_fp
 from varro.config import DATA_DIR
 from varro.chat.agent_run import run_agent
@@ -25,6 +27,54 @@ from varro.db.models import Chat
 from varro.db import crud
 
 ar = APIRouter()
+
+
+def _chat_artifact_paths(chat, user_id: int):
+    turn_paths = [DATA_DIR / turn.obj_fp for turn in chat.turns]
+    cache_paths = [path.with_suffix(".cache.json") for path in turn_paths]
+    state_path = runtime_state_fp(user_id, chat.id)
+    return turn_paths, cache_paths, state_path
+
+
+def _delete_chat_with_artifacts(chats, chat, user_id: int) -> None:
+    turn_paths, cache_paths, state_path = _chat_artifact_paths(chat, user_id)
+    chats.delete(chat)
+    for path in turn_paths:
+        path.unlink(missing_ok=True)
+    for path in cache_paths:
+        path.unlink(missing_ok=True)
+    state_path.unlink(missing_ok=True)
+
+
+async def _stream_run(msg: str, session, chat_id: int, current_url: str | None) -> None:
+    async for block in run_agent(msg, session, chat_id=chat_id, current_url=current_url):
+        attrs = getattr(block, "attrs", None)
+        if isinstance(attrs, dict) and "hx-swap-oob" in attrs:
+            await session.send(block)
+        else:
+            await session.send(Div(block, hx_swap_oob="beforebegin:#chat-progress"))
+
+
+async def _rollback_cancelled_run(session, sess, run: ActiveRun) -> None:
+    restored_chat_id = run.chat_id
+    if run.created_chat:
+        created_chat = session.chats.get(run.chat_id, with_turns=True)
+        if created_chat:
+            _delete_chat_with_artifacts(session.chats, created_chat, session.user_id)
+        restored_chat_id = run.previous_chat_id
+        if restored_chat_id is None:
+            sess.pop("chat_id", None)
+        else:
+            sess["chat_id"] = restored_chat_id
+    else:
+        sess["chat_id"] = run.chat_id
+
+    restored_chat = (
+        session.chats.get(restored_chat_id, with_turns=True)
+        if restored_chat_id is not None
+        else None
+    )
+    await session.send(ChatPanel(restored_chat, shell=None, hx_swap_oob="outerHTML:#chat-panel"))
 
 
 async def on_conn(ws, send, sess, req):
@@ -74,26 +124,52 @@ async def on_message(
     if not s:
         return
     sessions.touch(user_id, sid)
+
+    previous_chat_id = sess.get("chat_id")
+    created_chat = False
     if chat_id is None:
         chat = s.chats.create(Chat())
         chat_id = chat.id
+        created_chat = True
     elif not s.chats.get(chat_id):
+        return
+
+    run_id = uuid4().hex
+    if not s.start_run(
+        run_id=run_id,
+        chat_id=chat_id,
+        previous_chat_id=previous_chat_id,
+        created_chat=created_chat,
+    ):
+        if created_chat:
+            created = s.chats.get(chat_id, with_turns=True)
+            if created:
+                _delete_chat_with_artifacts(s.chats, created, user_id)
+            if previous_chat_id is None:
+                sess.pop("chat_id", None)
+            else:
+                sess["chat_id"] = previous_chat_id
+        return
+
+    run = s.active_run
+    if run is None:
         return
 
     sess["chat_id"] = chat_id
 
-    await s.send(ChatFormDisabled(chat_id))
+    await s.send(ChatFormRunning(chat_id, run_id))
     await s.send(ChatProgressStart())
 
-    async for block in run_agent(msg, s, chat_id=chat_id, current_url=current_url):
-        attrs = getattr(block, "attrs", None)
-        if isinstance(attrs, dict) and "hx-swap-oob" in attrs:
-            await s.send(block)
-        else:
-            await s.send(Div(block, hx_swap_oob="beforebegin:#chat-progress"))
-
-    await s.send(ChatProgressEnd())
-    await s.send(ChatFormEnabled(chat_id))
+    task = asyncio.create_task(_stream_run(msg, s, chat_id, current_url))
+    s.attach_run_task(run_id, task)
+    try:
+        await task
+        await s.send(ChatProgressEnd())
+        await s.send(ChatFormEnabled(chat_id))
+    except asyncio.CancelledError:
+        await _rollback_cancelled_run(s, sess, run)
+    finally:
+        s.clear_run(run_id)
 
 
 @ar.get("/chat")
@@ -110,6 +186,15 @@ def chat_heartbeat(sid: str, sess):
 @ar.post("/chat/close")
 async def chat_close(sid: str, sess):
     await sessions.close_and_remove(sess.get("user_id"), sid)
+    return Response(status_code=204)
+
+
+@ar.post("/chat/cancel")
+def chat_cancel(sid: str, sess, run_id: str | None = None):
+    user_id = sess.get("user_id")
+    if user_id is not None and (session := sessions.get(user_id, sid)):
+        session.cancel_active_run(run_id)
+        sessions.touch(user_id, sid)
     return Response(status_code=204)
 
 
@@ -143,20 +228,10 @@ def chat_delete(chat_id: int, req, sess):
     if not chat:
         return Response(status_code=404)
 
-    turn_paths = [DATA_DIR / turn.obj_fp for turn in chat.turns]
-    cache_paths = [path.with_suffix(".cache.json") for path in turn_paths]
     user_id = sess.get("user_id") or chat.user_id
-    state_path = runtime_state_fp(user_id, chat_id)
-
-    req.state.chats.delete(chat)
+    _delete_chat_with_artifacts(req.state.chats, chat, user_id)
 
     if sess.get("chat_id") == chat_id:
         sess.pop("chat_id", None)
-
-    for path in turn_paths:
-        path.unlink(missing_ok=True)
-    for path in cache_paths:
-        path.unlink(missing_ok=True)
-    state_path.unlink(missing_ok=True)
 
     return Response(status_code=200)

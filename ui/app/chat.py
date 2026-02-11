@@ -121,7 +121,32 @@ def _load_render_cache(turn_fp) -> dict:
     return {}
 
 
-def ChatForm(chat_id: int | None = None, disabled: bool = False):
+def ChatForm(
+    chat_id: int | None = None,
+    *,
+    running: bool = False,
+    run_id: str | None = None,
+):
+    send_icon = NotStr(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'
+    )
+    stop_icon = NotStr(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>'
+    )
+    enter_submit = (
+        "if ($event.key !== 'Enter' || $event.shiftKey || $event.isComposing || $event.keyCode === 229) return;"
+        " const value = ($el.value || '').trim();"
+        " if (!value) { $event.preventDefault(); return; }"
+        " const form = $el.form;"
+        " if (!form) return;"
+        " $event.preventDefault();"
+        " form.requestSubmit();"
+    )
+    blank_submit_guard = (
+        "const input = $el.querySelector('#message-input');"
+        " if (!input || (input.value || '').trim()) return;"
+        " $event.preventDefault();"
+    )
     return Form(
         Div(
             Textarea(
@@ -129,21 +154,22 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
                 name="msg",
                 placeholder="Ask about Danish statistics...",
                 rows="1",
-                disabled=disabled,
+                disabled=running,
                 cls="border-none bg-transparent w-full resize-none focus:outline-none text-sm placeholder:text-base-content/50",
                 x_data="",
                 x_init="$el.style.height = $el.scrollHeight + 'px'",
                 **{
-                    "@input": "$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                    "@input": "$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'",
+                    "@keydown": enter_submit,
                 },
             ),
             Div(
                 Button(
-                    NotStr(
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'
-                    ),
-                    type="submit",
-                    disabled=disabled,
+                    stop_icon if running else send_icon,
+                    type="button" if running else "submit",
+                    hx_post="/chat/cancel" if running else None,
+                    hx_swap="none" if running else None,
+                    hx_include="closest form" if running else None,
                     cls="btn btn-circle btn-sm btn-primary",
                 ),
                 cls="flex justify-end",
@@ -151,6 +177,7 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
             cls="bg-base-100 rounded-box p-3 flex flex-col gap-2 border border-base-300",
         ),
         Input(type="hidden", name="sid", value=""),
+        Input(type="hidden", name="run_id", value=run_id or ""),
         Input(type="hidden", name="current_url", value=""),
         Input(type="hidden", name="chat_id", value=chat_id)
         if chat_id is not None
@@ -158,18 +185,21 @@ def ChatForm(chat_id: int | None = None, disabled: bool = False):
         ws_send=True,
         id="chat-form",
         cls="px-4 py-3",
+        x_data="",
+        **{"@submit": blank_submit_guard},
     )
 
 
-def ChatFormDisabled(chat_id: int | None = None):
+def ChatFormRunning(chat_id: int | None = None, run_id: str | None = None):
     return Div(
-        ChatForm(chat_id=chat_id, disabled=True), hx_swap_oob="outerHTML:#chat-form"
+        ChatForm(chat_id=chat_id, running=True, run_id=run_id),
+        hx_swap_oob="outerHTML:#chat-form",
     )
 
 
 def ChatFormEnabled(chat_id: int | None = None):
     return Div(
-        ChatForm(chat_id=chat_id, disabled=False), hx_swap_oob="outerHTML:#chat-form"
+        ChatForm(chat_id=chat_id), hx_swap_oob="outerHTML:#chat-form"
     )
 
 
