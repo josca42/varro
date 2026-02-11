@@ -116,3 +116,14 @@ Tool changes:
   - WebSocket `on_message` streams only new blocks for the active run.
 - `request_current_url()` is a request-snapshot of browser URL captured client-side at send time; server tools cannot execute browser JavaScript mid-tool-call.
 - Concurrent `Bash` tool calls for the same chat are accepted with last-writer-wins semantics for persisted `bash_cwd`.
+
+## Workspace docs symlinks + read-only paths
+
+- `ensure_user_workspace` now seeds `/subjects`, `/fact`, and `/dim` as symlinks to `docs_template` instead of copying those trees.
+- `/skills` and `/dashboards` are still copied into each user workspace and remain writable.
+- Filesystem tools enforce docs read-only behavior:
+  - `Read` supports readonly symlink traversal for docs paths.
+  - `Write` and `Edit` return `Error: file_path is read-only` for `/subjects`, `/fact`, and `/dim`.
+- Bash enforces docs read-only behavior:
+  - read/list commands still work (`ls`, `find`, `grep`, etc.),
+  - mutating commands and output redirections targeting readonly docs paths are blocked with `Error: path is read-only`.

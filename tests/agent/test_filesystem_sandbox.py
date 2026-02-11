@@ -14,6 +14,8 @@ def _seed_docs_template(data_dir: Path) -> Path:
     (docs_dir / "dashboards").mkdir()
     (docs_dir / "skills").mkdir()
     (docs_dir / "subjects" / "topic.md").write_text("# Topic\n", encoding="utf-8")
+    (docs_dir / "fact" / "table.md").write_text("# Fact\n", encoding="utf-8")
+    (docs_dir / "dim" / "table.md").write_text("# Dim\n", encoding="utf-8")
     return docs_dir
 
 
@@ -34,9 +36,13 @@ def test_ensure_user_workspace_seeds_docs_template(tmp_path: Path, monkeypatch) 
 
     assert user_root == data_dir / "user" / "1"
     assert (user_root / "subjects" / "topic.md").read_text(encoding="utf-8") == "# Topic\n"
-    assert (user_root / "fact").is_dir()
-    assert (user_root / "dim").is_dir()
+    assert (user_root / "subjects").is_symlink()
+    assert (user_root / "fact").is_symlink()
+    assert (user_root / "dim").is_symlink()
     assert (user_root / "dashboards").is_dir()
+    assert not (user_root / "dashboards").is_symlink()
+    assert (user_root / "skills").is_dir()
+    assert not (user_root / "skills").is_symlink()
 
 
 def test_read_file_uses_demo_user_workspace_root(tmp_path: Path, monkeypatch) -> None:
@@ -119,6 +125,28 @@ def test_write_and_edit_file_use_user_workspace_root(
     assert (data_dir / "user" / "1" / "dashboards" / "note.txt").read_text(
         encoding="utf-8"
     ) == "beta"
+
+
+def test_write_and_edit_reject_readonly_docs_paths(tmp_path: Path, monkeypatch) -> None:
+    data_dir = tmp_path / "data"
+    _seed_docs_template(data_dir)
+    _patch_workspace_paths(monkeypatch, data_dir)
+
+    filesystem = importlib.import_module("varro.agent.filesystem")
+    write_res_subjects = filesystem.write_file("/subjects/note.txt", "alpha", user_id=1)
+    write_res_fact = filesystem.write_file("/fact/note.txt", "alpha", user_id=1)
+    write_res_dim = filesystem.write_file("/dim/note.txt", "alpha", user_id=1)
+    edit_res = filesystem.edit_file(
+        "/subjects/topic.md",
+        old_string="# Topic\n",
+        new_string="# Updated\n",
+        user_id=1,
+    )
+
+    assert write_res_subjects == "Error: file_path is read-only"
+    assert write_res_fact == "Error: file_path is read-only"
+    assert write_res_dim == "Error: file_path is read-only"
+    assert edit_res == "Error: file_path is read-only"
 
 
 def test_read_write_edit_reject_paths_outside_sandbox(

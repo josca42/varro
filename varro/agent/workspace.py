@@ -1,11 +1,23 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path, PurePosixPath
 import shutil
 
 from varro.config import DATA_DIR, DOCS_DIR
 
 DEMO_USER_ID = 1
+READONLY_DOCS_DIRS = {"subjects", "fact", "dim"}
+
+
+def is_readonly_user_path(file_path: str) -> bool:
+    path = PurePosixPath(file_path)
+    if not path.is_absolute():
+        return False
+    parts = [part for part in path.parts if part != "/"]
+    if not parts:
+        return False
+    return parts[0] in READONLY_DOCS_DIRS
 
 
 def user_workspace_root(user_id: int) -> Path:
@@ -20,7 +32,11 @@ def ensure_user_workspace(user_id: int) -> Path:
 
     for source in DOCS_DIR.iterdir():
         target = root / source.name
-        if target.exists():
+        if target.exists() or target.is_symlink():
+            continue
+        if source.is_dir() and source.name in READONLY_DOCS_DIRS:
+            rel_source = Path(os.path.relpath(source, start=target.parent))
+            target.symlink_to(rel_source, target_is_directory=True)
             continue
         if source.is_dir():
             shutil.copytree(source, target)
@@ -31,7 +47,11 @@ def ensure_user_workspace(user_id: int) -> Path:
     return root
 
 
-def resolve_user_path(user_id: int, file_path: str) -> Path | str:
+def resolve_user_path(
+    user_id: int,
+    file_path: str,
+    allow_readonly_symlink_read: bool = False,
+) -> Path | str:
     path = PurePosixPath(file_path)
     if not path.is_absolute():
         return "file_path must be an absolute path"
@@ -40,7 +60,16 @@ def resolve_user_path(user_id: int, file_path: str) -> Path | str:
 
     user_root = ensure_user_workspace(user_id).resolve()
     rel_path = file_path.lstrip("/")
-    host_path = (user_root / rel_path).resolve()
+    lexical_host_path = user_root / rel_path
+
+    if allow_readonly_symlink_read and is_readonly_user_path(file_path):
+        try:
+            lexical_host_path.relative_to(user_root)
+        except ValueError:
+            return "file_path escapes sandbox root"
+        return lexical_host_path
+
+    host_path = lexical_host_path.resolve()
 
     try:
         host_path.relative_to(user_root)

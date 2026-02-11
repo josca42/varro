@@ -4,7 +4,11 @@ import pandas as pd
 from pydantic_ai import BinaryContent
 from pydantic_ai.messages import ToolReturn
 from varro.data.utils import df_preview
-from varro.agent.workspace import DEMO_USER_ID, resolve_user_path
+from varro.agent.workspace import (
+    DEMO_USER_ID,
+    is_readonly_user_path,
+    resolve_user_path,
+)
 
 IMAGE_EXTENSIONS = {".png"}
 PARQUET_EXTENSIONS = {".parquet"}
@@ -22,7 +26,11 @@ def read_file(
     limit: int | None = None,
     user_id: int = DEMO_USER_ID,
 ) -> str | ToolReturn:
-    resolved = resolve_user_path(user_id=user_id, file_path=file_path)
+    resolved = resolve_user_path(
+        user_id=user_id,
+        file_path=file_path,
+        allow_readonly_symlink_read=True,
+    )
     if isinstance(resolved, str):
         return _error(resolved)
     path = Path(resolved)
@@ -70,6 +78,8 @@ def read_file(
 
 
 def write_file(file_path: str, content: str, user_id: int = DEMO_USER_ID) -> str:
+    if is_readonly_user_path(file_path):
+        return _error("file_path is read-only")
     resolved = resolve_user_path(user_id=user_id, file_path=file_path)
     if isinstance(resolved, str):
         return _error(resolved)
@@ -93,6 +103,8 @@ def edit_file(
     replace_all: bool = False,
     user_id: int = DEMO_USER_ID,
 ) -> str:
+    if is_readonly_user_path(file_path):
+        return _error("file_path is read-only")
     resolved = resolve_user_path(user_id=user_id, file_path=file_path)
     if isinstance(resolved, str):
         return _error(resolved)

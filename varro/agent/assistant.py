@@ -192,6 +192,7 @@ def Read(
     Usage:
     - The file_path parameter must be an absolute path, not a relative path.
     - Paths are resolved from the sandbox root (`/`) within the current user's workspace.
+    - `/subjects`, `/fact`, and `/dim` are read-only docs paths. Read is allowed there.
     - By default, it reads up to 2000 lines starting from the beginning of the file
     - You can optionally specify a line offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters
     - Any lines longer than 2000 characters will be truncated
@@ -215,6 +216,7 @@ def Write(ctx: RunContext[AssistantRunDeps], file_path: str, content: str) -> st
 
     Usage:
     - Paths are resolved from the sandbox root (`/`) within the current user's workspace.
+    - `/subjects`, `/fact`, and `/dim` are read-only docs paths. Write is blocked there.
     - This tool will overwrite the existing file if there is one at the provided path.
     - If this is an existing file, you MUST use the Read tool first to read the file's contents. This tool will fail if you did not read the file first.
     - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
@@ -240,6 +242,7 @@ def Edit(
 
     Usage:
     - Paths are resolved from the sandbox root (`/`) within the current user's workspace.
+    - `/subjects`, `/fact`, and `/dim` are read-only docs paths. Edit is blocked there.
     - You must use your `Read` tool at least once in the conversation before editing. This tool will error if you attempt an edit without reading the file.
     - When editing text from Read tool output, ensure you preserve the exact indentation (tabs/spaces) as it appears AFTER the line number prefix. The line number prefix format is: spaces + line number + tab. Everything after that tab is the actual file content to match. Never include any part of the line number prefix in the old_string or new_string.
     - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
@@ -271,6 +274,7 @@ def Bash(
     """Executes a given bash command. Working directory persists between commands; shell state (everything else) does not. The shell environment is initialized from the user working directory, which appears as root.
 
     IMPORTANT: This tool is for terminal operations like ls, grep, find, glop. DO NOT use it for file operations (reading, writing, editing) - use the specialized tools for this instead.
+    `/subjects`, `/fact`, and `/dim` are read-only docs paths. Inspection commands are allowed there, but mutating commands are blocked.
 
     Before executing the command, please follow these steps:
     1. Directory Verification:

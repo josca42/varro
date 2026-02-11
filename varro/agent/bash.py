@@ -101,12 +101,19 @@ BASH_ALLOWED_BINARIES = [
     "xargs",
 ]
 BASH_DELETE_COMMANDS = {"rm", "rmdir", "unlink"}
+READONLY_DOCS_ROOTS = ("/subjects", "/fact", "/dim")
+READONLY_MUTATING_COMMANDS = {"touch", "mkdir", "mv", "tee"}
+OUTPUT_REDIRECTION_TOKENS = {">", ">>", ">|"}
+COMMAND_SPLITTERS = {";", "&&", "||"}
 DEV_ABS_PATH_COMMANDS = (
     "cat",
     "cd",
     "du",
+    "egrep",
     "fd",
     "find",
+    "fgrep",
+    "grep",
     "head",
     "less",
     "ls",
@@ -298,6 +305,94 @@ def _commands_allowed(commands: list[list[str]]) -> tuple[bool, str | None]:
     return True, None
 
 
+def _is_readonly_root(path: str) -> bool:
+    return any(path == root or path.startswith(f"{root}/") for root in READONLY_DOCS_ROOTS)
+
+
+def _resolve_command_path(cwd_rel: str, arg: str) -> str | None:
+    if not arg:
+        return None
+    if arg in {"-", "&1", "&2"}:
+        return None
+    if arg.startswith("$") or arg.startswith("~") or arg.startswith("&"):
+        return None
+    if arg.startswith("-"):
+        return None
+    if arg.startswith("/"):
+        return _sanitize_cwd_rel(arg)
+    return _sanitize_cwd_rel(posixpath.join(cwd_rel, arg))
+
+
+def _arg_targets_readonly(cwd_rel: str, arg: str) -> bool:
+    resolved = _resolve_command_path(cwd_rel, arg)
+    if resolved is None:
+        return False
+    return _is_readonly_root(resolved)
+
+
+def _next_cwd_from_cd(cwd_rel: str, tokens: list[str]) -> str:
+    if len(tokens) < 2:
+        return "/"
+    target = _resolve_command_path(cwd_rel, tokens[1])
+    if target is None:
+        return cwd_rel
+    return target
+
+
+def _commands_mutate_readonly(commands: list[list[str]], cwd_rel: str) -> bool:
+    current_cwd = _sanitize_cwd_rel(cwd_rel)
+    for tokens in commands:
+        if not tokens:
+            continue
+        name = Path(tokens[0]).name
+        if name == "cd":
+            current_cwd = _next_cwd_from_cd(current_cwd, tokens)
+            continue
+        if name not in READONLY_MUTATING_COMMANDS:
+            continue
+        args = [arg for arg in tokens[1:] if not arg.startswith("-")]
+        if any(_arg_targets_readonly(current_cwd, arg) for arg in args):
+            return True
+    return False
+
+
+def _split_statements(command: str) -> list[list[str]]:
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|<>")
+    lexer.whitespace_split = True
+    tokens = list(lexer)
+
+    statements: list[list[str]] = []
+    current: list[str] = []
+    for token in tokens:
+        if token in COMMAND_SPLITTERS:
+            if current:
+                statements.append(current)
+                current = []
+            continue
+        current.append(token)
+    if current:
+        statements.append(current)
+    return statements
+
+
+def _redirection_mutates_readonly(command: str, cwd_rel: str) -> bool:
+    current_cwd = _sanitize_cwd_rel(cwd_rel)
+    for statement in _split_statements(command):
+        if not statement:
+            continue
+        if Path(statement[0]).name == "cd":
+            current_cwd = _next_cwd_from_cd(current_cwd, statement)
+            continue
+        for index, token in enumerate(statement):
+            if token not in OUTPUT_REDIRECTION_TOKENS:
+                continue
+            if index + 1 >= len(statement):
+                continue
+            if _arg_targets_readonly(current_cwd, statement[index + 1]):
+                return True
+    return False
+
+
 def _combine_output(stdout: str | None, stderr: str | None) -> str:
     out = (stdout or "").rstrip("\n")
     err = (stderr or "").rstrip("\n")
@@ -326,6 +421,10 @@ def run_bash_command(user_id: int, cwd_rel: str, command: str) -> tuple[str, str
 
     if any(_is_delete_command(tokens) for tokens in commands):
         return "warning: delete", cwd_rel
+    if _commands_mutate_readonly(commands, cwd_rel):
+        return "Error: path is read-only", cwd_rel
+    if _redirection_mutates_readonly(command, cwd_rel):
+        return "Error: path is read-only", cwd_rel
     if not _use_bwrap():
         ok, bad = _commands_allowed(commands)
         if not ok:
