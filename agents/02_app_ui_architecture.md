@@ -10,7 +10,7 @@
   - dashboard routes via `mount_dashboard_routes(...)`,
   - chat routes via `app.routes.chat`,
   - command palette search route via `app.routes.commands`.
-  - dashboard routes are user-scoped (`DATA_DIR/user/{id}/dashboards`).
+  - dashboard routes are user-scoped (`DATA_DIR/user/{id}/dashboard`).
 - Starts/stops idle websocket session cleanup on startup/shutdown.
 
 ## Shell layout (`ui/app/layout.py`)
@@ -69,7 +69,7 @@ Content panel behavior:
 
 - Prefer file-backed pages for user-facing content:
   - welcome page source at `DATA_DIR/user/{user_id}/welcome.md`,
-  - dashboard source at `DATA_DIR/user/{user_id}/dashboards/{slug}/dashboard.md`.
+  - dashboard source at `DATA_DIR/user/{user_id}/dashboard/{slug}/dashboard.md`.
 - Keep HTMX navigation URL-first:
   - `/dashboard/{slug}` for rendered dashboard,
   - `/dashboard/{slug}/code` for source editing,

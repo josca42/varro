@@ -103,7 +103,7 @@ async def snapshot_dashboard_url(
     slug, query = parse_dashboard_url(target_url)
 
     workspace_root = ensure_user_workspace(user_id)
-    dashboard_dir = workspace_root / "dashboards" / slug
+    dashboard_dir = workspace_root / "dashboard" / slug
     if not dashboard_dir.exists():
         raise ValueError(f"dashboard not found: {slug}")
 
@@ -117,8 +117,7 @@ async def snapshot_dashboard_url(
     )
     save_png(snapshot_dir / "dashboard.png", dashboard_png, max_pixels=max_pixels)
 
-    (snapshot_dir / "context.url").write_text(target_url, encoding="utf-8")
-    (snapshot_dir / f"{date.today().isoformat()}.timestamp").touch()
+    (snapshot_dir / f"{date.today().isoformat()}.date").touch()
 
     clear_query_cache()
     metrics: dict[str, Any] = {}

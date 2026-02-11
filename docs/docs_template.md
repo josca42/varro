@@ -23,7 +23,7 @@ docs_template/
 │   │   └── ...
 │   └── ...
 ├── dim/               # Per-table documentation for dimension tables
-└── dashboards/        # Saved dashboard definitions
+└── dashboard/         # Saved dashboard definitions
 ```
 
 ## Subject Hierarchy (3 levels)

@@ -57,7 +57,7 @@
 At runtime, chat agent behavior expects:
 
 - populated Postgres schemas (`fact`, `dim`),
-- docs under `DATA_DIR/docs_template/...` (subjects, fact, dim, dashboards, skills),
+- docs under `DATA_DIR/docs_template/...` (subjects, fact, dim, dashboard, skills),
 - column value parquet files under `DATA_DIR/column_values`,
 - dimension links under `DATA_DIR/dimension_links`.
 

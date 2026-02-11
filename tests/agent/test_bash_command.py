@@ -6,7 +6,7 @@ from pathlib import Path
 
 def _seed_dev_root(dev_root: Path) -> None:
     (dev_root / "subjects").mkdir(parents=True)
-    (dev_root / "dashboards").mkdir(parents=True)
+    (dev_root / "dashboard").mkdir(parents=True)
     (dev_root / "subjects" / "topic.md").write_text("# Topic\n", encoding="utf-8")
 
 
@@ -77,13 +77,13 @@ def test_run_bash_command_blocks_mv_in_readonly_docs(tmp_path: Path, monkeypatch
     bash = _patch_dev_mode(monkeypatch, dev_root)
 
     output, cwd = bash.run_bash_command(
-        1, "/", "mv /subjects/topic.md /dashboards/topic.md"
+        1, "/", "mv /subjects/topic.md /dashboard/topic.md"
     )
 
     assert output == "Error: path is read-only"
     assert cwd == "/"
     assert (dev_root / "subjects" / "topic.md").exists()
-    assert not (dev_root / "dashboards" / "topic.md").exists()
+    assert not (dev_root / "dashboard" / "topic.md").exists()
 
 
 def test_run_bash_command_blocks_redirection_in_readonly_docs(

@@ -64,7 +64,7 @@ def mount_dashboard_routes(app, dashboards_root: Path | str, engine: Engine) -> 
 def _dashboards_dir(user_id: int) -> Path | None:
     if _dashboards_root is None:
         return None
-    return _dashboards_root / "user" / str(user_id) / "dashboards"
+    return _dashboards_root / "user" / str(user_id) / "dashboard"
 
 
 def list_dashboards(user_id: int) -> list[str]:

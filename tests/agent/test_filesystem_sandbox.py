@@ -39,8 +39,9 @@ def test_ensure_user_workspace_seeds_docs_template(tmp_path: Path, monkeypatch) 
     assert (user_root / "subjects").is_symlink()
     assert (user_root / "fact").is_symlink()
     assert (user_root / "dim").is_symlink()
-    assert (user_root / "dashboards").is_dir()
-    assert not (user_root / "dashboards").is_symlink()
+    assert (user_root / "dashboard").is_dir()
+    assert not (user_root / "dashboard").is_symlink()
+    assert not (user_root / "dashboards").exists()
     assert (user_root / "skills").is_dir()
     assert not (user_root / "skills").is_symlink()
 
@@ -112,9 +113,9 @@ def test_write_and_edit_file_use_user_workspace_root(
     _patch_workspace_paths(monkeypatch, data_dir)
 
     filesystem = importlib.import_module("varro.agent.filesystem")
-    write_res = filesystem.write_file("/dashboards/note.txt", "alpha", user_id=1)
+    write_res = filesystem.write_file("/dashboard/note.txt", "alpha", user_id=1)
     edit_res = filesystem.edit_file(
-        "/dashboards/note.txt",
+        "/dashboard/note.txt",
         old_string="alpha",
         new_string="beta",
         user_id=1,
@@ -122,7 +123,7 @@ def test_write_and_edit_file_use_user_workspace_root(
 
     assert write_res == "Wrote 5 bytes."
     assert edit_res == "Replaced 1 occurrence(s)."
-    assert (data_dir / "user" / "1" / "dashboards" / "note.txt").read_text(
+    assert (data_dir / "user" / "1" / "dashboard" / "note.txt").read_text(
         encoding="utf-8"
     ) == "beta"
 

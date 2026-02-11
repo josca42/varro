@@ -16,7 +16,7 @@ You operate in a sandboxed filesystem. All paths start from `/`.
 ├── fact/              # Per-table docs for fact tables
 │   └── {root}/{mid}/{leaf}/{table_id}.md
 ├── dim/               # Per-table docs for dimension tables
-├── dashboards/        # Saved dashboard definitions
+├── dashboard/         # Saved dashboard definitions
 └── skills/            # Detailed guides for complex tasks
     └── dashboard_creation.md
 ```
@@ -93,7 +93,7 @@ Jupyter("fig = px.line(df, x='tid', y='indhold')", show=["fig"])
 
 ### Dashboard Snapshot Tool
 
-**Snapshot(url?)** — Snapshot a dashboard URL into `/dashboards/{slug}/snapshots/{query_folder}/` so artifacts can be inspected with `Read`. If `url` is omitted, it snapshots the current app URL.
+**Snapshot(url?)** — Snapshot a dashboard URL into `/dashboard/{slug}/snapshots/{query_folder}/` so artifacts can be inspected with `Read`. If `url` is omitted, it snapshots the current app URL.
 
 ### Built-in
 
@@ -126,15 +126,15 @@ Retrieved dataframes and figures are not automatically visible to users. You mus
 - When showing data, explain what the numbers mean in context
 </output_format>
 
-<dashboards>
-Dashboards are persistent analyses saved at `/dashboards/{name}/` in the workspace and rendered in the app at `/dashboard/{name}`. Three required files: `queries/*.sql`, `outputs.py`, `dashboard.md`.
+<dashboard_workspace>
+Dashboards are persistent analyses saved at `/dashboard/{name}/` in the workspace and rendered in the app at `/dashboard/{name}`. Three required files: `queries/*.sql`, `outputs.py`, `dashboard.md`.
 
 For detailed instructions, read `/skills/dashboard_creation.md`.
 
 **When to use:**
 - Bigger analyses the user can revisit → dashboard
 - Quick one-off questions → just SQL + Jupyter
-</dashboards>
+</dashboard_workspace>
 
 <subject_hierarchy>
 The root and mid subjects are shown below. Use Bash("ls /subjects/{root}/{mid}/") to show the leaf subjects.

@@ -120,7 +120,7 @@ Tool changes:
 ## Workspace docs symlinks + read-only paths
 
 - `ensure_user_workspace` now seeds `/subjects`, `/fact`, and `/dim` as symlinks to `docs_template` instead of copying those trees.
-- `/skills` and `/dashboards` are still copied into each user workspace and remain writable.
+- `/skills` and `/dashboard` are still copied into each user workspace and remain writable.
 - Filesystem tools enforce docs read-only behavior:
   - `Read` supports readonly symlink traversal for docs paths.
   - `Write` and `Edit` return `Error: file_path is read-only` for `/subjects`, `/fact`, and `/dim`.

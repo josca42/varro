@@ -37,7 +37,7 @@ Build an AI state statistician for Denmark that can:
 
 - Unified app shell: `app/main.py`
 - Chat-only entrypoint: `app/main_chat.py`
-- Demo user dashboard content: `mnt/user/1/dashboards/sales/`
+- Demo user dashboard content: `mnt/user/1/dashboard/sales/`
 
 ## Key docs read
 

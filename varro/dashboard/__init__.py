@@ -13,7 +13,7 @@ Usage:
     # In your app:
     from sqlalchemy import create_engine
     engine = create_engine(DATABASE_URL)
-    dashboards = mount_dashboards(app, engine, "dashboards")
+    dashboards = mount_dashboards(app, engine, "dashboard")
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def mount_dashboards(
     from varro.dashboard.routes import mount_dashboard_routes
 
     root = Path(dashboards_root)
-    dashboards_dir = root / "user" / str(user_id) / "dashboards"
+    dashboards_dir = root / "user" / str(user_id) / "dashboard"
     dashboards = load_dashboards(dashboards_dir)
     mount_dashboard_routes(app, root, engine)
     return dashboards

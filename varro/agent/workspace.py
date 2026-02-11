@@ -8,6 +8,7 @@ from varro.config import DATA_DIR, DOCS_DIR
 
 DEMO_USER_ID = 1
 READONLY_DOCS_DIRS = {"subjects", "fact", "dim"}
+DASHBOARD_DIR_NAMES = {"dashboard", "dashboards"}
 
 
 def is_readonly_user_path(file_path: str) -> bool:
@@ -27,11 +28,13 @@ def user_workspace_root(user_id: int) -> Path:
 def ensure_user_workspace(user_id: int) -> Path:
     root = user_workspace_root(user_id)
     root.mkdir(parents=True, exist_ok=True)
+    (root / "dashboard").mkdir(exist_ok=True)
     if not DOCS_DIR.exists():
         return root
 
     for source in DOCS_DIR.iterdir():
-        target = root / source.name
+        target_name = "dashboard" if source.name in DASHBOARD_DIR_NAMES else source.name
+        target = root / target_name
         if target.exists() or target.is_symlink():
             continue
         if source.is_dir() and source.name in READONLY_DOCS_DIRS:

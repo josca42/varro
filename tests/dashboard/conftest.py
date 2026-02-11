@@ -25,7 +25,7 @@ class DashboardTestEnv:
 
     @property
     def dashboard_path(self) -> Path:
-        return self.dashboards_root / "user" / str(self.user_id) / "dashboards" / self.dashboard_name
+        return self.dashboards_root / "user" / str(self.user_id) / "dashboard" / self.dashboard_name
 
     @property
     def base_url(self) -> str:
@@ -177,7 +177,7 @@ def dashboard_env(tmp_path: Path) -> DashboardTestEnv:
     user_id = 1
     dashboards_root = tmp_path
     dashboard_name = "population"
-    dashboards_dir = dashboards_root / "user" / str(user_id) / "dashboards"
+    dashboards_dir = dashboards_root / "user" / str(user_id) / "dashboard"
     _write_dashboard(dashboards_dir / dashboard_name, table_name)
 
     app, _ = daisy_app()

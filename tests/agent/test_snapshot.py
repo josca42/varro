@@ -110,7 +110,7 @@ def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatc
     snapshot = importlib.import_module("varro.agent.snapshot")
 
     data_dir = tmp_path / "data"
-    dashboard_dir = data_dir / "user" / "1" / "dashboards" / "sales"
+    dashboard_dir = data_dir / "user" / "1" / "dashboard" / "sales"
     dashboard_dir.mkdir(parents=True)
 
     monkeypatch.setattr(workspace, "DATA_DIR", data_dir)
@@ -165,8 +165,8 @@ def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatc
     snapshot_dir = dashboard_dir / "snapshots" / "a=1&b=2"
     assert result.url == "/dashboard/sales?b=2&a=1"
     assert result.folder == snapshot_dir
-    assert (snapshot_dir / "context.url").read_text(encoding="utf-8") == "/dashboard/sales?b=2&a=1"
-    assert (snapshot_dir / f"{date.today().isoformat()}.timestamp").exists()
+    assert not (snapshot_dir / "context.url").exists()
+    assert (snapshot_dir / f"{date.today().isoformat()}.date").exists()
     assert (snapshot_dir / "dashboard.png").exists()
     assert (snapshot_dir / "figures" / "line_plot.png").exists()
     assert (snapshot_dir / "tables" / "summary_table.parquet").exists()
