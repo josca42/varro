@@ -1,7 +1,9 @@
 from datetime import datetime
 import json
+from dataclasses import dataclass
 import pandas as pd
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from typing import Callable
 
 from pydantic_ai import (
     Agent,
@@ -22,7 +24,7 @@ from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
 from varro.context.tools import generate_hierarchy
 from sqlalchemy import text
-from varro.chat.session import UserSession
+from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
 from varro.agent.snapshot import snapshot_dashboard_url
 import logfire
@@ -39,10 +41,18 @@ sonnet_settings = AnthropicModelSettings(
 )
 
 
+@dataclass
+class AssistantRunDeps:
+    user_id: int
+    chat_id: int
+    shell: object
+    request_current_url: Callable[[], str]
+
+
 agent = Agent(
     model=sonnet_model,
     model_settings=sonnet_settings,
-    deps_type=UserSession,
+    deps_type=AssistantRunDeps,
     builtin_tools=[
         # MemoryTool(),
         WebSearchTool(
@@ -62,19 +72,22 @@ agent = Agent(
 
 
 @agent.instructions
-async def get_system_prompt(ctx: RunContext[UserSession]) -> str:
-    prompts = ctx.deps.cached_prompts
-    if not prompts:
-        prompts = get_prompts(prompts)
-        ctx.deps.cached_prompts = prompts
-
+async def get_system_prompt(ctx: RunContext[AssistantRunDeps]) -> str:
+    prompts = {
+        "CURRENT_DATE": datetime.now().strftime("%Y-%m-%d"),
+        **get_static_prompts(),
+    }
     return crud.prompt.render_prompt(name="rigsstatistiker", **prompts)
 
 
-def get_prompts(prompts):
-    prompts["CURRENT_DATE"] = datetime.now().strftime("%Y-%m-%d")
-    prompts["SUBJECT_HIERARCHY"] = generate_hierarchy()
-    return prompts
+_STATIC_PROMPTS: dict[str, str] | None = None
+
+
+def get_static_prompts() -> dict[str, str]:
+    global _STATIC_PROMPTS
+    if _STATIC_PROMPTS is None:
+        _STATIC_PROMPTS = {"SUBJECT_HIERARCHY": generate_hierarchy()}
+    return _STATIC_PROMPTS
 
 
 @agent.tool_plain(docstring_format="google")
@@ -106,7 +119,7 @@ def ColumnValues(
 
 
 @agent.tool(docstring_format="google")
-def Sql(ctx: RunContext[UserSession], query: str, df_name: str | None = None):
+def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = None):
     """
     Execute a SQL query against the PostgreSQL database containing the dimension and fact tables. If df_name is provided then the result is stored in the <session_store> with the name specified by df_name.
 
@@ -128,7 +141,7 @@ def Sql(ctx: RunContext[UserSession], query: str, df_name: str | None = None):
 
 
 @agent.tool(docstring_format="google")
-async def Jupyter(ctx: RunContext[UserSession], code: str, show: list[str] = []):
+async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] = []):
     """
     Stateful Jupyter notebook environment. Each call executes as a new cell.
     All printed output in the notebook cell will be included in the response.
@@ -169,7 +182,7 @@ async def Jupyter(ctx: RunContext[UserSession], code: str, show: list[str] = [])
 
 @agent.tool(docstring_format="google")
 def Read(
-    ctx: RunContext[UserSession],
+    ctx: RunContext[AssistantRunDeps],
     file_path: str,
     offset: int | None = None,
     limit: int | None = None,
@@ -197,7 +210,7 @@ def Read(
 
 
 @agent.tool(docstring_format="google")
-def Write(ctx: RunContext[UserSession], file_path: str, content: str) -> str:
+def Write(ctx: RunContext[AssistantRunDeps], file_path: str, content: str) -> str:
     """Writes a file to the sandboxed local filesystem rooted at `/`.
 
     Usage:
@@ -217,7 +230,7 @@ def Write(ctx: RunContext[UserSession], file_path: str, content: str) -> str:
 
 @agent.tool(docstring_format="google")
 def Edit(
-    ctx: RunContext[UserSession],
+    ctx: RunContext[AssistantRunDeps],
     file_path: str,
     old_string: str,
     new_string: str,
@@ -250,7 +263,11 @@ def Edit(
 
 
 @agent.tool(docstring_format="google")
-def Bash(ctx: RunContext[UserSession], command: str, description: str | None = None):
+def Bash(
+    ctx: RunContext[AssistantRunDeps],
+    command: str,
+    description: str | None = None,
+):
     """Executes a given bash command. Working directory persists between commands; shell state (everything else) does not. The shell environment is initialized from the user working directory, which appears as root.
 
     IMPORTANT: This tool is for terminal operations like ls, grep, find, glop. DO NOT use it for file operations (reading, writing, editing) - use the specialized tools for this instead.
@@ -286,20 +303,20 @@ def Bash(ctx: RunContext[UserSession], command: str, description: str | None = N
         command: The command to execute.
         description: Clear, concise description of what this command does in active voice. Never use words like complex or risk in the description - just describe what it does. For simple commands (git, npm, standard CLI tools), keep it brief (5-10 words). For commands that are harder to parse at a glance (piped commands, obscure flags, etc.), add enough context to clarify what it does.
     """
-    cwd_rel = getattr(ctx.deps, "bash_cwd", "/")
+    cwd_rel = load_bash_cwd(ctx.deps.user_id, ctx.deps.chat_id)
     output, new_cwd = run_bash_command(ctx.deps.user_id, cwd_rel, command)
-    ctx.deps.bash_cwd = new_cwd
+    save_bash_cwd(ctx.deps.user_id, ctx.deps.chat_id, new_cwd)
     return output
 
 
 @agent.tool(docstring_format="google")
-async def Snapshot(ctx: RunContext[UserSession], url: str | None = None) -> str:
+async def Snapshot(ctx: RunContext[AssistantRunDeps], url: str | None = None) -> str:
     """Snapshot a dashboard URL to disk so files can be inspected.
 
     Args:
         url: Optional dashboard URL path. If omitted, uses current content URL.
     """
-    target_url = (url or getattr(ctx.deps, "current_url", "") or "").strip()
+    target_url = (url or ctx.deps.request_current_url() or "").strip()
     if not target_url:
         raise ModelRetry("No URL available. Provide url or open a dashboard first.")
 
@@ -308,13 +325,12 @@ async def Snapshot(ctx: RunContext[UserSession], url: str | None = None) -> str:
     except Exception as exc:
         raise ModelRetry(str(exc))
 
-    ctx.deps.current_url = result.url
     return result.url
 
 
 @agent.tool(docstring_format="google")
 def UpdateUrl(
-    ctx: RunContext[UserSession],
+    ctx: RunContext[AssistantRunDeps],
     path: str | None = None,
     params: dict[str, str | bool | None] | None = None,
     replace: bool = False,
@@ -326,7 +342,7 @@ def UpdateUrl(
         params: Query parameters to merge. `None` or empty values remove keys.
         replace: If true, update URL via replaceState instead of pushState.
     """
-    source = (path or getattr(ctx.deps, "current_url", "/") or "/").strip()
+    source = (path or ctx.deps.request_current_url() or "/").strip()
     if not source.startswith("/"):
         raise ModelRetry("path must start with '/'")
 
@@ -354,7 +370,5 @@ def UpdateUrl(
 
     merged_query = urlencode(query)
     next_url = urlunsplit(("", "", parsed.path or "/", merged_query, ""))
-    ctx.deps.current_url = next_url
-
     payload = {"url": next_url, "replace": replace}
     return f"UPDATE_URL {json.dumps(payload, ensure_ascii=False)}"

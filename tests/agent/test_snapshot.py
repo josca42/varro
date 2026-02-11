@@ -65,7 +65,10 @@ def test_snapshot_tool_uses_current_url_when_url_is_omitted(
         fake_snapshot_dashboard_url,
     )
     ctx = SimpleNamespace(
-        deps=SimpleNamespace(user_id=7, current_url="/dashboard/sales?region=North")
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: "/dashboard/sales?region=North",
+        )
     )
 
     result = asyncio.run(assistant_module.Snapshot(ctx))
@@ -90,7 +93,10 @@ def test_snapshot_tool_uses_explicit_url_over_current_url(
         fake_snapshot_dashboard_url,
     )
     ctx = SimpleNamespace(
-        deps=SimpleNamespace(user_id=7, current_url="/dashboard/sales?region=North")
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: "/dashboard/sales?region=North",
+        )
     )
 
     result = asyncio.run(assistant_module.Snapshot(ctx, url="/dashboard/sales?region=South"))

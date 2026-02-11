@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import AsyncIterator
 
 from pydantic_ai import Agent
@@ -9,9 +10,12 @@ from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart, ToolRetur
 
 from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
-from varro.agent.assistant import agent
+from varro.agent.assistant import AssistantRunDeps, agent
+from varro.chat.render_cache import save_turn_render_cache
 from varro.chat.session import UserSession
-from varro.db.models.chat import Chat
+from varro.chat.turn_store import load_messages_for_turns, save_turn_messages, turn_fp
+from varro.config import DATA_DIR
+from varro.db.models.chat import Chat, Turn
 from varro.db import crud
 
 
@@ -44,20 +48,56 @@ class ReasoningState:
         self.sent = False
 
 
-async def run_agent(user_text: str, session: UserSession) -> AsyncIterator[object]:
+async def run_agent(
+    user_text: str,
+    session: UserSession,
+    chat_id: int,
+    current_url: str | None = None,
+) -> AsyncIterator[object]:
     """Run the agent and yield one HTML block per completed node."""
-    state = ReasoningState(session.turn_idx)
-    async with agent.iter(user_text, message_history=session.msgs, deps=session) as run:
+    chat = session.chats.get(chat_id, with_turns=True)
+    if not chat:
+        return
+
+    msg_history = load_messages_for_turns(chat.turns)
+    turn_idx = len(chat.turns)
+    state = ReasoningState(turn_idx)
+
+    await session.ensure_shell_for_chat(chat_id, msg_history)
+
+    request_url = (current_url or "").strip()
+    if not request_url.startswith("/"):
+        request_url = "/"
+
+    deps = AssistantRunDeps(
+        user_id=session.user_id,
+        chat_id=chat_id,
+        shell=session.shell,
+        request_current_url=lambda: request_url,
+    )
+    async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
         async for node in run:
-            for block in node_to_blocks(node, session, state):
+            for block in node_to_blocks(node, session.shell, state):
                 if block:
                     yield block
 
     new_msgs = run.result.new_messages()
-    session.save_turn(new_msgs, user_text)
+    fp = turn_fp(session.user_id, chat_id, turn_idx)
+    save_turn_messages(new_msgs, fp)
+    save_turn_render_cache(new_msgs, fp, session.shell)
 
-    if session.turn_idx == 1:
-        asyncio.create_task(_set_chat_title(session.chat_id, user_text))
+    crud.turn.create(
+        Turn(
+            chat_id=chat_id,
+            user_text=user_text,
+            obj_fp=str(fp.relative_to(DATA_DIR)),
+            idx=turn_idx,
+        )
+    )
+    crud.chat.update(Chat(id=chat_id, updated_at=datetime.now(timezone.utc)))
+
+    if turn_idx == 0:
+        asyncio.create_task(_set_chat_title(chat_id, user_text))
 
 
 _title_agent = Agent(
@@ -80,7 +120,7 @@ async def _set_chat_title(chat_id: int, user_text: str) -> None:
 
 def node_to_blocks(
     node,
-    session: UserSession,
+    shell,
     state: ReasoningState,
 ) -> list[object]:
     """Convert a completed pydantic-ai node to a UI block."""
@@ -94,7 +134,7 @@ def node_to_blocks(
             return []
         state.returns.extend(tool_parts)
         if state.sequence:
-            return [state.build_block(session.shell)]
+            return [state.build_block(shell)]
         return [ModelRequestBlock(node)]
 
     if Agent.is_call_tools_node(node):
@@ -102,15 +142,15 @@ def node_to_blocks(
             cache_tool_calls(node.model_response.parts, state.sequence)
             return []
         blocks = []
-        block = state.build_block(session.shell)
+        block = state.build_block(shell)
         if block:
             blocks.append(block)
-        blocks.append(CallToolsBlock(node, shell=session.shell, connected=False))
+        blocks.append(CallToolsBlock(node, shell=shell, connected=False))
         state.clear()
         return blocks
 
     if Agent.is_end_node(node):
-        block = state.build_block(session.shell)
+        block = state.build_block(shell)
         state.clear()
         return [block] if block else []
 

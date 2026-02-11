@@ -24,42 +24,70 @@ def assistant_module(monkeypatch):
     return importlib.reload(assistant)
 
 
-def test_bash_returns_command_output_and_updates_cwd(assistant_module, monkeypatch):
+def test_bash_returns_command_output_and_persists_cwd(assistant_module, monkeypatch):
     calls = []
 
+    def fake_load_bash_cwd(user_id: int, chat_id: int) -> str:
+        calls.append(("load", user_id, chat_id))
+        return "/start"
+
     def fake_run_bash_command(user_id: int, cwd_rel: str, command: str):
-        calls.append((user_id, cwd_rel, command))
+        calls.append(("run", user_id, cwd_rel, command))
         return "command output", "/next"
 
-    monkeypatch.setattr(assistant_module, "run_bash_command", fake_run_bash_command)
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=42, bash_cwd="/start"))
+    def fake_save_bash_cwd(user_id: int, chat_id: int, cwd: str) -> None:
+        calls.append(("save", user_id, chat_id, cwd))
 
+    monkeypatch.setattr(assistant_module, "load_bash_cwd", fake_load_bash_cwd)
+    monkeypatch.setattr(assistant_module, "run_bash_command", fake_run_bash_command)
+    monkeypatch.setattr(assistant_module, "save_bash_cwd", fake_save_bash_cwd)
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=42, chat_id=7))
     output = assistant_module.Bash(ctx, command="ls /subjects")
 
     assert output == "command output"
-    assert ctx.deps.bash_cwd == "/next"
-    assert calls == [(42, "/start", "ls /subjects")]
+    assert calls == [
+        ("load", 42, 7),
+        ("run", 42, "/start", "ls /subjects"),
+        ("save", 42, 7, "/next"),
+    ]
 
 
-def test_bash_uses_root_cwd_when_session_has_no_bash_cwd(assistant_module, monkeypatch):
+def test_bash_uses_loaded_root_cwd_when_store_returns_root(assistant_module, monkeypatch):
     calls = []
 
+    def fake_load_bash_cwd(user_id: int, chat_id: int) -> str:
+        calls.append(("load", user_id, chat_id))
+        return "/"
+
     def fake_run_bash_command(user_id: int, cwd_rel: str, command: str):
-        calls.append((user_id, cwd_rel, command))
+        calls.append(("run", user_id, cwd_rel, command))
         return "pwd output", "/"
 
-    monkeypatch.setattr(assistant_module, "run_bash_command", fake_run_bash_command)
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=9))
+    def fake_save_bash_cwd(user_id: int, chat_id: int, cwd: str) -> None:
+        calls.append(("save", user_id, chat_id, cwd))
 
+    monkeypatch.setattr(assistant_module, "load_bash_cwd", fake_load_bash_cwd)
+    monkeypatch.setattr(assistant_module, "run_bash_command", fake_run_bash_command)
+    monkeypatch.setattr(assistant_module, "save_bash_cwd", fake_save_bash_cwd)
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=9, chat_id=2))
     output = assistant_module.Bash(ctx, command="pwd")
 
     assert output == "pwd output"
-    assert ctx.deps.bash_cwd == "/"
-    assert calls == [(9, "/", "pwd")]
+    assert calls == [
+        ("load", 9, 2),
+        ("run", 9, "/", "pwd"),
+        ("save", 9, 2, "/"),
+    ]
 
 
-def test_update_url_merges_params_and_updates_session_url(assistant_module):
-    ctx = SimpleNamespace(deps=SimpleNamespace(current_url="/dashboard/sales?region=North"))
+def test_update_url_merges_params_using_request_current_url(assistant_module):
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            request_current_url=lambda: "/dashboard/sales?region=North"
+        )
+    )
 
     output = assistant_module.UpdateUrl(
         ctx,
@@ -76,11 +104,14 @@ def test_update_url_merges_params_and_updates_session_url(assistant_module):
         "period_from": ["2024-01-01"],
     }
     assert payload["replace"] is True
-    assert ctx.deps.current_url == payload["url"]
 
 
 def test_update_url_removes_params_with_none(assistant_module):
-    ctx = SimpleNamespace(deps=SimpleNamespace(current_url="/dashboard/sales?region=North&period_to=2024-12-31"))
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            request_current_url=lambda: "/dashboard/sales?region=North&period_to=2024-12-31"
+        )
+    )
 
     output = assistant_module.UpdateUrl(
         ctx,
@@ -90,4 +121,3 @@ def test_update_url_removes_params_with_none(assistant_module):
     payload = json.loads(output.removeprefix("UPDATE_URL ").strip())
     assert payload["url"] == "/dashboard/sales"
     assert payload["replace"] is False
-    assert ctx.deps.current_url == "/dashboard/sales"

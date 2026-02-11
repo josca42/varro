@@ -2,7 +2,7 @@
 
 ## Websocket chat flow
 
-Primary runtime lives in:
+Primary runtime:
 
 - `app/routes/chat.py`
 - `varro/chat/session.py`
@@ -14,108 +14,100 @@ Flow:
 2. `SessionManager.create(...)` allocates a `UserSession`.
 3. Incoming message:
   - create chat if needed,
-  - optionally delete turns from `edit_idx`,
   - disable chat form + start progress animation,
   - run agent and stream blocks,
-  - save turn, stop progress animation, re-enable form.
+  - persist the new turn,
+  - stop progress animation + re-enable form.
 
 ## Browser session identity
 
 `ui/app/chat.py::ChatClientScript()`:
 
 - creates per-tab sid in `sessionStorage`,
-- writes sid to websocket url and hidden inputs (`sid`, `current_url`),
+- writes sid to websocket URL and hidden inputs (`sid`, `current_url`),
+- refreshes hidden values on initial load, HTMX swaps, popstate, and form submit,
 - sends heartbeat (`/chat/heartbeat`) while active/visible,
 - sends close beacon on unload (`/chat/close`).
 
 ## Session model (`UserSession`)
 
-State fields:
+`UserSession` is transport + shell identity only:
 
-- `chat_id`, `msgs`, `turn_idx`,
-- stateful IPython shell (`TerminalInteractiveShell`),
-- `cached_prompts`,
-- persisted bash working directory (`bash_cwd`).
-- current URL state (`current_url`) for assistant navigation.
+- `user_id`, `sid`, `send`, `ws`, `chats`
+- stateful IPython shell (`TerminalInteractiveShell`)
+- `shell_chat_id` to track which chat shell state currently represents
 
-Turn persistence:
+No per-session chat history state is stored (`msgs`, `turn_idx`, `current_url`, `bash_cwd`, `cached_prompts` removed).
 
-- messages serialized as msgpack + zstd:
-  - `data/chats/{user_id}/{chat_id}/{idx}.mpk`
-- cache file for rendered placeholders:
-  - `{idx}.cache.json` (`fig:name` / `df:name` -> HTML).
+## Turn/runtime persistence
+
+Turn files:
+
+- `data/chats/{user_id}/{chat_id}/{idx}.mpk` (msgpack+zstd `ModelMessage` list)
+- `data/chats/{user_id}/{chat_id}/{idx}.cache.json` (fig/df cached HTML)
+
+Chat runtime state:
+
+- `data/chats/{user_id}/{chat_id}/runtime.json`
+- schema: `{"bash_cwd": "/..."}`
+
+Helpers:
+
+- `varro/chat/turn_store.py`
+- `varro/chat/render_cache.py`
+- `varro/chat/runtime_state.py`
+- `varro/chat/shell_replay.py`
 
 ## Agent orchestration (`varro/chat/agent_run.py`)
 
-- uses `agent.iter(...)` from pydantic-ai.
-- maps completed nodes to UI blocks:
-  - user prompt bubbles,
-  - reasoning block (thinking/text/tool calls + tool returns),
-  - final answer block(s).
-- first user turn triggers async title generation with a small agent model.
+`run_agent(...)` now does stateless history reconstruction per request:
 
-## Agent configuration (`varro/agent/assistant.py`)
+1. Load turns from DB (`chat_id`, `with_turns=True`).
+2. Load full message history from turn files.
+3. Compute `turn_idx = len(turns)`.
+4. Ensure shell for this chat (`ensure_shell_for_chat`):
+  - reset shell on chat switch,
+  - replay prior `Sql(df_name=...)` and `Jupyter(...)` tool calls.
+5. Run `agent.iter(...)` with request-scoped deps.
+6. Persist new turn messages + render cache + DB turn row.
+7. Trigger async title generation when `turn_idx == 0`.
 
-- model: `claude-sonnet-4-5`
-- thinking enabled with token budget
-- builtin web search tool with Copenhagen locale metadata
-- custom tools exposed in code:
-  - `ColumnValues`
-  - `Sql`
-  - `Jupyter`
-  - `Read` / `Write` / `Edit`
-  - `Bash`
-  - `Snapshot`
-  - `UpdateUrl`
+## Session manager liveness
 
-## Agent prompt (`varro/prompts/agent/rigsstatistiker.j2`)
+`SessionManager` stores entries as:
 
-Structured as:
+- `{session: UserSession, last_seen: datetime}`
 
-1. **Role** — Rigsstatistikeren identity + current date.
-2. **Environment** — Sandboxed filesystem layout (`/subjects/`, `/fact/`, `/dim/`, `/dashboards/`, `/skills/`).
-3. **Database schema** — dim/fact schema, join pattern.
-4. **Tools** — Documents all registered tools by their exact names.
-5. **Workflow** — Step-by-step: identify subject → read docs → check values → query → analyze.
-6. **Output format** — `<df />` and `<fig />` embedding tags.
-7. **Dashboards** — Brief pointer to `/skills/dashboard_creation.md`.
-8. **Subject hierarchy** — Compact (roots + mids only) injected via `{{ SUBJECT_HIERARCHY }}`. Agent discovers leaves on-demand via `Bash("ls /subjects/{root}/{mid}/")`.
+`touch`, `evict_idle`, `find_by_ws`, `get`, `create`, and `remove` use entry metadata; `last_seen` is no longer on `UserSession`.
 
-The agent accesses table docs and subject overviews via `Read` and `Bash` on the filesystem.
+## Assistant deps and tool runtime
 
-## Tool runtime helpers
+`varro/agent/assistant.py` uses:
 
-- `varro/agent/ipython_shell.py`: patched shell `run_cell`, timeout support.
-- `varro/agent/utils.py`: dataframe/figure rendering helpers.
-- `varro/agent/snapshot.py`: dashboard URL snapshot service (`dashboard.png`, `figures/*.png`, `tables/*.parquet`, `metrics.json`, `context.url`, date marker).
-- `varro/agent/playwright_render.py`: persistent headless browser for plotly and dashboard snapshots.
-- `varro/agent/bash.py`: sandboxed command execution with allowlist and per-user working root.
-- `varro/agent/images.py`: shared PNG optimization/downscale pipeline with per-call max pixel caps.
+- `AssistantRunDeps(user_id, chat_id, shell, request_current_url)`
+
+Tool changes:
+
+- `Bash` loads/saves cwd via `runtime.json` per chat.
+- `Snapshot(url?)` uses explicit `url` or `request_current_url()`.
+- `UpdateUrl(path?, params?, replace?)` builds payload from explicit `path` or `request_current_url()`.
+- Prompt generation uses module-level cache for static expensive prompt parts (`SUBJECT_HIERARCHY`).
 
 ## URL-state navigation flow
 
-- `UpdateUrl(path?, params?, replace?)` builds app-relative URLs and stores the latest URL in session state.
-- `Snapshot(url?)` snapshots `/dashboard/{slug}` URLs to `/dashboards/{slug}/snapshots/{query_folder}/`; omitted `url` falls back to `current_url`.
-- Tool output uses the marker format `UPDATE_URL {json_payload}`.
-- `ui/app/tool.py` detects `UpdateUrl` results and emits a script call to `window.__varroApplyUpdateUrl(callId, payload)`.
-- `ui/app/layout.py::UrlStateScript()` applies navigation via HTMX (`#content-panel`) and updates browser history (`pushState`/`replaceState`).
+- Frontend captures current content URL into hidden `current_url` at send time.
+- `on_message` passes `current_url` into `run_agent(...)`.
+- Assistant reads URL via `ctx.deps.request_current_url()` during that run only.
+- No URL state is persisted on `UserSession`.
 
-## Chat UI rendering
+## Chat load vs streaming behavior
 
-`ui/app/chat.py` handles:
-
-- message list + form + dropdown,
-- model-part rendering (`ThinkingPart`, `TextPart`, `ToolCallPart`),
-- markdown rendering with dashboard parser support,
-- inline placeholders:
-  - `<fig name="..."/>`
-  - `<df name="..."/>`
+- `/chat/switch/{chat_id}` returns full `ChatPanel(...)` from persisted turns.
+- WebSocket message path streams only new blocks for the active run.
+- Edit-message flow is removed.
 
 ## Important runtime notes
 
-- History replay attempts to re-run prior tool calls to rebuild shell state.
-- Chat edit flow removes turns >= `edit_idx` from DB and disk.
-- Progress indicator uses Game of Life canvas and OOB swaps.
-- Chat form hidden fields (`sid`, `current_url`) are initially set by `ChatClientScript`, and each turn replaces `#chat-form` via websocket OOB swaps (`ChatFormDisabled`/`ChatFormEnabled`).
-- `ChatClientScript` now re-applies hidden values on both `htmx:afterSwap` and `htmx:oobAfterSwap`, preventing follow-up messages from dropping `sid` and being ignored by `on_message`.
-- `Read` tool supports `.parquet` by loading via pandas and returning a `df_preview(...)` string; other non-image files still use UTF-8 text reads and return read/decode errors for binary content.
+- Disk IO is now the source of truth for history on every message run.
+- Shell continuity is preserved only through replay + in-memory shell per active chat session.
+- Chat deletion removes turn files, render cache files, and `runtime.json`.

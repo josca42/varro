@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from sqlalchemy.orm import selectinload
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select
 
 from varro.db.crud.base import CrudBase
 from varro.db.db import engine
@@ -46,27 +44,7 @@ class CrudChat(CrudBase[Chat]):
 
 
 class CrudTurn(CrudBase[Turn]):
-    def delete_from_idx(self, chat_id: int, idx: int) -> list[str]:
-        """
-        Delete all turns with idx >= given idx.
-        Returns list of obj_fp paths that were deleted (for file cleanup).
-        """
-        with Session(self.engine) as session:
-            query = select(Turn).where(
-                Turn.chat_id == chat_id,
-                Turn.idx >= idx,
-            )
-            to_delete = list(session.exec(query).all())
-            deleted_paths = [t.obj_fp for t in to_delete]
-
-            stmt = delete(Turn).where(
-                Turn.chat_id == chat_id,
-                Turn.idx >= idx,
-            )
-            session.exec(stmt)
-            session.commit()
-
-            return deleted_paths
+    pass
 
 
 chat = CrudChat(Chat, engine)

@@ -97,10 +97,10 @@ def ChatMessages(
 
 def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None):
     """Render a complete turn from stored data."""
-    from varro.chat.session import UserSession
+    from varro.chat.turn_store import load_turn_messages
 
     fp = DATA_DIR / turn.obj_fp
-    msgs = UserSession._load_turn(fp)
+    msgs = load_turn_messages(fp)
     if shell is None:
         cache = _load_render_cache(fp)
         if cache:
@@ -236,6 +236,13 @@ def ChatClientScript():
   };
   document.body.addEventListener("htmx:afterSwap", onSwap);
   document.body.addEventListener("htmx:oobAfterSwap", onSwap);
+
+  document.body.addEventListener("submit", (event) => {
+    const form = event.target;
+    if (form && form.matches && form.matches("#chat-form")) {
+      setHiddenInputs();
+    }
+  }, true);
 
   window.addEventListener("popstate", setHiddenInputs);
 

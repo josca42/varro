@@ -14,11 +14,11 @@ from ui.app.chat import (
     ChatFormDisabled,
     ChatFormEnabled,
     ChatDropdown,
-    ChatMessages,
     ChatProgressStart,
     ChatProgressEnd,
 )
 from varro.chat.session import sessions
+from varro.chat.runtime_state import runtime_state_fp
 from varro.config import DATA_DIR
 from varro.chat.agent_run import run_agent
 from varro.db.models import Chat
@@ -42,11 +42,8 @@ async def on_conn(ws, send, sess, req):
         return
 
     chats = crud.chat.for_user(user_id)
-    session = await sessions.create(user_id, sid, chats, send, ws)
-    session.touch()
-
-    if chat_id := sess.get("chat_id"):
-        await session.start_chat(chat_id)
+    await sessions.create(user_id, sid, chats, send, ws)
+    sessions.touch(user_id, sid)
 
 
 def on_disconn(ws, sess):
@@ -60,7 +57,6 @@ async def on_message(
     msg: str,
     sess,
     chat_id: int | None = None,
-    edit_idx: int | None = None,
     sid: str | None = None,
     current_url: str | None = None,
 ):
@@ -70,39 +66,26 @@ async def on_message(
     Args:
         msg: The user's message text
         chat_id: The chat ID (may be None for new chat)
-        edit_idx: If provided, delete turns from this index before processing
     """
     if not sid:
         return
-    s = sessions.get(sess["user_id"], sid)
+    user_id = sess["user_id"]
+    s = sessions.get(user_id, sid)
     if not s:
         return
-    s.touch()
-    if current_url and current_url.startswith("/"):
-        s.current_url = current_url
-
+    sessions.touch(user_id, sid)
     if chat_id is None:
         chat = s.chats.create(Chat())
         chat_id = chat.id
-        sess["chat_id"] = chat_id
+    elif not s.chats.get(chat_id):
+        return
 
-    if s.chat_id != chat_id:
-        await s.start_chat(chat_id)
-
-    if edit_idx is not None:
-        s.delete_from_idx(edit_idx)
-        chat = s.chats.get(s.chat_id, with_turns=True)
-        if chat:
-            await s.send(
-                ChatMessages(
-                    chat.turns, shell=s.shell, hx_swap_oob="outerHTML:#chat-messages"
-                )
-            )
+    sess["chat_id"] = chat_id
 
     await s.send(ChatFormDisabled(chat_id))
     await s.send(ChatProgressStart())
 
-    async for block in run_agent(msg, s):
+    async for block in run_agent(msg, s, chat_id=chat_id, current_url=current_url):
         attrs = getattr(block, "attrs", None)
         if isinstance(attrs, dict) and "hx-swap-oob" in attrs:
             await s.send(block)
@@ -161,6 +144,9 @@ def chat_delete(chat_id: int, req, sess):
         return Response(status_code=404)
 
     turn_paths = [DATA_DIR / turn.obj_fp for turn in chat.turns]
+    cache_paths = [path.with_suffix(".cache.json") for path in turn_paths]
+    user_id = sess.get("user_id") or chat.user_id
+    state_path = runtime_state_fp(user_id, chat_id)
 
     req.state.chats.delete(chat)
 
@@ -168,7 +154,9 @@ def chat_delete(chat_id: int, req, sess):
         sess.pop("chat_id", None)
 
     for path in turn_paths:
-        if path.exists():
-            path.unlink()
+        path.unlink(missing_ok=True)
+    for path in cache_paths:
+        path.unlink(missing_ok=True)
+    state_path.unlink(missing_ok=True)
 
     return Response(status_code=200)
