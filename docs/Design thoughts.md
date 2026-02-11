@@ -95,3 +95,7 @@ Read/Write/Edit
 Sql, python, update_url, snapshot
 **Orchestrator**
 Bash
+
+**Words that create words that create words**
+Skills/
+Agent/ notes

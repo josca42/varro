@@ -1,6 +1,6 @@
 # Varro Notes Index
 
-Last updated: 2026-02-10.
+Last updated: 2026-02-11.
 
 ## Core notes
 

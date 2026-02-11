@@ -111,3 +111,8 @@ Tool changes:
 - Disk IO is now the source of truth for history on every message run.
 - Shell continuity is preserved only through replay + in-memory shell per active chat session.
 - Chat deletion removes turn files, render cache files, and `runtime.json`.
+- Full-history vs incremental rendering is route-driven, not inferred:
+  - `/chat/switch/{chat_id}` returns full `ChatPanel(...)`.
+  - WebSocket `on_message` streams only new blocks for the active run.
+- `request_current_url()` is a request-snapshot of browser URL captured client-side at send time; server tools cannot execute browser JavaScript mid-tool-call.
+- Concurrent `Bash` tool calls for the same chat are accepted with last-writer-wins semantics for persisted `bash_cwd`.
