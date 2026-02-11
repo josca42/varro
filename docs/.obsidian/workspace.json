@@ -200,6 +200,8 @@
   },
   "active": "988bd9f20db43176",
   "lastOpenFiles": [
+    "tasks/SKILL_DOCS.md",
+    "libs/SKILL_DOCS.md",
     "docs_template.md",
     "Design thoughts.md",
     "Design thougs.md",
@@ -243,8 +245,6 @@
     "llm_docs/alpine_js/headless-radio.md",
     "llm_docs/alpine_js/code_examples.md",
     "llm_docs/alpine_js/headless-popover.md",
-    "llm_docs/alpine_js/headless-listbox.md",
-    "llm_docs/alpine_js/headless-disclosure.md",
-    "llm_docs/alpine_js/headless-combobox.md"
+    "llm_docs/alpine_js/headless-listbox.md"
   ]
 }

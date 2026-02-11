@@ -21,7 +21,9 @@ dashboards/
 │   │   ├── monthly_revenue.sql
 │   │   └── top_products.sql
 │   ├── outputs.py       # @output functions returning figures, tables, metrics
-│   └── dashboard.md     # Layout and component references
+│   ├── dashboard.md     # Layout and component references
+│   └── notes.md         # If the AI agent wants to include notes for future
+						 # reference it can do so in a notes.md file
 ```
 
 The markdown file uses `:::` fence syntax to indicate UI containers and <object_type /> to indicate python objects that should be displayed. So a dashboard could look like this
@@ -92,10 +94,13 @@ Notice that the folder name of the snapshot are the filter values used in the ur
 **Verbs**
 Read/Write/Edit
 **Infrastructure**
-Sql, python, update_url, snapshot
-**Orchestrator**
-Bash
+Sql, Jupyter, UpdateUrl, Snapshot, Bash
+
 
 **Words that create words that create words**
-Skills/
-Agent/ notes
+A key aspect of the "file over app" philosophy is that the filesystem is the state of the system. Hence, how the program behaves evolves as the files change. In my dashboard app this is enabled in 3 ways. 
+
+- **Dashboards as memory**: A dashboard represents an analysis that the user has iterated on. As such it encapsulates various decisions about what a good analysis is. What tables were used, what plots were created and how were the pieces put together. By having the dashboard be easily read and viewed by the AI agent it can always consult previous examples of user preferences and use that as guidelines going forward.
+
+- **Skills**:
+- **Agent notes**:  
