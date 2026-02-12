@@ -40,6 +40,7 @@ def _nav_tab(icon_key: str, label: str, action: str):
     )
 
 
+# TODO: Is this needed?. Could I replace with native htmx functionality?.
 def NavbarNavScript():
     return Script(
         """

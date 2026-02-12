@@ -13,10 +13,10 @@ Build an AI state statistician for Denmark that can:
 ## Main parts
 
 - `ui/`: shared FastHTML + DaisyUI component library.
-- `app/`: web app shell, routes, websocket chat wiring.
+- `app/`: web app shell, routes, SSE chat run wiring.
 - `varro/`: domain/runtime library:
   - `agent/`: pydantic-ai agent and tool implementations.
-  - `chat/`: session and turn persistence/runtime.
+  - `chat/`: run manager, shell pool, and turn persistence/runtime.
   - `dashboard/`: markdown dashboard framework.
   - `context/`: docs generation and lookup helpers.
   - `data/`: ingestion and DB loading scripts.

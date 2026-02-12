@@ -8,7 +8,7 @@ The unified FastHTML web app that renders the split-panel shell and mounts chat 
 app/
 ├── main.py          # App entrypoint, beforeware, unified shell routes
 └── routes/
-    ├── chat.py      # WebSocket + OOB chat routes
+    ├── chat.py      # Run start/stream/cancel/status + OOB chat routes
     ├── auth.py      # Authentication routes (optional)
     └── index.py     # Auth landing routes (optional)
 ```
@@ -23,7 +23,7 @@ app/
 - The content panel uses `hx-history-elt` so back/forward only swaps the right panel.
 
 ### Chat Isolation
-- Chat state is session + WebSocket only.
+- Chat state is session + run_id based SSE transport.
 - `/chat/new` and `/chat/switch/{id}` return OOB swaps targeting `#chat-panel`.
 - The URL never determines chat state.
 

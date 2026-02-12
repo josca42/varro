@@ -3,55 +3,54 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import mistletoe
+import pandas as pd
 from fasthtml.common import (
-    Div,
-    Span,
-    Button,
-    Form,
-    Input,
-    Textarea,
-    Main,
-    Script,
-    Header,
-    Ul,
-    Li,
     A,
+    Button,
+    Div,
+    Form,
+    Header,
+    Input,
+    Li,
+    Main,
     NotStr,
+    Script,
+    Span,
+    Textarea,
+    Ul,
 )
-from ui.components import DataTable, Figure, GameOfLifeAnimation
+from plotly.basedatatypes import BaseFigure
 from pydantic_ai.messages import (
     ModelRequest,
     ModelResponse,
-    ThinkingPart,
     TextPart,
+    ThinkingPart,
     ToolCallPart,
 )
+
 from ui.app.tool import (
+    ReasoningBlock,
     ThinkingBlock,
     ToolCallsGroup,
     ToolResultsGroup,
-    ReasoningBlock,
     _tool_call_item,
 )
+from ui.components import DataTable, Figure, GameOfLifeAnimation
 from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
+from varro.config import DATA_DIR
 from varro.dashboard.parser import (
-    parse_dashboard_md,
-    MarkdownNode,
     ComponentNode,
     ContainerNode,
+    MarkdownNode,
+    parse_dashboard_md,
 )
-from varro.config import DATA_DIR
-from plotly.basedatatypes import BaseFigure
-import pandas as pd
 
 if TYPE_CHECKING:
-    from varro.db.models.chat import Chat, Turn
     from varro.agent.ipython_shell import TerminalInteractiveShell
+    from varro.db.models.chat import Chat, Turn
 
 
 class _CacheShell:
-    """Lightweight stand-in for shell that serves cached HTML for fig/df placeholders."""
-
     def __init__(self, cache: dict):
         self.user_ns = cache
 
@@ -62,7 +61,6 @@ def ChatPage(chat: "Chat | None", shell: "TerminalInteractiveShell | None" = Non
         ChatClientScript(),
         cls="flex flex-col h-screen",
         id="chat-root",
-        hx_ext="ws",
     )
 
 
@@ -76,6 +74,7 @@ def ChatPanel(
     return Div(
         ChatHeader(chat),
         ChatMessages(turns, shell=shell),
+        ChatRunStream(),
         ChatForm(chat_id=chat_id),
         cls="flex flex-col min-h-0 h-full",
         id="chat-panel",
@@ -96,7 +95,6 @@ def ChatMessages(
 
 
 def TurnComponent(turn: "Turn", shell: "TerminalInteractiveShell | None" = None):
-    """Render a complete turn from stored data."""
     from varro.chat.turn_store import load_turn_messages
 
     fp = DATA_DIR / turn.obj_fp
@@ -119,6 +117,20 @@ def _load_render_cache(turn_fp) -> dict:
     if cache_fp.exists():
         return json.loads(cache_fp.read_text())
     return {}
+
+
+def ChatRunStream(run_id: str | None = None, **attrs):
+    if not run_id:
+        return Div(id="chat-run-stream", **attrs)
+    return Div(
+        id="chat-run-stream",
+        hx_ext="sse",
+        sse_connect=f"/chat/runs/{run_id}/stream",
+        sse_swap="message",
+        sse_close="done",
+        hx_swap="none",
+        **attrs,
+    )
 
 
 def ChatForm(
@@ -167,22 +179,23 @@ def ChatForm(
                 Button(
                     stop_icon if running else send_icon,
                     type="button" if running else "submit",
-                    hx_post="/chat/cancel" if running else None,
+                    hx_post=f"/chat/runs/{run_id}/cancel"
+                    if running and run_id
+                    else None,
                     hx_swap="none" if running else None,
-                    hx_include="closest form" if running else None,
                     cls="btn btn-circle btn-sm btn-primary",
                 ),
                 cls="flex justify-end",
             ),
             cls="bg-base-100 rounded-box p-3 flex flex-col gap-2 border border-base-300",
         ),
-        Input(type="hidden", name="sid", value=""),
         Input(type="hidden", name="run_id", value=run_id or ""),
         Input(type="hidden", name="current_url", value=""),
         Input(type="hidden", name="chat_id", value=chat_id)
         if chat_id is not None
         else None,
-        ws_send=True,
+        hx_post="/chat/runs",
+        hx_swap="none",
         id="chat-form",
         cls="px-4 py-3",
         x_data="",
@@ -198,121 +211,41 @@ def ChatFormRunning(chat_id: int | None = None, run_id: str | None = None):
 
 
 def ChatFormEnabled(chat_id: int | None = None):
-    return Div(
-        ChatForm(chat_id=chat_id), hx_swap_oob="outerHTML:#chat-form"
-    )
+    return Div(ChatForm(chat_id=chat_id), hx_swap_oob="outerHTML:#chat-form")
 
 
-# TODO: Does it make sense to have the client script in the UI library?
-# Maybe it would make more sense to have it in the app folder. And can this be simplified somehow?. Essentially, the script does two things:
-# 1. It creates a random view UID, enabling a user to have multiple sessions in different tabs.
-# 2. These sessions are then closed after a time interval if the user is inactive.
 def ChatClientScript():
     return Script(
         """
 (() => {
-  const makeSid = () => {
-    if (window.crypto && crypto.randomUUID) {
-      return crypto.randomUUID();
-    }
-    if (window.crypto && crypto.getRandomValues) {
-      const bytes = new Uint8Array(16);
-      crypto.getRandomValues(bytes);
-      bytes[6] = (bytes[6] & 0x0f) | 0x40;
-      bytes[8] = (bytes[8] & 0x3f) | 0x80;
-      const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
-      return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex
-        .slice(6, 8)
-        .join("")}-${hex.slice(8, 10).join("")}-${hex
-        .slice(10, 16)
-        .join("")}`;
-    }
-    return `sid-${Date.now().toString(36)}-${Math.random()
-      .toString(36)
-      .slice(2, 10)}`;
-  };
-
-  const sidKey = "varro_chat_sid";
-  let sid = sessionStorage.getItem(sidKey);
-  if (!sid) {
-    sid = makeSid();
-    sessionStorage.setItem(sidKey, sid);
-  }
-
-  const root = document.getElementById("chat-root");
-  if (root) {
-    root.setAttribute("ws-connect", `/ws?sid=${encodeURIComponent(sid)}`);
-    if (window.htmx) {
-      window.htmx.process(root);
-    }
-  }
+  if (window.__varroChatClientInitialized) return;
+  window.__varroChatClientInitialized = true;
 
   const setHiddenInputs = () => {
     const currentUrl = `${window.location.pathname}${window.location.search}`;
-    for (const input of document.querySelectorAll("input[name='sid']")) {
-      input.value = sid;
-    }
     for (const input of document.querySelectorAll("input[name='current_url']")) {
       input.value = currentUrl;
     }
   };
 
-  setHiddenInputs();
-  const onSwap = () => {
+  const refreshUi = () => {
     setHiddenInputs();
-    if (window.__golRefresh) {
-      window.__golRefresh();
-    }
+    if (window.__golRefresh) window.__golRefresh();
   };
-  document.body.addEventListener("htmx:afterSwap", onSwap);
-  document.body.addEventListener("htmx:oobAfterSwap", onSwap);
 
-  document.body.addEventListener("submit", (event) => {
-    const form = event.target;
-    if (form && form.matches && form.matches("#chat-form")) {
-      setHiddenInputs();
-    }
-  }, true);
-
+  document.body.addEventListener("htmx:afterSwap", refreshUi);
+  document.body.addEventListener("htmx:oobAfterSwap", refreshUi);
+  document.body.addEventListener(
+    "submit",
+    (event) => {
+      const form = event.target;
+      if (form && form.matches && form.matches("#chat-form")) setHiddenInputs();
+    },
+    true
+  );
   window.addEventListener("popstate", setHiddenInputs);
 
-  if (window.__golRefresh) {
-    window.__golRefresh();
-  }
-
-  let lastInput = Date.now();
-  const markActive = () => {
-    lastInput = Date.now();
-  };
-
-  ["keydown", "pointerdown", "mousedown", "touchstart"].forEach((event) => {
-    window.addEventListener(event, markActive, { passive: true });
-  });
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      markActive();
-    }
-  });
-
-  const activeWindowMs = 2 * 60 * 1000;
-  const intervalMs = 60 * 1000;
-
-  const heartbeat = () => {
-    if (document.visibilityState !== "visible") {
-      return;
-    }
-    if (Date.now() - lastInput > activeWindowMs) {
-      return;
-    }
-    navigator.sendBeacon(`/chat/heartbeat?sid=${encodeURIComponent(sid)}`);
-  };
-
-  setInterval(heartbeat, intervalMs);
-
-  window.addEventListener("beforeunload", () => {
-    navigator.sendBeacon(`/chat/close?sid=${encodeURIComponent(sid)}`);
-  });
+  refreshUi();
 })();
 """
     )
@@ -326,15 +259,10 @@ def UserMessage(content: str):
 
 
 def UserPromptBlock(node):
-    """Render a UserPromptNode."""
     return UserMessage(node.user_prompt)
 
 
 def ModelRequestBlock(node):
-    """
-    Render a ModelRequestNode.
-    Contains the request sent to the model (tool return parts from previous calls).
-    """
     tool_parts = extract_tool_render_records(node.request)
     if not tool_parts:
         return None
@@ -346,10 +274,6 @@ def CallToolsBlock(
     shell: "TerminalInteractiveShell | None" = None,
     connected: bool = True,
 ):
-    """
-    Render a CallToolsNode.
-    Contains the model's response: thinking, text, and tool calls.
-    """
     parts = _render_model_parts(
         node.model_response.parts,
         shell=shell,
@@ -460,9 +384,6 @@ def ChatDropdownItem(chat: "Chat"):
     )
 
 
-# --- Markdown rendering ---
-
-
 def render_markdown_blocks(
     content: str, shell: "TerminalInteractiveShell | None" = None
 ):
@@ -508,7 +429,7 @@ def _render_placeholder(
             if not isinstance(df.index, pd.RangeIndex):
                 df = df.reset_index()
             return DataTable(df, cls="my-2")
-        elif kind == "fig" and isinstance(obj, BaseFigure):
+        if kind == "fig" and isinstance(obj, BaseFigure):
             return Div(Figure(obj), cls="my-2")
 
     return _missing_placeholder(kind, name)
@@ -520,9 +441,6 @@ def _missing_placeholder(kind: str, name: str):
         f"Missing {label}: {name}",
         cls="text-xs text-base-content/50 italic",
     )
-
-
-# --- Turn / model part rendering ---
 
 
 def _render_model_parts(

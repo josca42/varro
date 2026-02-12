@@ -11,7 +11,8 @@ from varro.dashboard.routes import mount_dashboard_routes, list_dashboards
 from varro.db.db import engine
 from app.routes.chat import ar as chat_routes
 from app.routes.commands import ar as command_routes
-from varro.chat.session import sessions
+from varro.chat.run_manager import run_manager
+from varro.chat.shell_pool import shell_pool
 from varro.db import crud
 from varro.agent.workspace import ensure_user_workspace
 from varro.config import DATA_DIR
@@ -37,7 +38,7 @@ def before(req, sess):
 
 beforeware = Beforeware(before, skip=STATIC_SKIP)
 
-app, rt = daisy_app(exts="ws", before=beforeware, live=True)
+app, rt = daisy_app(before=beforeware, live=True)
 
 mount_dashboard_routes(app, DATA_DIR, engine)
 chat_routes.to_app(app)
@@ -163,13 +164,15 @@ def settings(req, sess):
 
 
 @app.on_event("startup")
-async def start_session_cleanup():
-    sessions.start_cleanup_task(ttl=timedelta(minutes=20), interval=60)
+async def start_chat_cleanup():
+    run_manager.start_cleanup_task(retention=timedelta(minutes=5), interval=30)
+    shell_pool.start_cleanup_task(ttl=timedelta(minutes=10), interval=60)
 
 
 @app.on_event("shutdown")
-async def stop_session_cleanup():
-    sessions.stop_cleanup_task()
+async def stop_chat_cleanup():
+    run_manager.stop_cleanup_task()
+    shell_pool.stop_cleanup_task()
 
 
 if __name__ == "__main__":

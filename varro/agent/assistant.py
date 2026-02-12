@@ -27,10 +27,10 @@ from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
 from varro.agent.snapshot import snapshot_dashboard_url
-import logfire
+# import logfire
 
-logfire.configure(scrubbing=False)
-logfire.instrument_pydantic_ai()
+# logfire.configure(scrubbing=False)
+# logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
@@ -47,6 +47,7 @@ class AssistantRunDeps:
     chat_id: int
     shell: object
     request_current_url: Callable[[], str]
+    touch_shell: Callable[[], None]
 
 
 agent = Agent(
@@ -138,6 +139,7 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
         result = f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
     else:
         result = df_preview(df, max_rows=30)
+    ctx.deps.touch_shell()
     return ToolReturn(
         return_value=result,
         metadata={"ui": {"has_tool_content": False}},
@@ -173,6 +175,7 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
         raise ModelRetry(repr(res.error_in_exec))
 
     if not show:
+        ctx.deps.touch_shell()
         return ToolReturn(
             return_value=res.stdout,
             metadata={"ui": {"has_tool_content": False}},
@@ -184,6 +187,7 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
         rendered = await show_element(element)
         elements_rendered.append(rendered)
 
+    ctx.deps.touch_shell()
     return ToolReturn(
         return_value=res.stdout,
         content=elements_rendered or None,

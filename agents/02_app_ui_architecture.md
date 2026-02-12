@@ -2,7 +2,7 @@
 
 ## App bootstrap (`app/main.py`)
 
-- Creates FastHTML app via `daisy_app(exts="ws", before=beforeware, live=True)`.
+- Creates FastHTML app via `daisy_app(before=beforeware, live=True)`.
 - `beforeware` sets:
   - `sess["user_id"]` (demo fallback user id 1),
   - `req.state.chats = crud.chat.for_user(user_id)`.
@@ -11,13 +11,13 @@
   - chat routes via `app.routes.chat`,
   - command palette search route via `app.routes.commands`.
   - dashboard routes are user-scoped (`DATA_DIR/user/{id}/dashboard`).
-- Starts/stops idle websocket session cleanup on startup/shutdown.
+- Starts/stops `RunManager` and `ShellPool` cleanup tasks on startup/shutdown.
 
 ## Shell layout (`ui/app/layout.py`)
 
 `AppShell(chat, content)` renders a split layout:
 
-- left: chat panel (`#chat-root`) with websocket extension,
+- left: chat panel (`#chat-root`) with chat client script,
 - center: resize handle (Alpine pointer drag),
 - right: navbar + URL-driven content panel (`#content-panel`).
 
@@ -35,11 +35,16 @@ Content panel behavior:
 
 ## Chat routes (`app/routes/chat.py`)
 
-- `/ws` websocket endpoint for chat messages.
+- `POST /chat/runs` starts a run and returns OOB fragments to:
+  - switch form to running state,
+  - show progress,
+  - connect SSE stream node.
+- `GET /chat/runs/{run_id}/stream` streams SSE `message` HTML blocks and a terminal `done` event.
+- `POST /chat/runs/{run_id}/cancel` cancels active run task.
+- `POST /chat/ping/{chat_id}` touches/loads shell state for that chat.
 - `/chat/new`, `/chat/switch/{id}` return OOB chat panel swaps.
 - `/chat/history` returns dropdown list content.
-- `/chat/delete/{id}` deletes DB rows and turn files.
-- `/chat/heartbeat`, `/chat/close` maintain/close sid sessions.
+- `/chat/delete/{id}` deletes DB rows, turn files, runtime file, and shell snapshot.
 
 ## Command palette (`app/routes/commands.py` + `ui/app/command_palette.py`)
 

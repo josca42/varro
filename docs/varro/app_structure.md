@@ -3,7 +3,7 @@
 ## Overview
 
 The app is a unified FastHTML + HTMX application with a split-panel layout:
-- **Left panel:** Chat (session + WebSocket, independent of URL)
+- **Left panel:** Chat (session + SSE run streaming, independent of URL)
 - **Right panel:** URL-driven content (dashboards, overview, settings)
 
 The URL is the source of truth for the content panel. Chat state is never derived from the URL.
@@ -14,7 +14,7 @@ The URL is the source of truth for the content panel. Chat state is never derive
 app/
   main.py                # App entrypoint + unified shell routes
   routes/
-    chat.py              # WebSocket + OOB chat operations
+    chat.py              # Run start/stream/cancel/status + OOB chat operations
 
 ui/
   app/
@@ -24,18 +24,18 @@ ui/
 
 varro/
   dashboard/             # Markdown dashboard framework
-  chat/                  # Session + agent runtime
+  chat/                  # Run manager + shell pool + agent runtime
   db/                    # SQLModel models + CRUD
 ```
 
 ## Entry Point (app/main.py)
 
 `app/main.py` is the single entrypoint:
-- Creates the FastHTML app with `daisy_app(exts="ws", before=beforeware)`
+- Creates the FastHTML app with `daisy_app(before=beforeware)`
 - Injects `user_id` and `req.state.chats` via beforeware
 - Mounts dashboard routes (`mount_dashboard_routes`)
 - Mounts chat routes (`app.routes.chat`)
-- Starts/stops chat session cleanup on startup/shutdown
+- Starts/stops run-manager and shell-pool cleanup tasks on startup/shutdown
 
 Routes:
 - `/` → Welcome content
@@ -62,7 +62,10 @@ Key HTMX behavior:
 Chat is embedded in the left panel and does not own a page route.
 
 Routes in `app/routes/chat.py`:
-- `/ws` → WebSocket for chat streaming
+- `POST /chat/runs` → start run
+- `GET /chat/runs/{run_id}/stream` → SSE stream
+- `POST /chat/runs/{run_id}/cancel` → cancel run
+- `GET /chat/runs/{run_id}/status` → run status
 - `/chat/new` → OOB swap for `#chat-panel` (new chat)
 - `/chat/switch/{id}` → OOB swap for `#chat-panel` (switch chat)
 - `/chat/history` → Dropdown list (HTMX)
@@ -70,9 +73,9 @@ Routes in `app/routes/chat.py`:
 - `/chat` → Redirects to `/`
 
 Client wiring:
-- `ChatClientScript` sets a per-tab `sid` in `sessionStorage`
-- Script attaches `ws-connect="/ws?sid=..."` to `#chat-root`
-- Hidden form input `sid` is synced for WebSocket messages
+- `ChatClientScript` listens for `chatRunStarted` and opens `EventSource`
+- Tracks `lastEventId` and reconnects with `since` cursor
+- Applies streamed `dom` ops and watches `status` events
 
 ## Dashboard System
 
@@ -99,6 +102,6 @@ The URL is the state for the content panel:
 - `app/main.py` — app entrypoint, unified routing
 - `ui/app/layout.py` — AppShell + ContentNavbar
 - `ui/app/chat.py` — ChatPanel + chat UI + client script
-- `app/routes/chat.py` — WebSocket + OOB chat routes
+- `app/routes/chat.py` — run routes + OOB chat routes
 - `varro/dashboard/routes.py` — dashboard routes + dual-mode responses
 - `varro/dashboard/components.py` — dashboard rendering + HTMX placeholders

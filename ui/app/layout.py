@@ -34,7 +34,9 @@ def DashboardOverviewPage(dashboard_slugs: list[str]):
             ),
             Ul(*items, cls="list-disc pl-6 mt-4")
             if items
-            else P("No dashboards found for this user.", cls="mt-4 text-base-content/70"),
+            else P(
+                "No dashboards found for this user.", cls="mt-4 text-base-content/70"
+            ),
             cls="p-6",
         ),
         data_slot="dashboard-overview-page",
@@ -92,6 +94,7 @@ document.addEventListener('alpine:init', () => {
     )
 
 
+# TODO: Is this needed?. Could I replace with native htmx functionality?
 def UrlStateScript():
     return Script(
         """
@@ -139,7 +142,6 @@ def AppShell(
         ChatPanel(chat),
         ChatClientScript(),
         id="chat-root",
-        hx_ext="ws",
         cls="flex flex-col min-h-0 h-full shrink-0 border-r border-base-300 bg-base-200 min-w-[280px] max-w-[1200px] w-[700px]",
         data_slot="chat-root",
     )

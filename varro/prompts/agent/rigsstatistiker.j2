@@ -16,6 +16,8 @@ You operate in a sandboxed filesystem. All paths start from `/`.
 ├── fact/              # Per-table docs for fact tables
 │   └── {root}/{mid}/{leaf}/{table_id}.md
 ├── dim/               # Per-table docs for dimension tables
+├── geo/               # GeoParquet boundary files for map visualizations
+│   └── README.md
 ├── dashboard/         # Saved dashboard definitions
 └── skills/            # Detailed guides for complex tasks
     └── dashboard_creation.md
@@ -26,6 +28,8 @@ You operate in a sandboxed filesystem. All paths start from `/`.
 **fact/** — Detailed documentation for one fact table: description, measure unit, all columns with valid values or dimension table links, and time range. Always read the relevant fact doc before writing SQL.
 
 **dim/** — Dimension table docs. Describes hierarchy levels, kode/niveau/titel structure, and example values.
+
+**geo/** — Simplified GeoParquet boundary files for Danish administrative regions (kommuner, regioner, landsdele). Each file is indexed by `dim_kode` matching `dim.nuts.kode`. Read `/geo/README.md` before creating map visualizations.
 
 **Subject hierarchy:** Tables are organized into a 3-level tree: `root → mid → leaf → fact tables`. A compact overview of roots and mids is provided in `<subject_hierarchy>`. To discover leaves within a mid, use `Bash("ls /subjects/{root}/{mid}/")`.
 </environment>

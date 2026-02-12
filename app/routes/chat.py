@@ -2,29 +2,25 @@ from __future__ import annotations
 
 import asyncio
 from uuid import uuid4
-from urllib.parse import parse_qs
 
-from fasthtml.common import (
-    APIRouter,
-    Div,
-    Response,
-    RedirectResponse,
-)
+from fasthtml.common import APIRouter, Div, EventStream, RedirectResponse, Response
 
 from ui.app.chat import (
-    ChatPanel,
-    ChatFormRunning,
-    ChatFormEnabled,
     ChatDropdown,
-    ChatProgressStart,
+    ChatFormEnabled,
+    ChatFormRunning,
+    ChatPanel,
     ChatProgressEnd,
+    ChatProgressStart,
+    ChatRunStream,
+    ErrorBlock,
 )
-from varro.chat.session import ActiveRun, sessions
+from varro.chat.run_manager import run_manager
 from varro.chat.runtime_state import runtime_state_fp
+from varro.chat.shell_pool import shell_pool, shell_snapshot_fp
 from varro.config import DATA_DIR
-from varro.chat.agent_run import run_agent
-from varro.db.models import Chat
 from varro.db import crud
+from varro.db.models import Chat
 
 ar = APIRouter()
 
@@ -33,143 +29,176 @@ def _chat_artifact_paths(chat, user_id: int):
     turn_paths = [DATA_DIR / turn.obj_fp for turn in chat.turns]
     cache_paths = [path.with_suffix(".cache.json") for path in turn_paths]
     state_path = runtime_state_fp(user_id, chat.id)
-    return turn_paths, cache_paths, state_path
+    snapshot_path = shell_snapshot_fp(user_id, chat.id)
+    return turn_paths, cache_paths, state_path, snapshot_path
 
 
 def _delete_chat_with_artifacts(chats, chat, user_id: int) -> None:
-    turn_paths, cache_paths, state_path = _chat_artifact_paths(chat, user_id)
+    turn_paths, cache_paths, state_path, snapshot_path = _chat_artifact_paths(chat, user_id)
     chats.delete(chat)
     for path in turn_paths:
         path.unlink(missing_ok=True)
     for path in cache_paths:
         path.unlink(missing_ok=True)
     state_path.unlink(missing_ok=True)
+    snapshot_path.unlink(missing_ok=True)
 
 
-async def _stream_run(msg: str, session, chat_id: int, current_url: str | None) -> None:
-    async for block in run_agent(msg, session, chat_id=chat_id, current_url=current_url):
-        attrs = getattr(block, "attrs", None)
-        if isinstance(attrs, dict) and "hx-swap-oob" in attrs:
-            await session.send(block)
-        else:
-            await session.send(Div(block, hx_swap_oob="beforebegin:#chat-progress"))
+def _stream_block(block):
+    attrs = getattr(block, "attrs", None)
+    if isinstance(attrs, dict) and "hx-swap-oob" in attrs:
+        return block
+    return Div(block, hx_swap_oob="beforebegin:#chat-progress")
 
 
-async def _rollback_cancelled_run(session, sess, run: ActiveRun) -> None:
-    restored_chat_id = run.chat_id
-    if run.created_chat:
-        created_chat = session.chats.get(run.chat_id, with_turns=True)
-        if created_chat:
-            _delete_chat_with_artifacts(session.chats, created_chat, session.user_id)
-        restored_chat_id = run.previous_chat_id
-        if restored_chat_id is None:
-            sess.pop("chat_id", None)
-        else:
-            sess["chat_id"] = restored_chat_id
-    else:
-        sess["chat_id"] = run.chat_id
-
-    restored_chat = (
-        session.chats.get(restored_chat_id, with_turns=True)
-        if restored_chat_id is not None
-        else None
-    )
-    await session.send(ChatPanel(restored_chat, shell=None, hx_swap_oob="outerHTML:#chat-panel"))
+async def _publish_blocks(run_id: str, *blocks) -> None:
+    for block in blocks:
+        if block is None:
+            continue
+        await run_manager.publish(run_id, _stream_block(block))
 
 
-async def on_conn(ws, send, sess, req):
-    """Called when websocket connects."""
-    user_id = sess.get("user_id")
-
-    # Extract sid from query params (try multiple sources)
-    sid = (
-        getattr(req, "query_params", {}).get("sid")
-        or getattr(ws, "query_params", {}).get("sid")
-        or parse_qs(ws.scope.get("query_string", b"").decode()).get("sid", [None])[0]
-    )
-    if not sid:
-        await ws.close()
-        return
+async def _execute_run(
+    *,
+    run_id: str,
+    user_id: int,
+    chat_id: int,
+    msg: str,
+    current_url: str | None,
+) -> None:
+    from varro.chat.agent_run import run_agent
 
     chats = crud.chat.for_user(user_id)
-    await sessions.create(user_id, sid, chats, send, ws)
-    sessions.touch(user_id, sid)
+    request_url = (current_url or "").strip()
+
+    try:
+        async with shell_pool.lease(user_id=user_id, chat_id=chat_id) as shell:
+            touch = lambda: shell_pool.touch(user_id, chat_id)
+            async for block in run_agent(
+                msg,
+                user_id=user_id,
+                chats=chats,
+                shell=shell,
+                chat_id=chat_id,
+                current_url=request_url,
+                touch_shell=touch,
+            ):
+                await run_manager.publish(run_id, _stream_block(block))
+
+        await _publish_blocks(
+            run_id,
+            ChatProgressEnd(),
+            ChatFormEnabled(chat_id),
+        )
+    except asyncio.CancelledError:
+        await _publish_blocks(
+            run_id,
+            ChatProgressEnd(),
+            ChatFormEnabled(chat_id),
+        )
+    except Exception as exc:
+        await shell_pool.invalidate(user_id, chat_id)
+        await _publish_blocks(
+            run_id,
+            ErrorBlock(str(exc)),
+            ChatProgressEnd(),
+            ChatFormEnabled(chat_id),
+        )
+    finally:
+        await run_manager.close(run_id)
 
 
-def on_disconn(ws, sess):
-    """Called when websocket disconnects."""
-    if session := sessions.find_by_ws(sess["user_id"], ws):
-        sessions.remove(sess["user_id"], session.sid)
-
-
-@ar.ws("/ws", conn=on_conn, disconn=on_disconn)
-async def on_message(
+@ar.post("/chat/runs")
+async def chat_run_start(
     msg: str,
     sess,
+    req,
     chat_id: int | None = None,
-    sid: str | None = None,
     current_url: str | None = None,
 ):
-    """
-    Handle incoming chat messages.
+    msg = (msg or "").strip()
+    if not msg:
+        return Response(status_code=400)
 
-    Args:
-        msg: The user's message text
-        chat_id: The chat ID (may be None for new chat)
-    """
-    if not sid:
-        return
-    user_id = sess["user_id"]
-    s = sessions.get(user_id, sid)
-    if not s:
-        return
-    sessions.touch(user_id, sid)
+    user_id = sess.get("user_id")
+    if user_id is None:
+        return Response(status_code=403)
 
-    previous_chat_id = sess.get("chat_id")
-    created_chat = False
+    chats = req.state.chats
     if chat_id is None:
-        chat = s.chats.create(Chat())
+        chat = chats.create(Chat())
         chat_id = chat.id
-        created_chat = True
-    elif not s.chats.get(chat_id):
-        return
+    elif not chats.get(chat_id):
+        return Response(status_code=404)
 
     run_id = uuid4().hex
-    if not s.start_run(
+    run = await run_manager.create_run(
         run_id=run_id,
+        user_id=user_id,
         chat_id=chat_id,
-        previous_chat_id=previous_chat_id,
-        created_chat=created_chat,
-    ):
-        if created_chat:
-            created = s.chats.get(chat_id, with_turns=True)
-            if created:
-                _delete_chat_with_artifacts(s.chats, created, user_id)
-            if previous_chat_id is None:
-                sess.pop("chat_id", None)
-            else:
-                sess["chat_id"] = previous_chat_id
-        return
-
-    run = s.active_run
+    )
     if run is None:
-        return
+        return Response(status_code=409)
 
     sess["chat_id"] = chat_id
+    await shell_pool.ping(user_id, chat_id)
 
-    await s.send(ChatFormRunning(chat_id, run_id))
-    await s.send(ChatProgressStart())
+    task = asyncio.create_task(
+        _execute_run(
+            run_id=run_id,
+            user_id=user_id,
+            chat_id=chat_id,
+            msg=msg,
+            current_url=current_url,
+        )
+    )
+    await run_manager.attach_task(run_id, task)
 
-    task = asyncio.create_task(_stream_run(msg, s, chat_id, current_url))
-    s.attach_run_task(run_id, task)
-    try:
-        await task
-        await s.send(ChatProgressEnd())
-        await s.send(ChatFormEnabled(chat_id))
-    except asyncio.CancelledError:
-        await _rollback_cancelled_run(s, sess, run)
-    finally:
-        s.clear_run(run_id)
+    return (
+        ChatFormRunning(chat_id, run_id),
+        ChatProgressStart(),
+        ChatRunStream(run_id, hx_swap_oob="outerHTML:#chat-run-stream"),
+    )
+
+
+@ar.get("/chat/runs/{run_id}/stream")
+async def chat_run_stream(run_id: str, sess):
+    user_id = sess.get("user_id")
+    if user_id is None:
+        return Response(status_code=404)
+
+    stream = await run_manager.stream_for_user(run_id=run_id, user_id=user_id)
+    if stream is None:
+        return Response(status_code=404)
+
+    return EventStream(stream)
+
+
+@ar.post("/chat/runs/{run_id}/cancel")
+async def chat_run_cancel(run_id: str, sess):
+    user_id = sess.get("user_id")
+    if user_id is None:
+        return Response(status_code=404)
+
+    run = await run_manager.get_for_user(run_id, user_id)
+    if run is None:
+        return Response(status_code=404)
+
+    sess["chat_id"] = run.chat_id
+    await run_manager.cancel(run_id)
+    return Response(status_code=204)
+
+
+@ar.post("/chat/ping/{chat_id}")
+async def chat_ping(chat_id: int, req, sess):
+    user_id = sess.get("user_id")
+    if user_id is None:
+        return Response(status_code=404)
+    if not req.state.chats.get(chat_id):
+        return Response(status_code=404)
+
+    await shell_pool.ping(user_id, chat_id)
+    return Response(status_code=204)
 
 
 @ar.get("/chat")
@@ -177,37 +206,14 @@ def chat_page():
     return RedirectResponse("/", status_code=303)
 
 
-@ar.post("/chat/heartbeat")
-def chat_heartbeat(sid: str, sess):
-    sessions.touch(sess.get("user_id"), sid)
-    return Response(status_code=204)
-
-
-@ar.post("/chat/close")
-async def chat_close(sid: str, sess):
-    await sessions.close_and_remove(sess.get("user_id"), sid)
-    return Response(status_code=204)
-
-
-@ar.post("/chat/cancel")
-def chat_cancel(sid: str, sess, run_id: str | None = None):
-    user_id = sess.get("user_id")
-    if user_id is not None and (session := sessions.get(user_id, sid)):
-        session.cancel_active_run(run_id)
-        sessions.touch(user_id, sid)
-    return Response(status_code=204)
-
-
 @ar.get("/chat/new")
 def chat_new(req, sess):
-    """Start a new chat."""
     sess.pop("chat_id", None)
     return ChatPanel(None, shell=None, hx_swap_oob="outerHTML:#chat-panel")
 
 
 @ar.get("/chat/switch/{chat_id}")
 def chat_switch(chat_id: int, req, sess):
-    """Switch to a different chat."""
     chat = req.state.chats.get(chat_id, with_turns=True)
     if not chat:
         return Response(status_code=404)
@@ -217,19 +223,18 @@ def chat_switch(chat_id: int, req, sess):
 
 @ar.get("/chat/history")
 def chat_history(req):
-    """Get recent chat history for dropdown."""
     return ChatDropdown(req.state.chats.get_recent(limit=10))
 
 
 @ar.delete("/chat/delete/{chat_id}")
-def chat_delete(chat_id: int, req, sess):
-    """Delete a chat."""
+async def chat_delete(chat_id: int, req, sess):
     chat = req.state.chats.get(chat_id, with_turns=True)
     if not chat:
         return Response(status_code=404)
 
     user_id = sess.get("user_id") or chat.user_id
     _delete_chat_with_artifacts(req.state.chats, chat, user_id)
+    await shell_pool.remove_chat(user_id, chat_id)
 
     if sess.get("chat_id") == chat_id:
         sess.pop("chat_id", None)

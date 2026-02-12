@@ -7,7 +7,7 @@ import shutil
 from varro.config import DATA_DIR, DOCS_DIR
 
 DEMO_USER_ID = 1
-READONLY_DOCS_DIRS = {"subjects", "fact", "dim"}
+READONLY_DOCS_DIRS = {"subjects", "fact", "dim", "geo"}
 DASHBOARD_DIR_NAMES = {"dashboard", "dashboards"}
 
 

@@ -1,180 +1,96 @@
 # Chat + Agent Runtime
 
-## Websocket chat flow
+## SSE chat flow
 
 Primary runtime:
 
 - `app/routes/chat.py`
-- `varro/chat/session.py`
+- `varro/chat/run_manager.py`
+- `varro/chat/shell_pool.py`
 - `varro/chat/agent_run.py`
 
 Flow:
 
-1. Browser connects to `/ws?sid=...`.
-2. `SessionManager.create(...)` allocates a `UserSession`.
-3. Incoming message:
-  - create chat if needed,
-  - switch send button into stop mode + start progress animation,
-  - run agent in a cancellable task and stream blocks,
-  - on completion: persist the new turn, stop progress, restore send mode,
-  - on cancel: rollback to the pre-turn chat state and discard streamed partial output.
-4. `/chat/cancel` cancels the active run for `{user_id, sid, run_id}`.
+1. Browser submits `POST /chat/runs`.
+2. Server validates/creates chat, reserves one active run per `(user_id, chat_id)`, and returns OOB fragments:
+   - `ChatFormRunning`
+   - `ChatProgressStart`
+   - `ChatRunStream(run_id)`
+3. HTMX SSE extension opens `GET /chat/runs/{run_id}/stream` from `#chat-run-stream`.
+4. `_execute_run` leases shell from `ShellPool`, runs `run_agent(...)`, and streams HTML blocks incrementally.
+5. Server emits `ChatProgressEnd` + `ChatFormEnabled` and then closes the stream with SSE `done` event.
+6. `POST /chat/runs/{run_id}/cancel` cancels the task; chat remains (no rollback/delete edge-case handling).
 
-## Browser session identity
+## Run manager model
 
-`ui/app/chat.py::ChatClientScript()`:
+`RunRecord` is intentionally minimal:
 
-- creates per-tab sid in `sessionStorage`,
-- writes sid to websocket URL and hidden inputs (`sid`, `current_url`),
-- refreshes hidden values on initial load, HTMX swaps, popstate, and form submit,
-- chat composer keyboard behavior is Enter-to-send, Shift+Enter for newline, with whitespace-only submits blocked and IME-safe Enter handling,
-- sends heartbeat (`/chat/heartbeat`) while active/visible,
-- sends close beacon on unload (`/chat/close`).
+- `run_id`
+- `user_id`
+- `chat_id`
+- `task`
+- `queue`
 
-## Session model (`UserSession`)
+Behavior:
 
-`UserSession` is transport + shell identity only:
+- one active run per `(user_id, chat_id)`
+- queue carries pre-rendered HTML fragments
+- stream emits only SSE events:
+  - `message` with HTML fragment
+  - `done` to close the connection
+- terminal records are retained briefly and garbage-collected.
 
-- `user_id`, `sid`, `send`, `ws`, `chats`
-- stateful IPython shell (`TerminalInteractiveShell`)
-- `shell_chat_id` to track which chat shell state currently represents
-- `active_run` to track cancellable in-flight turn execution (`run_id`, chat ids, task)
+## Stream payload model
 
-No per-session chat history state is stored (`msgs`, `turn_idx`, `current_url`, `bash_cwd`, `cached_prompts` removed).
+- No DOM-op translation layer.
+- Blocks are streamed as HTML.
+- Non-OOB blocks are wrapped with `hx-swap-oob="beforebegin:#chat-progress"`.
+- OOB blocks (`ChatFormEnabled`, `ChatProgressEnd`, errors, etc.) are streamed as-is.
+
+## Shell pool model
+
+`ShellPool` is chat-scoped and simple:
+
+- key: `(user_id, chat_id)`
+- lease lifecycle: `lease(...)` and release
+- idle eviction: 10 minutes (startup interval 60s)
+- snapshot path:
+  - `data/chats/{user_id}/{chat_id}/shell.pkl`
+
+Snapshot behavior:
+
+- on close/eviction, dump shell namespace with `dill` to `shell.pkl`
+- when creating a missing in-memory shell, load `shell.pkl` if present
+- `ping(user_id, chat_id)` also hydrates from disk when entry is missing
 
 ## Turn/runtime persistence
 
 Turn files:
 
-- `data/chats/{user_id}/{chat_id}/{idx}.mpk` (msgpack+zstd `ModelMessage` list)
-- `data/chats/{user_id}/{chat_id}/{idx}.cache.json` (fig/df cached HTML)
+- `data/chats/{user_id}/{chat_id}/{idx}.mpk` (msgpack+zstd)
+- `data/chats/{user_id}/{chat_id}/{idx}.cache.json` (fig/df render cache)
 
-Chat runtime state:
+Runtime state:
 
 - `data/chats/{user_id}/{chat_id}/runtime.json`
 - schema: `{"bash_cwd": "/..."}`
 
-Helpers:
-
-- `varro/chat/turn_store.py`
-- `varro/chat/render_cache.py`
-- `varro/chat/runtime_state.py`
-- `varro/chat/shell_replay.py`
-
 ## Agent orchestration (`varro/chat/agent_run.py`)
 
-`run_agent(...)` now does stateless history reconstruction per request:
+`run_agent(...)` keeps incremental reasoning/tool-call streaming:
 
-1. Load turns from DB (`chat_id`, `with_turns=True`).
-2. Load full message history from turn files.
-3. Compute `turn_idx = len(turns)`.
-4. Ensure shell for this chat (`ensure_shell_for_chat`):
-  - reset shell on chat switch,
-  - replay prior `Sql(df_name=...)` and `Jupyter(...)` tool calls.
-5. Run `agent.iter(...)` with request-scoped deps.
-6. Persist new turn messages + render cache + DB turn row.
-7. Trigger async title generation when `turn_idx == 0`.
+- loads message history from persisted turn files
+- emits blocks per completed pydantic-ai node
+- persists new turn + render cache + DB `Turn`
+- updates `Chat.updated_at`
+- creates first-turn title asynchronously
 
-## Session manager liveness
+## Client behavior
 
-`SessionManager` stores entries as:
+`ui/app/chat.py`:
 
-- `{session: UserSession, last_seen: datetime}`
-
-`touch`, `evict_idle`, `find_by_ws`, `get`, `create`, and `remove` use entry metadata; `last_seen` is no longer on `UserSession`.
-
-`UserSession` run lifecycle methods:
-
-- `start_run(...)` reserves the active turn slot.
-- `attach_run_task(...)` links the asyncio task to that run id.
-- `cancel_active_run(run_id)` cancels in-flight work (idempotent/stale-safe).
-- `clear_run(run_id)` clears tracking after completion/cancel.
-
-## Assistant deps and tool runtime
-
-`varro/agent/assistant.py` uses:
-
-- `AssistantRunDeps(user_id, chat_id, shell, request_current_url)`
-
-Tool changes:
-
-- `Bash` loads/saves cwd via `runtime.json` per chat.
-- `Snapshot(url?)` uses explicit `url` or `request_current_url()`.
-- `UpdateUrl(path?, params?, replace?)` builds payload from explicit `path` or `request_current_url()`.
-- Prompt generation uses module-level cache for static expensive prompt parts (`SUBJECT_HIERARCHY`).
-
-## Tool result rendering pipeline (2026-02-11)
-
-- `Sql` and `Jupyter` now return `ToolReturn` values (instead of plain strings in these paths) with UI metadata:
-  - `metadata["ui"]["has_tool_content"]` indicates whether supplemental tool content is emitted.
-- `Read` image responses also set `metadata["ui"]["has_tool_content"] = true`.
-- New extractor: `varro/chat/tool_results.py`
-  - builds ordered tool render records from `ModelRequest`,
-  - maps `ToolReturnPart` items to supplemental `UserPromptPart.content` by metadata flag and order,
-  - includes legacy fallback for old turns with exactly one tool return and one supplemental content part.
-- Live streaming and turn replay now share the same extractor:
-  - `varro/chat/agent_run.py` uses it for reasoning/model-request blocks,
-  - `ui/app/chat.py` uses it when rebuilding historical turns.
-- Tool card rendering updates in `ui/app/tool.py`:
-  - `Sql`/`Jupyter` inputs render as SQL/Python code blocks with metadata lines (`df_name`, `show`),
-  - output combines text + binary in order (text first, then images),
-  - inline image rendering is scoped to `Jupyter` and `Read` using `data:` URIs,
-  - non-image binary content shows a placeholder (`Binary output: <media_type>`).
-- SQL highlighting is enabled by adding `"sql"` to `HighlightJS` languages in `ui/core.py`.
-
-## URL-state navigation flow
-
-- Frontend captures current content URL into hidden `current_url` at send time.
-- `on_message` passes `current_url` into `run_agent(...)`.
-- Assistant reads URL via `ctx.deps.request_current_url()` during that run only.
-- No URL state is persisted on `UserSession`.
-
-### Investigation note (2026-02-12): UpdateUrl-triggered cancellation
-
-- Observed production behavior: during agent runs that call `UpdateUrl`, the chat turn can disappear right after content navigation.
-- Not caused by missing final assistant text:
-  - user bubble is rendered from persisted `Turn.user_text`,
-  - tool/reasoning blocks can render without a final prose sentence,
-  - sampled saved `UpdateUrl` turns had final `finish_reason="stop"` text.
-- Likely cause chain:
-  - `UpdateUrl` applies immediate client navigation,
-  - chat bootstrap/websocket processing is re-triggered,
-  - same `{user_id, sid}` websocket reconnect causes session replacement cleanup,
-  - cleanup cancels active run task,
-  - cancel rollback re-renders chat panel from prior persisted state.
-- Practical fix direction:
-  - make same-sid reconnect a transport handoff (preserve active run + shell),
-  - make chat bootstrap idempotent (no duplicate websocket init/listeners),
-  - keep immediate URL updates so agent can guide dashboards/filters live.
-
-## Chat load vs streaming behavior
-
-- `/chat/switch/{chat_id}` returns full `ChatPanel(...)` from persisted turns.
-- WebSocket message path streams only new blocks for the active run.
-- Cancel path (`/chat/cancel`) triggers rollback by re-sending a full OOB `ChatPanel(...)`.
-- Edit-message flow is removed.
-
-## Important runtime notes
-
-- Disk IO is now the source of truth for history on every message run.
-- Shell continuity is preserved only through replay + in-memory shell per active chat session.
-- Chat deletion removes turn files, render cache files, and `runtime.json`.
-- Full-history vs incremental rendering is route-driven, not inferred:
-  - `/chat/switch/{chat_id}` returns full `ChatPanel(...)`.
-  - WebSocket `on_message` streams only new blocks for the active run.
-- Cancel rollback semantics:
-  - existing chat run: keep chat id, discard in-flight UI via full panel re-render.
-  - newly created chat run: delete created chat + turn/cache/runtime artifacts and restore previous chat selection.
-- `request_current_url()` is a request-snapshot of browser URL captured client-side at send time; server tools cannot execute browser JavaScript mid-tool-call.
-- Concurrent `Bash` tool calls for the same chat are accepted with last-writer-wins semantics for persisted `bash_cwd`.
-
-## Workspace docs symlinks + read-only paths
-
-- `ensure_user_workspace` now seeds `/subjects`, `/fact`, and `/dim` as symlinks to `docs_template` instead of copying those trees.
-- `/skills` and `/dashboard` are still copied into each user workspace and remain writable.
-- Filesystem tools enforce docs read-only behavior:
-  - `Read` supports readonly symlink traversal for docs paths.
-  - `Write` and `Edit` return `Error: file_path is read-only` for `/subjects`, `/fact`, and `/dim`.
-- Bash enforces docs read-only behavior:
-  - read/list commands still work (`ls`, `find`, `grep`, etc.),
-  - mutating commands and output redirections targeting readonly docs paths are blocked with `Error: path is read-only`.
+- `#chat-run-stream` is the SSE connection node.
+- `ChatClientScript()` is intentionally minimal:
+  - keep `current_url` hidden input synchronized
+  - refresh interactive widgets after swaps
+- no custom EventSource reconnect/status/resync logic.

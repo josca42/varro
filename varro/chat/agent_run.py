@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import AsyncIterator
+from typing import AsyncIterator, Callable
 
 from pydantic_ai import Agent
 from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
@@ -12,7 +12,6 @@ from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
 from varro.agent.assistant import AssistantRunDeps, agent
 from varro.chat.render_cache import save_turn_render_cache
-from varro.chat.session import UserSession
 from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
 from varro.chat.turn_store import load_messages_for_turns, save_turn_messages, turn_fp
 from varro.config import DATA_DIR
@@ -51,12 +50,15 @@ class ReasoningState:
 
 async def run_agent(
     user_text: str,
-    session: UserSession,
+    *,
+    user_id: int,
+    chats,
+    shell,
     chat_id: int,
     current_url: str | None = None,
+    touch_shell: Callable[[], None] | None = None,
 ) -> AsyncIterator[object]:
-    """Run the agent and yield one HTML block per completed node."""
-    chat = session.chats.get(chat_id, with_turns=True)
+    chat = chats.get(chat_id, with_turns=True)
     if not chat:
         return
 
@@ -64,28 +66,29 @@ async def run_agent(
     turn_idx = len(chat.turns)
     state = ReasoningState(turn_idx)
 
-    await session.ensure_shell_for_chat(chat_id, msg_history)
-
     request_url = (current_url or "").strip()
     if not request_url.startswith("/"):
         request_url = "/"
 
+    touch = touch_shell or (lambda: None)
+
     deps = AssistantRunDeps(
-        user_id=session.user_id,
+        user_id=user_id,
         chat_id=chat_id,
-        shell=session.shell,
+        shell=shell,
         request_current_url=lambda: request_url,
+        touch_shell=touch,
     )
     async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
         async for node in run:
-            for block in node_to_blocks(node, session.shell, state):
+            for block in node_to_blocks(node, shell, state):
                 if block:
                     yield block
 
     new_msgs = run.result.new_messages()
-    fp = turn_fp(session.user_id, chat_id, turn_idx)
+    fp = turn_fp(user_id, chat_id, turn_idx)
     save_turn_messages(new_msgs, fp)
-    save_turn_render_cache(new_msgs, fp, session.shell)
+    save_turn_render_cache(new_msgs, fp, shell)
 
     crud.turn.create(
         Turn(
@@ -124,8 +127,6 @@ def node_to_blocks(
     shell,
     state: ReasoningState,
 ) -> list[object]:
-    """Convert a completed pydantic-ai node to a UI block."""
-
     if Agent.is_user_prompt_node(node):
         return [UserPromptBlock(node)]
 
