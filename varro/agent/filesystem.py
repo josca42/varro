@@ -49,6 +49,7 @@ def read_file(
         return ToolReturn(
             return_value=f"Read image: {path.name}",
             content=[BinaryContent(data=data, media_type="image/png")],
+            metadata={"ui": {"has_tool_content": True}},
         )
     if suffix in PARQUET_EXTENSIONS:
         try:

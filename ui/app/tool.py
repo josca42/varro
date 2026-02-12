@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import base64
 import json
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 from fasthtml.common import (
     Div,
     Span,
@@ -15,13 +17,22 @@ from fasthtml.common import (
     Tr,
     Th,
     Td,
-    NotStr,
 )
 from pydantic_ai import BinaryContent
 from pydantic_ai.messages import ToolReturnPart
+from varro.chat.tool_results import ToolRenderRecord
 
 if TYPE_CHECKING:
     from varro.agent.ipython_shell import TerminalInteractiveShell
+
+
+INLINE_IMAGE_TOOLS = {"jupyter", "jupyter_notebook", "read"}
+
+
+@dataclass
+class ToolOutputPayload:
+    text: str
+    binaries: list[BinaryContent]
 
 
 def ThinkingBlock(content: str):
@@ -51,7 +62,7 @@ def ToolCallBlock(
     tool: str,
     args: dict,
     result: str,
-    attachments: list,
+    binary_outputs: list | None = None,
     call_id: str | None = None,
 ):
     return ToolCallsGroup(
@@ -60,7 +71,7 @@ def ToolCallBlock(
                 tool=tool,
                 args=args,
                 result=result,
-                attachments=attachments,
+                binary_outputs=binary_outputs or [],
                 call_id=call_id,
                 status="running",
             )
@@ -68,7 +79,7 @@ def ToolCallBlock(
     )
 
 
-def ToolResultBlock(part: ToolReturnPart):
+def ToolResultBlock(part: ToolRenderRecord | ToolReturnPart):
     """Render a tool result from a ModelRequestNode."""
     return ToolResultsGroup([part])
 
@@ -98,7 +109,7 @@ def ToolCallsGroup(
                     tool=item["tool"],
                     args=item["args"],
                     result=item.get("result", ""),
-                    attachments=item.get("attachments", []),
+                    binary_outputs=item.get("binary_outputs", []),
                     status=item.get("status", "running"),
                     call_id=item.get("call_id"),
                 )
@@ -113,7 +124,7 @@ def ToolCallsGroup(
     )
 
 
-def ToolResultsGroup(tool_parts: list[ToolReturnPart]):
+def ToolResultsGroup(tool_parts: list[ToolRenderRecord | ToolReturnPart]):
     if not tool_parts:
         return None
     return Div(
@@ -131,14 +142,14 @@ def ToolResultsGroup(tool_parts: list[ToolReturnPart]):
 
 def ReasoningBlock(
     sequence: list[dict],
-    tool_parts: list[ToolReturnPart],
+    tool_parts: list[ToolRenderRecord],
     shell: "TerminalInteractiveShell | None" = None,
     block_id: str | None = None,
     swap_oob: bool = False,
 ):
     if not sequence:
         return None
-    results = {part.tool_call_id: part for part in tool_parts}
+    results = {record.part.tool_call_id: record for record in tool_parts}
     steps = []
     tool_count = 0
     for item in sequence:
@@ -146,15 +157,19 @@ def ReasoningBlock(
         if kind == "tool_call":
             tool_count += 1
             call_id = item.get("call_id")
-            part = results.get(call_id) if call_id else None
-            result_text = _format_tool_result(part.content) if part else ""
-            status = _tool_result_status(result_text) if part else "running"
+            record = results.get(call_id) if call_id else None
+            output = (
+                _build_tool_output_payload(record.part.content, record.tool_content)
+                if record
+                else ToolOutputPayload(text="", binaries=[])
+            )
+            status = _tool_result_status(output.text) if record else "running"
             steps.append(
                 ToolCallStep(
                     tool=item["tool"],
                     args=item["args"],
-                    result=result_text,
-                    attachments=[],
+                    result=output.text,
+                    binary_outputs=output.binaries,
                     status=status,
                     call_id=call_id,
                 )
@@ -242,7 +257,7 @@ def ToolCallStep(
     tool: str,
     args: dict | None = None,
     result: str = "",
-    attachments: list | None = None,
+    binary_outputs: list[BinaryContent] | None = None,
     status: str = "running",
     call_id: str | None = None,
 ):
@@ -273,7 +288,7 @@ def ToolCallStep(
                 tool=tool,
                 args=args,
                 result=result,
-                attachments=attachments or [],
+                binary_outputs=binary_outputs or [],
                 pending=pending,
             ),
             cls="tool-step-details",
@@ -291,12 +306,14 @@ def ToolCallStep(
     )
 
 
-def ToolResultStep(part: ToolReturnPart):
-    result_text = _format_tool_result(part.content)
-    status = _tool_result_status(result_text)
+def ToolResultStep(part: ToolRenderRecord | ToolReturnPart):
+    record = _to_tool_render_record(part)
+    output = _build_tool_output_payload(record.part.content, record.tool_content)
+    status = _tool_result_status(output.text)
     return ToolCallStep(
-        tool=part.tool_name,
-        result=result_text,
+        tool=record.part.tool_name,
+        result=output.text,
+        binary_outputs=output.binaries,
         status=status,
     )
 
@@ -305,7 +322,7 @@ def ToolDetailCard(
     tool: str | None = None,
     args: dict | None = None,
     result: str = "",
-    attachments: list | None = None,
+    binary_outputs: list[BinaryContent] | None = None,
     pending: bool = False,
 ):
     sections = []
@@ -322,7 +339,8 @@ def ToolDetailCard(
             Span("Output", cls="tool-card-label"),
             ToolResultDisplay(
                 result,
-                attachments or [],
+                binary_outputs or [],
+                tool=tool,
                 empty_label="Waiting for output" if pending else "No output",
             ),
             cls="tool-card-section",
@@ -332,21 +350,32 @@ def ToolDetailCard(
 
 
 def ToolArgsDisplay(tool: str, args: dict):
-    if tool == "sql_query":
+    norm = _normalize_tool_name(tool)
+    if norm in {"sql", "sql_query"}:
         return Div(
             Pre(
                 Code(args.get("query", ""), cls="language-sql"),
                 cls="tool-code-block",
             ),
-            Span(f"-> {args.get('df_name')}", cls="tool-code-meta")
+            Span(f"df_name: {args.get('df_name')}", cls="tool-code-meta")
             if args.get("df_name")
             else None,
             cls="flex flex-col gap-2",
         )
-    if tool == "jupyter_notebook":
-        return Pre(
-            Code(args.get("code", ""), cls="language-python"),
-            cls="tool-code-block",
+    if norm in {"jupyter", "jupyter_notebook"}:
+        show = args.get("show")
+        show_label = None
+        if isinstance(show, list) and show:
+            show_label = ", ".join(str(item) for item in show)
+        elif show:
+            show_label = str(show)
+        return Div(
+            Pre(
+                Code(args.get("code", ""), cls="language-python"),
+                cls="tool-code-block",
+            ),
+            Span(f"show: {show_label}", cls="tool-code-meta") if show_label else None,
+            cls="flex flex-col gap-2",
         )
     return Pre(
         json.dumps(args, indent=2, ensure_ascii=False),
@@ -354,15 +383,23 @@ def ToolArgsDisplay(tool: str, args: dict):
     )
 
 
-def ToolResultDisplay(result: str, attachments: list, empty_label: str = "No output"):
+def ToolResultDisplay(
+    result: str,
+    binary_outputs: list[BinaryContent],
+    tool: str | None = None,
+    empty_label: str = "No output",
+):
     parts = []
     if result:
         if "|" in result and "\n" in result:
             parts.append(Div(MarkdownTable(result), cls="tool-output-block"))
         else:
             parts.append(Pre(result, cls="tool-output-block"))
-    for att in attachments:
-        parts.append(Img(src=f"/uploads/{att['path']}", cls="tool-output-asset"))
+    for item in binary_outputs:
+        if _should_render_inline_image(tool, item):
+            parts.append(Img(src=_binary_to_data_uri(item), cls="tool-output-asset"))
+        else:
+            parts.append(Pre(f"Binary output: {item.media_type}", cls="tool-output-block"))
     if not parts:
         return Span(empty_label, cls="tool-empty")
     return Div(*parts, cls="flex flex-col gap-2")
@@ -406,7 +443,7 @@ def _tool_call_item(
     tool: str,
     args: dict,
     result: str = "",
-    attachments: list | None = None,
+    binary_outputs: list[BinaryContent] | None = None,
     status: str = "running",
     call_id: str | None = None,
 ):
@@ -414,7 +451,7 @@ def _tool_call_item(
         "tool": tool,
         "args": args,
         "result": result,
-        "attachments": attachments or [],
+        "binary_outputs": binary_outputs or [],
         "status": status,
         "call_id": call_id,
     }
@@ -490,10 +527,49 @@ def _parse_update_url_payload(tool: str, result: str) -> dict | None:
     return {"url": url, "replace": bool(payload.get("replace", False))}
 
 
-def _format_tool_result(content) -> str:
+def _to_tool_render_record(part: ToolRenderRecord | ToolReturnPart) -> ToolRenderRecord:
+    if isinstance(part, ToolRenderRecord):
+        return part
+    return ToolRenderRecord(part=part)
+
+
+def _build_tool_output_payload(primary: Any, extra: Any = None) -> ToolOutputPayload:
+    text_chunks: list[str] = []
+    binaries: list[BinaryContent] = []
+    _append_output_content(primary, text_chunks, binaries)
+    _append_output_content(extra, text_chunks, binaries)
+    return ToolOutputPayload(text="\n".join(text_chunks), binaries=binaries)
+
+
+def _append_output_content(
+    content: Any,
+    text_chunks: list[str],
+    binaries: list[BinaryContent],
+) -> None:
     if content is None:
+        return
+    if isinstance(content, BinaryContent):
+        binaries.append(content)
+        return
+    if isinstance(content, (list, tuple)):
+        for item in content:
+            _append_output_content(item, text_chunks, binaries)
+        return
+    text = str(content)
+    if text.strip():
+        text_chunks.append(text)
+
+
+def _normalize_tool_name(tool: str | None) -> str:
+    if not tool:
         return ""
-    if isinstance(content, list):
-        items = [item for item in content if not isinstance(item, BinaryContent)]
-        return "\n".join(str(item) for item in items if str(item).strip())
-    return str(content)
+    return tool.replace("-", "_").strip().lower()
+
+
+def _should_render_inline_image(tool: str | None, content: BinaryContent) -> bool:
+    return _normalize_tool_name(tool) in INLINE_IMAGE_TOOLS and bool(content.is_image)
+
+
+def _binary_to_data_uri(content: BinaryContent) -> str:
+    encoded = base64.b64encode(content.data).decode("ascii")
+    return f"data:{content.media_type};base64,{encoded}"

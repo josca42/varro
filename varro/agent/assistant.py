@@ -135,9 +135,13 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
     if df_name:
         ctx.deps.shell.user_ns[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
-        return f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
+        result = f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
     else:
-        return df_preview(df, max_rows=30)
+        result = df_preview(df, max_rows=30)
+    return ToolReturn(
+        return_value=result,
+        metadata={"ui": {"has_tool_content": False}},
+    )
 
 
 @agent.tool(docstring_format="google")
@@ -169,7 +173,10 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
         raise ModelRetry(repr(res.error_in_exec))
 
     if not show:
-        return res.stdout
+        return ToolReturn(
+            return_value=res.stdout,
+            metadata={"ui": {"has_tool_content": False}},
+        )
 
     elements_rendered = []
     for name in show:
@@ -177,7 +184,11 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
         rendered = await show_element(element)
         elements_rendered.append(rendered)
 
-    return ToolReturn(return_value=res.stdout, content=elements_rendered)
+    return ToolReturn(
+        return_value=res.stdout,
+        content=elements_rendered or None,
+        metadata={"ui": {"has_tool_content": bool(elements_rendered)}},
+    )
 
 
 @agent.tool(docstring_format="google")

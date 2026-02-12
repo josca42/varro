@@ -103,12 +103,49 @@ Tool changes:
 - `UpdateUrl(path?, params?, replace?)` builds payload from explicit `path` or `request_current_url()`.
 - Prompt generation uses module-level cache for static expensive prompt parts (`SUBJECT_HIERARCHY`).
 
+## Tool result rendering pipeline (2026-02-11)
+
+- `Sql` and `Jupyter` now return `ToolReturn` values (instead of plain strings in these paths) with UI metadata:
+  - `metadata["ui"]["has_tool_content"]` indicates whether supplemental tool content is emitted.
+- `Read` image responses also set `metadata["ui"]["has_tool_content"] = true`.
+- New extractor: `varro/chat/tool_results.py`
+  - builds ordered tool render records from `ModelRequest`,
+  - maps `ToolReturnPart` items to supplemental `UserPromptPart.content` by metadata flag and order,
+  - includes legacy fallback for old turns with exactly one tool return and one supplemental content part.
+- Live streaming and turn replay now share the same extractor:
+  - `varro/chat/agent_run.py` uses it for reasoning/model-request blocks,
+  - `ui/app/chat.py` uses it when rebuilding historical turns.
+- Tool card rendering updates in `ui/app/tool.py`:
+  - `Sql`/`Jupyter` inputs render as SQL/Python code blocks with metadata lines (`df_name`, `show`),
+  - output combines text + binary in order (text first, then images),
+  - inline image rendering is scoped to `Jupyter` and `Read` using `data:` URIs,
+  - non-image binary content shows a placeholder (`Binary output: <media_type>`).
+- SQL highlighting is enabled by adding `"sql"` to `HighlightJS` languages in `ui/core.py`.
+
 ## URL-state navigation flow
 
 - Frontend captures current content URL into hidden `current_url` at send time.
 - `on_message` passes `current_url` into `run_agent(...)`.
 - Assistant reads URL via `ctx.deps.request_current_url()` during that run only.
 - No URL state is persisted on `UserSession`.
+
+### Investigation note (2026-02-12): UpdateUrl-triggered cancellation
+
+- Observed production behavior: during agent runs that call `UpdateUrl`, the chat turn can disappear right after content navigation.
+- Not caused by missing final assistant text:
+  - user bubble is rendered from persisted `Turn.user_text`,
+  - tool/reasoning blocks can render without a final prose sentence,
+  - sampled saved `UpdateUrl` turns had final `finish_reason="stop"` text.
+- Likely cause chain:
+  - `UpdateUrl` applies immediate client navigation,
+  - chat bootstrap/websocket processing is re-triggered,
+  - same `{user_id, sid}` websocket reconnect causes session replacement cleanup,
+  - cleanup cancels active run task,
+  - cancel rollback re-renders chat panel from prior persisted state.
+- Practical fix direction:
+  - make same-sid reconnect a transport handoff (preserve active run + shell),
+  - make chat bootstrap idempotent (no duplicate websocket init/listeners),
+  - keep immediate URL updates so agent can guide dashboards/filters live.
 
 ## Chat load vs streaming behavior
 

@@ -25,7 +25,6 @@ from pydantic_ai.messages import (
     ThinkingPart,
     TextPart,
     ToolCallPart,
-    ToolReturnPart,
 )
 from ui.app.tool import (
     ThinkingBlock,
@@ -34,6 +33,7 @@ from ui.app.tool import (
     ReasoningBlock,
     _tool_call_item,
 )
+from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
 from varro.dashboard.parser import (
     parse_dashboard_md,
     MarkdownNode,
@@ -335,9 +335,7 @@ def ModelRequestBlock(node):
     Render a ModelRequestNode.
     Contains the request sent to the model (tool return parts from previous calls).
     """
-    tool_parts = [
-        part for part in node.request.parts if isinstance(part, ToolReturnPart)
-    ]
+    tool_parts = extract_tool_render_records(node.request)
     if not tool_parts:
         return None
     return ToolResultsGroup(tool_parts)
@@ -559,7 +557,7 @@ def _render_model_parts(
                     tool=part.tool_name,
                     args=part.args_as_dict(),
                     result="",
-                    attachments=[],
+                    binary_outputs=[],
                     status="running",
                     call_id=part.tool_call_id,
                 )
@@ -576,7 +574,7 @@ def _render_turn_messages(
 
     parts = []
     reasoning_sequence: list[dict] = []
-    reasoning_tool_returns: list[ToolReturnPart] = []
+    reasoning_tool_returns: list[ToolRenderRecord] = []
 
     def flush_reasoning():
         nonlocal reasoning_sequence, reasoning_tool_returns
@@ -593,9 +591,7 @@ def _render_turn_messages(
 
     for msg in msgs:
         if isinstance(msg, ModelRequest):
-            for part in msg.parts:
-                if isinstance(part, ToolReturnPart):
-                    reasoning_tool_returns.append(part)
+            reasoning_tool_returns.extend(extract_tool_render_records(msg))
             continue
         if not isinstance(msg, ModelResponse):
             continue

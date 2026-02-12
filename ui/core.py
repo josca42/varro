@@ -108,7 +108,7 @@ prose_css = Link(
 ui_hdrs = (
     daisy_link,
     MarkdownJS(),
-    HighlightJS(langs=["python", "javascript", "html", "css", "json", "bash"]),
+    HighlightJS(langs=["python", "javascript", "html", "css", "json", "bash", "sql"]),
     tw_scr,
     plotly_hdr,
     sse_hdr,

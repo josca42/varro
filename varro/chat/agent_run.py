@@ -6,13 +6,14 @@ from datetime import datetime, timezone
 from typing import AsyncIterator
 
 from pydantic_ai import Agent
-from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
 
 from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
 from varro.agent.assistant import AssistantRunDeps, agent
 from varro.chat.render_cache import save_turn_render_cache
 from varro.chat.session import UserSession
+from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
 from varro.chat.turn_store import load_messages_for_turns, save_turn_messages, turn_fp
 from varro.config import DATA_DIR
 from varro.db.models.chat import Chat, Turn
@@ -23,7 +24,7 @@ from varro.db import crud
 class ReasoningState:
     turn_idx: int
     sequence: list[dict] = field(default_factory=list)
-    returns: list[ToolReturnPart] = field(default_factory=list)
+    returns: list[ToolRenderRecord] = field(default_factory=list)
     sent: bool = False
 
     @property
@@ -129,7 +130,7 @@ def node_to_blocks(
         return [UserPromptBlock(node)]
 
     if Agent.is_model_request_node(node):
-        tool_parts = _tool_return_parts(node.request)
+        tool_parts = extract_tool_render_records(node.request)
         if not tool_parts:
             return []
         state.returns.extend(tool_parts)
@@ -179,26 +180,3 @@ def cache_tool_calls(
                     "call_id": part.tool_call_id,
                 }
             )
-
-
-def _tool_return_parts(request) -> list[ToolReturnPart]:
-    parts: list[ToolReturnPart] = []
-    seen: set[str | int] = set()
-
-    def add(part: ToolReturnPart) -> None:
-        key = part.tool_call_id or id(part)
-        if key in seen:
-            return
-        seen.add(key)
-        parts.append(part)
-
-    for part in getattr(request, "parts", []) or []:
-        if isinstance(part, ToolReturnPart):
-            add(part)
-
-    for msg in getattr(request, "messages", []) or []:
-        for part in getattr(msg, "parts", []) or []:
-            if isinstance(part, ToolReturnPart):
-                add(part)
-
-    return parts
