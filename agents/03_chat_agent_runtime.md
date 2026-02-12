@@ -94,3 +94,16 @@ Runtime state:
   - keep `current_url` hidden input synchronized
   - refresh interactive widgets after swaps
 - no custom EventSource reconnect/status/resync logic.
+
+## SSE design learnings (from scratch)
+
+- Keep run transport state as small as possible. `run_id + task + queue` is enough for start/stream/cancel; additional run state should only be added when a concrete need appears.
+- Prefer streaming server-rendered HTML fragments over a custom DOM-op protocol when using HTMX OOB swaps. It removes client-side diff/apply code and keeps behavior easy to reason about.
+- Use a queue boundary between producer (`_execute_run`) and consumer (SSE endpoint). This decouples agent speed from network speed and keeps cancellation straightforward.
+- Normalize stream output in one place (`_stream_block`): plain blocks are wrapped with `beforebegin:#chat-progress`, OOB blocks pass through. A single rule avoids many UI edge cases.
+- Keep an always-present SSE mount node (`#chat-run-stream`) in the panel so run-start can replace it OOB with a live stream connection.
+- Lazy-import heavy runtime dependencies in request execution paths (e.g. `run_agent` inside `_execute_run`) to avoid import-time DB coupling in route modules and tests.
+- Separate concerns strictly:
+  - run manager owns run lifecycle and queues
+  - shell pool owns shell lifecycle and persistence
+  - routes own HTTP contract and chat CRUD wiring
