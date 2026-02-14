@@ -13,13 +13,39 @@ If you have deleted a feature then remove corresponding notes to keep notes up t
 Not everything needs to be written down. Use your judgement
 
 # Code style
-When writing code then only include essential comments. Otherwise leave comments out.
 
-Prefer simple and concise code. Do not implement a lot of try/except instead let code fail.
+Elegant minimalism. Every line should earn its place.
 
-Convention over configuration.
+**No commentary.** Only include essential comments. If the code needs a comment to be understood, consider rewriting the code. Don't add docstrings, type annotations, or comments to code you didn't change.
 
-Do not keep backwards compability unless specifically requested. Always assume that backward compability is not important. What's important is simple and concise code.
+**Let it fail.** No defensive try/except. Let exceptions propagate with clear tracebacks. Only catch exceptions at system boundaries where you need to convert them (e.g. `ModelRetry` for the AI agent, cleanup in async lifecycle).
+
+**Convention over configuration.** Use the patterns already in the codebase. Module-level constants for config, `snake_case` for functions and variables, `PascalCase` for classes, direct absolute imports. Don't introduce new patterns when existing ones work.
+
+**No backwards compatibility.** Unless specifically requested, don't preserve old interfaces. No renamed `_vars`, no re-exports, no shims. Delete what's unused.
+
+**Functions over classes.** Use plain functions for logic, dataclasses/Pydantic models for data. Only use classes when there's genuine state to manage (CRUD, database models). A factory function is almost always better than inheritance.
+
+**Small functions, flat modules.** Keep functions under ~50 lines. Keep directory nesting to 2–3 levels. If a module grows past ~400 lines, split it. Group related functions as sibling modules in a package, not as methods on a class.
+
+# Design principles
+
+**State as values.** Each interaction produces immutable values on disk. A chat turn is serialized to `{idx}.mpk` and never modified. A dashboard snapshot freezes outputs as PNG, parquet, and JSON files. The current state is the ordered collection of these values — not a mutable place that gets updated.
+
+**Explicit transitions.** The AI agent is the transition function: `(prior_turns, user_message) → new_turn_value`. Tool calls within a turn are the steps of the transition. Keep this boundary clean — the agent reads values, calls tools, produces a new value.
+
+**Filesystem reflects the app.** Dashboards are markdown + SQL + Python files. Chat turns are ordered files in a directory. Reviews are derived markdown in a parallel tree. If you can understand the app by reading files on disk, then an AI agent can too — and crucially, an AI review agent can evaluate how well the system performed.
+
+**Don't complect.** Keep independent concerns separate:
+- Source vs derived: `chats/` (immutable .mpk) vs `chat_reviews/` (regenerable .md)
+- Identity vs state: a chat ID is an identity; its state is the sequence of turn values
+- Layout vs data vs transforms: `dashboard.md` vs `queries/` vs `outputs.py`
+
+**Built for AI review.** The review system (`varro/chat/review.py`) generates readable markdown and extracted tool calls from binary turn data. The primary consumer is an AI review agent that evaluates system performance — inspecting real user conversations, investigating bugs, and identifying where the statistician agent struggled or could be helped by better tool outputs. Optimizing for AI reviewability means: text over binary, extracted code over inline blobs, clear structure over compact encoding.
+
+When adding new features, ask: can the result be represented as an immutable value on disk? Can an AI review agent inspect it by reading files? Is the transition function explicit? If yes, the feature will compose well with the rest of the system.
+
+More details are in `docs/Design thoughts.md`
 
 # The project consists of 3 parts:
 
