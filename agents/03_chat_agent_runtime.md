@@ -107,3 +107,34 @@ Runtime state:
   - run manager owns run lifecycle and queues
   - shell pool owns shell lifecycle and persistence
   - routes own HTTP contract and chat CRUD wiring
+
+## Chat review / observability
+
+`varro/chat/review.py` generates markdown reports from persisted `.mpk` turn files.
+
+Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DIR` in `varro/config.py`) — separate from source data in `chats/`.
+
+Structure per chat:
+
+- `chat.md` — overview with one summary block per turn
+- `{turn_idx}/turn.md` — detailed turn report (user prompt, thinking, tool calls with args/results, response, usage)
+- `{turn_idx}/summary.md` — short summary used to build `chat.md`
+- `{turn_idx}/tool_calls/` — extracted SQL queries, Jupyter code, large tool results
+- `{turn_idx}/images/` — extracted binary images from user prompts or tool returns
+
+Idempotent processing:
+
+- `.mpk` files are immutable after write, so if `turn.md` already exists the turn is skipped.
+- Only new turns are processed on repeated calls.
+- `chat.md` is rebuilt cheaply by concatenating existing `summary.md` files.
+
+Strict separation from source data:
+
+- Review dir is NOT deleted when a chat is deleted. Reviews are independently managed.
+- Can be deleted with `shutil.rmtree(REVIEWS_DIR / user_id / chat_id)` when desired.
+- Can be regenerated from source `.mpk` files at any time.
+
+## Design patterns
+
+- **Source vs. derived separation**: keep generated/derived artifacts in a parallel directory tree, not mixed into the source data folder. Lifecycle is independent — deleting source doesn't cascade to derived, and derived can be regenerated from source at any time. Applied here: `chats/` (source `.mpk`) vs `chat_reviews/` (derived `.md` reports).
+- **Idempotent processing via immutable source**: when source files are write-once (like `.mpk` turns), check for output existence to skip reprocessing. Keeps repeated calls cheap.
