@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import AsyncIterator, Callable
+from typing import AsyncIterator
 
 from pydantic_ai import Agent
 from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
@@ -11,6 +11,7 @@ from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
 from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
 from varro.agent.assistant import AssistantRunDeps, agent
+from varro.agent.env import Environment
 from varro.chat.render_cache import save_turn_render_cache
 from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
 from varro.chat.turn_store import load_messages_for_turns, save_turn_messages, turn_fp
@@ -51,14 +52,11 @@ class ReasoningState:
 async def run_agent(
     user_text: str,
     *,
-    user_id: int,
     chats,
-    shell,
-    chat_id: int,
+    env: Environment,
     current_url: str | None = None,
-    touch_shell: Callable[[], None] | None = None,
 ) -> AsyncIterator[object]:
-    chat = chats.get(chat_id, with_turns=True)
+    chat = chats.get(env.chat_id, with_turns=True)
     if not chat:
         return
 
@@ -70,38 +68,33 @@ async def run_agent(
     if not request_url.startswith("/"):
         request_url = "/"
 
-    touch = touch_shell or (lambda: None)
-
     deps = AssistantRunDeps(
-        user_id=user_id,
-        chat_id=chat_id,
-        shell=shell,
+        env=env,
         request_current_url=lambda: request_url,
-        touch_shell=touch,
     )
     async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
         async for node in run:
-            for block in node_to_blocks(node, shell, state):
+            for block in node_to_blocks(node, env.shell, state):
                 if block:
                     yield block
 
     new_msgs = run.result.new_messages()
-    fp = turn_fp(user_id, chat_id, turn_idx)
+    fp = turn_fp(env.user_id, env.chat_id, turn_idx)
     save_turn_messages(new_msgs, fp)
-    save_turn_render_cache(new_msgs, fp, shell)
+    save_turn_render_cache(new_msgs, fp, env.shell)
 
     crud.turn.create(
         Turn(
-            chat_id=chat_id,
+            chat_id=env.chat_id,
             user_text=user_text,
             obj_fp=str(fp.relative_to(DATA_DIR)),
             idx=turn_idx,
         )
     )
-    crud.chat.update(Chat(id=chat_id, updated_at=datetime.now(timezone.utc)))
+    crud.chat.update(Chat(id=env.chat_id, updated_at=datetime.now(timezone.utc)))
 
     if turn_idx == 0:
-        asyncio.create_task(_set_chat_title(chat_id, user_text))
+        asyncio.create_task(_set_chat_title(env.chat_id, user_text))
 
 
 _title_agent = Agent(

@@ -66,6 +66,7 @@ async def _execute_run(
     msg: str,
     current_url: str | None,
 ) -> None:
+    from varro.agent.env import Environment
     from varro.chat.agent_run import run_agent
 
     chats = crud.chat.for_user(user_id)
@@ -73,15 +74,12 @@ async def _execute_run(
 
     try:
         async with shell_pool.lease(user_id=user_id, chat_id=chat_id) as shell:
-            touch = lambda: shell_pool.touch(user_id, chat_id)
+            env = Environment(user_id=user_id, chat_id=chat_id, shell=shell)
             async for block in run_agent(
                 msg,
-                user_id=user_id,
                 chats=chats,
-                shell=shell,
-                chat_id=chat_id,
+                env=env,
                 current_url=request_url,
-                touch_shell=touch,
             ):
                 await run_manager.publish(run_id, _stream_block(block))
 

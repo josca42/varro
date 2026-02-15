@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
-from pydantic_ai import ModelRetry
 from pydantic_ai.messages import BaseToolCallPart, ModelMessage, ModelResponse
 
+from varro.agent.env import Environment
 
-async def restore_shell_namespace(shell, deps, msgs: list[ModelMessage]) -> None:
-    from varro.agent.assistant import Jupyter, Sql
 
-    ctx = SimpleNamespace(deps=deps)
+async def restore_shell_namespace(env: Environment, msgs: list[ModelMessage]) -> None:
     for msg in msgs:
         if not isinstance(msg, ModelResponse):
             continue
@@ -19,11 +15,14 @@ async def restore_shell_namespace(shell, deps, msgs: list[ModelMessage]) -> None
             kwargs = part.args_as_dict()
             if part.tool_name == "Sql":
                 if kwargs.get("df_name"):
-                    Sql(ctx, **kwargs)
+                    try:
+                        env.sql(**kwargs)
+                    except Exception:
+                        continue
                 continue
             if part.tool_name != "Jupyter":
                 continue
             try:
-                await Jupyter(ctx, **kwargs)
-            except ModelRetry:
+                await env.jupyter(**kwargs)
+            except Exception:
                 continue

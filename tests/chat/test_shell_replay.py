@@ -1,29 +1,39 @@
 from __future__ import annotations
 
 import asyncio
-import sys
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 
-from pydantic_ai import ModelRetry
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 
 from varro.chat.shell_replay import restore_shell_namespace
 
 
-def test_restore_shell_namespace_replays_sql_and_jupyter(monkeypatch):
-    calls = []
+def _make_env(sql_side_effect=None, jupyter_side_effect=None):
+    env = SimpleNamespace()
+    sql_calls = []
+    jupyter_calls = []
 
-    fake_assistant = ModuleType("varro.agent.assistant")
+    def fake_sql(**kwargs):
+        if sql_side_effect:
+            sql_side_effect(**kwargs)
+        sql_calls.append(("Sql", kwargs))
+        return SimpleNamespace(text="ok")
 
-    def fake_sql(ctx, **kwargs):
-        calls.append(("Sql", kwargs, ctx.deps.chat_id))
+    async def fake_jupyter(**kwargs):
+        if jupyter_side_effect:
+            jupyter_side_effect(**kwargs)
+        jupyter_calls.append(("Jupyter", kwargs))
+        return SimpleNamespace(text="ok")
 
-    async def fake_jupyter(ctx, **kwargs):
-        calls.append(("Jupyter", kwargs, ctx.deps.chat_id))
+    env.sql = fake_sql
+    env.jupyter = fake_jupyter
+    env.sql_calls = sql_calls
+    env.jupyter_calls = jupyter_calls
+    return env
 
-    fake_assistant.Sql = fake_sql
-    fake_assistant.Jupyter = fake_jupyter
-    monkeypatch.setitem(sys.modules, "varro.agent.assistant", fake_assistant)
+
+def test_restore_shell_namespace_replays_sql_and_jupyter():
+    env = _make_env()
 
     msgs = [
         ModelResponse(
@@ -36,28 +46,22 @@ def test_restore_shell_namespace_replays_sql_and_jupyter(monkeypatch):
             finish_reason="stop",
         )
     ]
-    deps = SimpleNamespace(chat_id=13)
 
-    asyncio.run(restore_shell_namespace(shell=SimpleNamespace(), deps=deps, msgs=msgs))
+    asyncio.run(restore_shell_namespace(env=env, msgs=msgs))
 
-    assert calls == [
-        ("Sql", {"query": "select 1", "df_name": "df_a"}, 13),
-        ("Jupyter", {"code": "x = 1", "show": []}, 13),
+    assert env.sql_calls == [
+        ("Sql", {"query": "select 1", "df_name": "df_a"}),
+    ]
+    assert env.jupyter_calls == [
+        ("Jupyter", {"code": "x = 1", "show": []}),
     ]
 
 
-def test_restore_shell_namespace_ignores_jupyter_model_retry(monkeypatch):
-    fake_assistant = ModuleType("varro.agent.assistant")
+def test_restore_shell_namespace_ignores_jupyter_errors():
+    def raise_error(**kwargs):
+        raise RuntimeError("execution failed")
 
-    def fake_sql(ctx, **kwargs):
-        return None
-
-    async def fake_jupyter(ctx, **kwargs):
-        raise ModelRetry("execution failed")
-
-    fake_assistant.Sql = fake_sql
-    fake_assistant.Jupyter = fake_jupyter
-    monkeypatch.setitem(sys.modules, "varro.agent.assistant", fake_assistant)
+    env = _make_env(jupyter_side_effect=raise_error)
 
     msgs = [
         ModelResponse(
@@ -66,6 +70,4 @@ def test_restore_shell_namespace_ignores_jupyter_model_retry(monkeypatch):
         )
     ]
 
-    asyncio.run(
-        restore_shell_namespace(shell=SimpleNamespace(), deps=SimpleNamespace(), msgs=msgs)
-    )
+    asyncio.run(restore_shell_namespace(env=env, msgs=msgs))

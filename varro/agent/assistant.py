@@ -16,21 +16,13 @@ from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
-from varro.agent.utils import show_element
+from varro.agent.env import Environment
 from varro.agent.utils import get_dim_tables
 from varro.agent.filesystem import read_file, write_file, edit_file
-from varro.db.db import engine
 from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
 from varro.context.tools import generate_hierarchy
-from sqlalchemy import text
-from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
-from varro.agent.bash import run_bash_command
 from varro.agent.snapshot import snapshot_dashboard_url
-# import logfire
-
-# logfire.configure(scrubbing=False)
-# logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
@@ -43,11 +35,8 @@ sonnet_settings = AnthropicModelSettings(
 
 @dataclass
 class AssistantRunDeps:
-    user_id: int
-    chat_id: int
-    shell: object
+    env: Environment
     request_current_url: Callable[[], str]
-    touch_shell: Callable[[], None]
 
 
 agent = Agent(
@@ -55,7 +44,6 @@ agent = Agent(
     model_settings=sonnet_settings,
     deps_type=AssistantRunDeps,
     builtin_tools=[
-        # MemoryTool(),
         WebSearchTool(
             search_context_size="medium",
             user_location=WebSearchUserLocation(
@@ -129,20 +117,12 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
         df_name: The name of the dataframe containing the data from the query.
     """
     try:
-        with engine.connect() as conn:
-            df = pd.read_sql(text(query), conn)
+        result = ctx.deps.env.sql(query, df_name)
     except Exception as e:
         raise ModelRetry(str(e))
-    if df_name:
-        ctx.deps.shell.user_ns[df_name] = df
-        max_rows = 20 if len(df) < 21 else 5
-        result = f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
-    else:
-        result = df_preview(df, max_rows=30)
-    ctx.deps.touch_shell()
     return ToolReturn(
-        return_value=result,
-        metadata={"ui": {"has_tool_content": False}},
+        return_value=result.text,
+        metadata={"ui": {"has_tool_content": result.has_ui_content}},
     )
 
 
@@ -168,30 +148,14 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     Args:
         code (str): The Python code to execute.
     """
-    res = ctx.deps.shell.run_cell(code)
-    if res.error_before_exec:
-        raise ModelRetry(repr(res.error_before_exec))
-    if res.error_in_exec:
-        raise ModelRetry(repr(res.error_in_exec))
-
-    if not show:
-        ctx.deps.touch_shell()
-        return ToolReturn(
-            return_value=res.stdout,
-            metadata={"ui": {"has_tool_content": False}},
-        )
-
-    elements_rendered = []
-    for name in show:
-        element = ctx.deps.shell.user_ns.get(name)
-        rendered = await show_element(element)
-        elements_rendered.append(rendered)
-
-    ctx.deps.touch_shell()
+    try:
+        result = await ctx.deps.env.jupyter(code, show)
+    except Exception as e:
+        raise ModelRetry(str(e))
     return ToolReturn(
-        return_value=res.stdout,
-        content=elements_rendered or None,
-        metadata={"ui": {"has_tool_content": bool(elements_rendered)}},
+        return_value=result.text,
+        content=result.content,
+        metadata={"ui": {"has_tool_content": result.has_ui_content}},
     )
 
 
@@ -222,7 +186,7 @@ def Read(
         offset: The line number to start reading from. Only provide if the file is too large to read at once
         limit: The number of lines to read. Only provide if the file is too large to read at once.
     """
-    return read_file(file_path, offset=offset, limit=limit, user_id=ctx.deps.user_id)
+    return read_file(file_path, offset=offset, limit=limit, user_id=ctx.deps.env.user_id)
 
 
 @agent.tool(docstring_format="google")
@@ -242,7 +206,7 @@ def Write(ctx: RunContext[AssistantRunDeps], file_path: str, content: str) -> st
         file_path: The absolute path to the file to write (must be absolute, not relative)
         content: The content to write to the file
     """
-    return write_file(file_path, content, user_id=ctx.deps.user_id)
+    return write_file(file_path, content, user_id=ctx.deps.env.user_id)
 
 
 @agent.tool(docstring_format="google")
@@ -276,7 +240,7 @@ def Edit(
         old_string=old_string,
         new_string=new_string,
         replace_all=replace_all,
-        user_id=ctx.deps.user_id,
+        user_id=ctx.deps.env.user_id,
     )
 
 
@@ -322,10 +286,7 @@ def Bash(
         command: The command to execute.
         description: Clear, concise description of what this command does in active voice. Never use words like complex or risk in the description - just describe what it does. For simple commands (git, npm, standard CLI tools), keep it brief (5-10 words). For commands that are harder to parse at a glance (piped commands, obscure flags, etc.), add enough context to clarify what it does.
     """
-    cwd_rel = load_bash_cwd(ctx.deps.user_id, ctx.deps.chat_id)
-    output, new_cwd = run_bash_command(ctx.deps.user_id, cwd_rel, command)
-    save_bash_cwd(ctx.deps.user_id, ctx.deps.chat_id, new_cwd)
-    return output
+    return ctx.deps.env.bash(command).text
 
 
 @agent.tool(docstring_format="google")
@@ -340,7 +301,7 @@ async def Snapshot(ctx: RunContext[AssistantRunDeps], url: str | None = None) ->
         raise ModelRetry("No URL available. Provide url or open a dashboard first.")
 
     try:
-        result = await snapshot_dashboard_url(ctx.deps.user_id, target_url)
+        result = await snapshot_dashboard_url(ctx.deps.env.user_id, target_url)
     except Exception as exc:
         raise ModelRetry(str(exc))
 
