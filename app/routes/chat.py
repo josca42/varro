@@ -73,7 +73,6 @@ async def _execute_run(
 
     try:
         async with shell_pool.lease(user_id=user_id, chat_id=chat_id) as shell:
-            touch = lambda: shell_pool.touch(user_id, chat_id)
             async for block in run_agent(
                 msg,
                 user_id=user_id,
@@ -81,7 +80,6 @@ async def _execute_run(
                 shell=shell,
                 chat_id=chat_id,
                 current_url=request_url,
-                touch_shell=touch,
             ):
                 await run_manager.publish(run_id, _stream_block(block))
 
@@ -141,8 +139,6 @@ async def chat_run_start(
         return Response(status_code=409)
 
     sess["chat_id"] = chat_id
-    await shell_pool.ping(user_id, chat_id)
-
     task = asyncio.create_task(
         _execute_run(
             run_id=run_id,
@@ -187,19 +183,6 @@ async def chat_run_cancel(run_id: str, sess):
     sess["chat_id"] = run.chat_id
     await run_manager.cancel(run_id)
     return Response(status_code=204)
-
-
-@ar.post("/chat/ping/{chat_id}")
-async def chat_ping(chat_id: int, req, sess):
-    user_id = sess.get("user_id")
-    if user_id is None:
-        return Response(status_code=404)
-    if not req.state.chats.get(chat_id):
-        return Response(status_code=404)
-
-    await shell_pool.ping(user_id, chat_id)
-    return Response(status_code=204)
-
 
 @ar.get("/chat")
 def chat_page():

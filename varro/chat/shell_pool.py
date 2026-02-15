@@ -50,24 +50,6 @@ class ShellPool:
         finally:
             await self._release(key)
 
-    async def ping(self, user_id: int, chat_id: int) -> None:
-        key = (user_id, chat_id)
-        async with self._lock:
-            entry = self._entries.get(key)
-
-        if entry is None:
-            entry = await self._acquire(key, user_id=user_id, chat_id=chat_id)
-            await self._release(key)
-            return
-
-        self.touch(user_id, chat_id)
-
-    def touch(self, user_id: int, chat_id: int) -> None:
-        entry = self._entries.get((user_id, chat_id))
-        if entry is None:
-            return
-        entry.last_active = _utc_now()
-
     async def invalidate(self, user_id: int, chat_id: int) -> None:
         async with self._lock:
             entry = self._entries.pop((user_id, chat_id), None)

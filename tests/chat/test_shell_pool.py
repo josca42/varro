@@ -29,7 +29,7 @@ class _DummyShell:
         self.user_ns = {}
 
 
-def test_shell_pool_ping_loads_snapshot_when_entry_missing(tmp_path, monkeypatch):
+def test_shell_pool_lease_loads_snapshot_when_entry_missing(tmp_path, monkeypatch):
     async def scenario():
         monkeypatch.setattr(shell_pool_mod, "DATA_DIR", tmp_path)
         monkeypatch.setattr(shell_pool_mod, "JUPYTER_INITIAL_IMPORTS", "")
@@ -51,7 +51,8 @@ def test_shell_pool_ping_loads_snapshot_when_entry_missing(tmp_path, monkeypatch
         monkeypatch.setattr(shell_pool_mod, "get_shell", lambda: restored_shell)
 
         next_pool = shell_pool_mod.ShellPool(ttl=timedelta(minutes=10), cleanup_interval=60)
-        await next_pool.ping(2, 5)
+        async with next_pool.lease(user_id=2, chat_id=5):
+            pass
 
         assert restored_shell.user_ns["answer"] == 42
 
@@ -76,7 +77,8 @@ def test_shell_pool_remove_chat_evicts_entry_and_snapshot(tmp_path, monkeypatch)
         snapshot_fp = shell_pool_mod.shell_snapshot_fp(1, 8)
         assert snapshot_fp.exists()
 
-        await pool.ping(1, 8)
+        async with pool.lease(user_id=1, chat_id=8):
+            pass
         assert (1, 8) in pool._entries
 
         await pool.remove_chat(1, 8)

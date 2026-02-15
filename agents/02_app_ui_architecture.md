@@ -41,7 +41,6 @@ Content panel behavior:
   - connect SSE stream node.
 - `GET /chat/runs/{run_id}/stream` streams SSE `message` HTML blocks and a terminal `done` event.
 - `POST /chat/runs/{run_id}/cancel` cancels active run task.
-- `POST /chat/ping/{chat_id}` touches/loads shell state for that chat.
 - `/chat/new`, `/chat/switch/{id}` return OOB chat panel swaps.
 - `/chat/history` returns dropdown list content.
 - `/chat/delete/{id}` deletes DB rows, turn files, runtime file, and shell snapshot.

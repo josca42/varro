@@ -53,7 +53,8 @@ Behavior:
 
 - key: `(user_id, chat_id)`
 - lease lifecycle: `lease(...)` and release
-- idle eviction: 10 minutes (startup interval 60s)
+- alive window: during active lease (agent run) and 10 minutes after lease release
+- idle eviction sweep: startup interval 60s
 - snapshot path:
   - `data/chats/{user_id}/{chat_id}/shell.pkl`
 
@@ -61,7 +62,6 @@ Snapshot behavior:
 
 - on close/eviction, dump shell namespace with `dill` to `shell.pkl`
 - when creating a missing in-memory shell, load `shell.pkl` if present
-- `ping(user_id, chat_id)` also hydrates from disk when entry is missing
 
 ## Turn/runtime persistence
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import AsyncIterator, Callable
+from typing import AsyncIterator
 
 from pydantic_ai import Agent
 from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
@@ -56,7 +56,6 @@ async def run_agent(
     shell,
     chat_id: int,
     current_url: str | None = None,
-    touch_shell: Callable[[], None] | None = None,
 ) -> AsyncIterator[object]:
     chat = chats.get(chat_id, with_turns=True)
     if not chat:
@@ -70,14 +69,11 @@ async def run_agent(
     if not request_url.startswith("/"):
         request_url = "/"
 
-    touch = touch_shell or (lambda: None)
-
     deps = AssistantRunDeps(
         user_id=user_id,
         chat_id=chat_id,
         shell=shell,
         request_current_url=lambda: request_url,
-        touch_shell=touch,
     )
     async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
         async for node in run:
