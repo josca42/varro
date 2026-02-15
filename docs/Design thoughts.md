@@ -92,7 +92,15 @@ This url structure is then reflected in the folder structure on disk in the foll
 Notice that the folder name of the snapshot are the filter values used in the url. In this way the AI agent can easily navigate the app using the url and "view" the app using the url. 
 
 ####  App as playground
-The app should be implemented as a playground that the AI agent can run experiments in and then inspect and reason about the experiments.
+The app should be implemented as a playground that the AI agent can run experiments in and then inspect and reason about the experiments. The chat is essentially a classic loop of: observe → decide → act → observe → decide → act → ...
+
+
+```python
+obs, info = env.reset()
+while not done:
+    action = agent.decide(obs)
+    obs, reward, terminated, truncated, info = env.step(action)
+```
 
 **Example**:
 Each chat
