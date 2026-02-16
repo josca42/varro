@@ -18,11 +18,25 @@ from pydantic_ai.messages import (
 from varro.chat import review as review_module
 from varro.chat.review import REVIEW_FORMAT_VERSION, review_turn, review_turn_summary
 
+SYSTEM_PROMPT = """
+<role>
+You are the state statistician.
+</role>
+
+<tools>
+**Sql(query, df_name?)** — Execute SQL against the database.
+**Read(file_path, offset?, limit?)** — Read files from the workspace.
+</tools>
+""".strip()
+
 
 def _build_review_messages() -> list:
     image = BinaryContent(data=b"img", media_type="image/png")
     return [
-        ModelRequest(parts=[UserPromptPart(content="Analyse this")]),
+        ModelRequest(
+            parts=[UserPromptPart(content="Analyse this")],
+            instructions=SYSTEM_PROMPT,
+        ),
         ModelResponse(
             parts=[
                 ThinkingPart(content="Need query and plot"),
@@ -175,6 +189,24 @@ def test_review_chat_does_not_generate_summary_md(tmp_path, monkeypatch) -> None
     monkeypatch.setattr(review_module, "REVIEWS_DIR", review_dir)
     monkeypatch.setattr(review_module, "DATA_DIR", tmp_path)
     monkeypatch.setattr(review_module, "load_turn_messages", lambda fp: _build_review_messages())
+    monkeypatch.setattr(
+        review_module,
+        "_load_tool_instructions",
+        lambda: "\n".join(
+            [
+                "# Tool Instructions",
+                "",
+                "## Read tool",
+                "Reads a file from /.",
+                "",
+                "Parameters schema:",
+                "```json",
+                '{"type":"object","properties":{"file_path":{"type":"string"}}}',
+                "```",
+                "",
+            ]
+        ),
+    )
 
     fake_turn = SimpleNamespace(
         idx=0,
@@ -195,6 +227,13 @@ def test_review_chat_does_not_generate_summary_md(tmp_path, monkeypatch) -> None
     assert out == review_dir / "1" / "62"
     assert (out / "0" / "turn.md").exists()
     assert not (out / "0" / "summary.md").exists()
+    assert (out / "system_instructions.md").exists()
+    assert (out / "system_instructions.md").read_text() == SYSTEM_PROMPT
+    assert (out / "tool_instructions.md").exists()
+    tool_md = (out / "tool_instructions.md").read_text()
+    assert "# Tool Instructions" in tool_md
+    assert "## Read tool" in tool_md
+    assert "Parameters schema:" in tool_md
 
     chat_md = (out / "chat.md").read_text()
     assert "Final: Final answer." in chat_md
