@@ -117,6 +117,7 @@ Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DI
 Structure per chat:
 
 - `chat.md` — overview with one summary block per turn
+- `instructions.md` — system prompt used by the agent (dumped from `chats/{user_id}/{chat_id}/0.mpk`)
 - `{turn_idx}/turn.md` — trajectory-first turn report: `User`, `Trajectory` (`Step N` with `Thinking`, `Actions`, `Observations`), `Final response`, `Usage`
 - `{turn_idx}/tool_calls/` — extracted SQL queries, Jupyter code, large tool results
 - `{turn_idx}/images/` — extracted binary images from review events

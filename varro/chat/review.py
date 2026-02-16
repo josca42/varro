@@ -352,6 +352,16 @@ def review_turn_summary(
     return "\n".join(parts)
 
 
+def _load_chat_instructions(user_id: int, chat_id: int) -> str:
+    fp = DATA_DIR / "chats" / str(user_id) / str(chat_id) / "0.mpk"
+    msgs = load_turn_messages(fp)
+    for msg in msgs:
+        instructions = getattr(msg, "instructions", None)
+        if isinstance(instructions, str) and instructions.strip():
+            return instructions.strip()
+    raise ValueError(f"No instructions found in {fp}")
+
+
 def _turn_review_is_current(turn_dir: Path) -> bool:
     version_fp = turn_dir / ".review_version"
     turn_fp = turn_dir / "turn.md"
@@ -367,6 +377,8 @@ def review_chat(user_id: int, chat_id: int) -> Path:
 
     review_base = REVIEWS_DIR / str(user_id) / str(chat_id)
     review_base.mkdir(parents=True, exist_ok=True)
+    instructions = _load_chat_instructions(user_id, chat_id)
+    (review_base / "instructions.md").write_text(instructions)
     turn_summaries: list[str] = []
 
     for turn in db_chat.turns:

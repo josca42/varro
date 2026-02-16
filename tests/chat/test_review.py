@@ -18,11 +18,16 @@ from pydantic_ai.messages import (
 from varro.chat import review as review_module
 from varro.chat.review import REVIEW_FORMAT_VERSION, review_turn, review_turn_summary
 
+SYSTEM_PROMPT = "You are the state statistician."
+
 
 def _build_review_messages() -> list:
     image = BinaryContent(data=b"img", media_type="image/png")
     return [
-        ModelRequest(parts=[UserPromptPart(content="Analyse this")]),
+        ModelRequest(
+            parts=[UserPromptPart(content="Analyse this")],
+            instructions=SYSTEM_PROMPT,
+        ),
         ModelResponse(
             parts=[
                 ThinkingPart(content="Need query and plot"),
@@ -195,6 +200,8 @@ def test_review_chat_does_not_generate_summary_md(tmp_path, monkeypatch) -> None
     assert out == review_dir / "1" / "62"
     assert (out / "0" / "turn.md").exists()
     assert not (out / "0" / "summary.md").exists()
+    assert (out / "instructions.md").exists()
+    assert (out / "instructions.md").read_text() == SYSTEM_PROMPT
 
     chat_md = (out / "chat.md").read_text()
     assert "Final: Final answer." in chat_md
