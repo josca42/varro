@@ -362,6 +362,26 @@ def _load_chat_instructions(user_id: int, chat_id: int) -> str:
     raise ValueError(f"No instructions found in {fp}")
 
 
+def _load_tool_instructions() -> str:
+    from varro.agent.assistant import agent
+
+    lines = ["# Tool Instructions", ""]
+    for name, tool in agent._function_toolset.tools.items():
+        lines.append(f"## {name} tool")
+        description = (tool.description or "").strip()
+        if description:
+            lines.append(description)
+        else:
+            lines.append("_None_")
+        lines.append("")
+        lines.append("Parameters schema:")
+        lines.append("```json")
+        lines.append(json.dumps(tool.function_schema.json_schema, ensure_ascii=False, indent=2))
+        lines.append("```")
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _turn_review_is_current(turn_dir: Path) -> bool:
     version_fp = turn_dir / ".review_version"
     turn_fp = turn_dir / "turn.md"
@@ -377,8 +397,10 @@ def review_chat(user_id: int, chat_id: int) -> Path:
 
     review_base = REVIEWS_DIR / str(user_id) / str(chat_id)
     review_base.mkdir(parents=True, exist_ok=True)
-    instructions = _load_chat_instructions(user_id, chat_id)
-    (review_base / "instructions.md").write_text(instructions)
+    system_instructions = _load_chat_instructions(user_id, chat_id)
+    tool_instructions = _load_tool_instructions()
+    (review_base / "system_instructions.md").write_text(system_instructions)
+    (review_base / "tool_instructions.md").write_text(tool_instructions)
     turn_summaries: list[str] = []
 
     for turn in db_chat.turns:
