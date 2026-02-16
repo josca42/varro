@@ -55,6 +55,7 @@ from ui.app.auth import (
     AuthPasswordResetForm,
     AuthPasswordResetConfirmForm,
 )
+from ui.app.frontpage import Frontpage
 
 __all__ = [
     "Navbar",
@@ -107,4 +108,5 @@ __all__ = [
     "AuthVerificationResendForm",
     "AuthPasswordResetForm",
     "AuthPasswordResetConfirmForm",
+    "Frontpage",
 ]

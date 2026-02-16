@@ -36,7 +36,7 @@ def _discover_dashboards(user_id: int) -> list[dict]:
 
 def _build_commands(user_id: int) -> list[dict]:
     pages = [
-        dict(id="home", label="Home", icon="home", href="/", target="#content-panel", swap="innerHTML"),
+        dict(id="home", label="Home", icon="home", href="/app", target="#content-panel", swap="innerHTML"),
         dict(id="settings", label="Settings", icon="settings", href="/settings", target="#content-panel", swap="innerHTML"),
     ]
     dashboards = _discover_dashboards(user_id)
