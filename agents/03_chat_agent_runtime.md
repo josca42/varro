@@ -117,8 +117,7 @@ Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DI
 Structure per chat:
 
 - `chat.md` — overview with one summary block per turn
-- `{turn_idx}/turn.md` — trajectory-first turn report: `User`, `Trajectory` (`Step N` with `Decision`, `Actions`, `Observations`), `Final response`, `Usage`
-- `{turn_idx}/summary.md` — short summary used to build `chat.md`
+- `{turn_idx}/turn.md` — trajectory-first turn report: `User`, `Trajectory` (`Step N` with `Thinking`, `Actions`, `Observations`), `Final response`, `Usage`
 - `{turn_idx}/tool_calls/` — extracted SQL queries, Jupyter code, large tool results
 - `{turn_idx}/images/` — extracted binary images from review events
 - `{turn_idx}/.review_version` — renderer format marker for invalidating old derived output
@@ -134,7 +133,7 @@ Idempotent processing:
 
 - `.mpk` files are immutable after write.
 - A turn is skipped only when `turn.md` exists and `.review_version` matches the current renderer version.
-- `chat.md` is rebuilt cheaply by concatenating existing `summary.md` files.
+- `chat.md` is rebuilt directly from `.mpk` turns (user/tool summary + final response excerpt + details link).
 
 Strict separation from source data:
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime
+from types import SimpleNamespace
+
 from pydantic_ai import BinaryContent
 from pydantic_ai.messages import (
     ModelRequest,
@@ -12,7 +15,8 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 
-from varro.chat.review import REVIEW_FORMAT_VERSION, review_turn
+from varro.chat import review as review_module
+from varro.chat.review import REVIEW_FORMAT_VERSION, review_turn, review_turn_summary
 
 
 def _build_review_messages() -> list:
@@ -93,7 +97,8 @@ def test_review_turn_renders_chronological_trajectory(tmp_path) -> None:
     assert "#### Step 1" in md
     assert "#### Step 2" in md
     assert "#### Step 3" in md
-    assert "**Decision**" in md
+    assert "**Thinking**" in md
+    assert "**Decision**" not in md
     assert "**Actions**" in md
     assert "**Observations**" in md
     assert "### Final response" in md
@@ -124,6 +129,7 @@ def test_review_turn_attaches_tool_images_to_observations_not_user(tmp_path) -> 
     assert "user_" not in md
     assert "obs_" in md
     assert "NameError('fig')" in md
+    assert "→" not in md
     assert (turn_dir / "images").exists()
 
 
@@ -132,3 +138,64 @@ def test_review_turn_writes_review_version(tmp_path) -> None:
     review_turn(_build_review_messages(), turn_dir, 3)
 
     assert (turn_dir / ".review_version").read_text() == REVIEW_FORMAT_VERSION
+
+
+def test_review_turn_summary_includes_final_excerpt() -> None:
+    summary = review_turn_summary(
+        _build_review_messages(),
+        0,
+        created_at=datetime(2026, 2, 12),
+    )
+
+    assert "## Turn 0 — 2026-02-12" in summary
+    assert "**User**: Analyse this" in summary
+    assert "Tools: Sql(1), Jupyter(2)" in summary
+    assert "Final: Final answer." in summary
+
+
+def test_review_turn_summary_truncates_final_excerpt() -> None:
+    msgs = [
+        ModelRequest(parts=[UserPromptPart(content="User prompt")]),
+        ModelResponse(
+            parts=[TextPart(content="A " * 200)],
+            finish_reason="stop",
+            model_name="model-a",
+        ),
+    ]
+
+    summary = review_turn_summary(msgs, 0)
+    final_line = [line for line in summary.splitlines() if line.startswith("Final:")][0]
+
+    assert final_line.endswith("...")
+    assert len(final_line) == len("Final: ") + 123
+
+
+def test_review_chat_does_not_generate_summary_md(tmp_path, monkeypatch) -> None:
+    review_dir = tmp_path / "chat_reviews"
+    monkeypatch.setattr(review_module, "REVIEWS_DIR", review_dir)
+    monkeypatch.setattr(review_module, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(review_module, "load_turn_messages", lambda fp: _build_review_messages())
+
+    fake_turn = SimpleNamespace(
+        idx=0,
+        obj_fp="chats/1/62/0.mpk",
+        created_at=datetime(2026, 2, 12),
+    )
+    fake_chat = SimpleNamespace(turns=[fake_turn])
+    monkeypatch.setattr(
+        review_module.chat_crud,
+        "for_user",
+        lambda user_id: SimpleNamespace(
+            get=lambda chat_id, with_turns=True: fake_chat,
+        ),
+    )
+
+    out = review_module.review_chat(1, 62)
+
+    assert out == review_dir / "1" / "62"
+    assert (out / "0" / "turn.md").exists()
+    assert not (out / "0" / "summary.md").exists()
+
+    chat_md = (out / "chat.md").read_text()
+    assert "Final: Final answer." in chat_md
+    assert "[Details](0/turn.md)" in chat_md

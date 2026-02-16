@@ -8,36 +8,41 @@ description: Generate and inspect chat review reports. Use when a user wants to 
 ## Generate a review
 
 ```bash
-python -c "from varro.chat.review import review_chat; print(review_chat(user_id=USER_ID, chat_id=CHAT_ID))"
+uv run python -c "from varro.chat.review import review_chat; print(review_chat(user_id=USER_ID, chat_id=CHAT_ID))"
 ```
 
-Idempotent — only new turns are processed on repeat calls.
+Idempotent:
+- Turn files are regenerated only when `turn.md` is missing or `.review_version` is outdated.
+- `chat.md` is rebuilt from `.mpk` turns each run.
 
 ## Output location
 
 `mnt/chat_reviews/{user_id}/{chat_id}/`
 
 ```
-chat.md              # overview with per-turn summaries
+chat.md              # overview with user/tools/final excerpt + details link
 0/
   turn.md            # full turn detail
-  summary.md         # 3-line summary used to build chat.md
+  .review_version    # renderer format version
   tool_calls/        # SQL queries, Jupyter code, large results
   images/            # extracted user/tool images
 1/
   ...
 ```
 
+`turn.md` structure:
+- `User`
+- `Trajectory` with `Step N` sections
+- Step fields: `Thinking`, `Actions`, `Observations`
+- `Final response`
+- `Usage`
+
+Observation notes:
+- Multiline outputs are plain markdown text.
+- No `→` markers are used.
+
 ## Inspect
 
-1. Read `chat.md` for the overview
-2. Read `{turn_idx}/turn.md` for full detail on a specific turn
-3. Read files in `tool_calls/` and `images/` for artifacts
-
-## Delete a review
-
-```python
-import shutil
-from varro.config import REVIEWS_DIR
-shutil.rmtree(REVIEWS_DIR / str(user_id) / str(chat_id))
-```
+1. Read `chat.md` for the overview across turns.
+2. Read `{turn_idx}/turn.md` for full trajectory detail on a turn.
+3. Read files in `tool_calls/` and `images/` for extracted artifacts.

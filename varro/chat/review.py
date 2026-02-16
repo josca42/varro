@@ -14,7 +14,7 @@ from varro.config import DATA_DIR, REVIEWS_DIR
 from varro.db.crud.chat import chat as chat_crud
 
 MAX_RESULT_CHARS = 500
-REVIEW_FORMAT_VERSION = "2"
+REVIEW_FORMAT_VERSION = "3"
 
 
 def _truncate(text: str, max_chars: int = MAX_RESULT_CHARS) -> tuple[str, bool]:
@@ -69,7 +69,9 @@ def _image_ext(media_type: str) -> str:
     return "png"
 
 
-def _collect_output(content: Any, text_chunks: list[str], binaries: list[BinaryContent]) -> None:
+def _collect_output(
+    content: Any, text_chunks: list[str], binaries: list[BinaryContent]
+) -> None:
     if content is None:
         return
     if isinstance(content, BinaryContent):
@@ -84,7 +86,9 @@ def _collect_output(content: Any, text_chunks: list[str], binaries: list[BinaryC
         text_chunks.append(text)
 
 
-def _extract_images(content: Any, images_dir: Path, prefix: str) -> list[tuple[str, str]]:
+def _extract_images(
+    content: Any, images_dir: Path, prefix: str
+) -> list[tuple[str, str]]:
     chunks: list[str] = []
     binaries: list[BinaryContent] = []
     _collect_output(content, chunks, binaries)
@@ -105,8 +109,8 @@ def _extract_images(content: Any, images_dir: Path, prefix: str) -> list[tuple[s
     return images
 
 
-def _render_decision(lines: list[str], events: list[TraceEvent]) -> None:
-    lines.append("**Decision**")
+def _render_thinking(lines: list[str], events: list[TraceEvent]) -> None:
+    lines.append("**Thinking**")
     if not events:
         lines.append("_None_")
         return
@@ -182,9 +186,9 @@ def _render_observations(
                     tc_dir.mkdir(parents=True, exist_ok=True)
                     rf = f"{seq:02d}_{tool.lower()}_retry.txt"
                     (tc_dir / rf).write_text(retry_text)
-                    label += f"\n→ [{len(retry_text)} chars](tool_calls/{rf})"
+                    label += f"\n[{len(retry_text)} chars](tool_calls/{rf})"
                 else:
-                    label += f"\n→ {trunc}"
+                    label += f"\n{trunc}"
             lines.append(label)
             lines.append("")
             continue
@@ -201,9 +205,9 @@ def _render_observations(
                 tc_dir.mkdir(parents=True, exist_ok=True)
                 rf = f"{seq:02d}_{tool.lower()}_result.txt"
                 (tc_dir / rf).write_text(text_output)
-                label += f"\n→ [{len(text_output)} chars](tool_calls/{rf})"
+                label += f"\n[{len(text_output)} chars](tool_calls/{rf})"
             else:
-                label += f"\n→ {trunc}"
+                label += f"\n{trunc}"
 
         for fname, alt in _extract_images(
             binaries,
@@ -214,7 +218,7 @@ def _render_observations(
 
         non_image = [item for item in binaries if not item.is_image]
         for item in non_image:
-            label += f"\n→ Binary output: {item.media_type}"
+            label += f"\nBinary output: {item.media_type}"
 
         lines.append(label)
         lines.append("")
@@ -239,7 +243,9 @@ def review_turn(msgs: list[ModelMessage], turn_dir: Path, turn_idx: int) -> None
         for event in user_events:
             if event.text:
                 lines.append(event.text)
-            for fname, alt in _extract_images(event.content, img_dir, f"user_{event.idx:03d}"):
+            for fname, alt in _extract_images(
+                event.content, img_dir, f"user_{event.idx:03d}"
+            ):
                 lines.append(f"[{alt}](images/{fname})")
             lines.append("")
         if lines[-1] == "":
@@ -259,11 +265,13 @@ def review_turn(msgs: list[ModelMessage], turn_dir: Path, turn_idx: int) -> None
             and event.kind in ("thinking", "assistant_text")
             and not event.is_final
         ]
-        _render_decision(lines, decision_events)
+        _render_thinking(lines, decision_events)
         lines.append("")
 
         action_events = [
-            event for event in trace.events if event.step_idx == step and event.kind == "tool_call"
+            event
+            for event in trace.events
+            if event.step_idx == step and event.kind == "tool_call"
         ]
         _render_actions(lines, action_events, tc_dir)
         lines.append("")
@@ -298,6 +306,15 @@ def review_turn(msgs: list[ModelMessage], turn_dir: Path, turn_idx: int) -> None
     (turn_dir / ".review_version").write_text(REVIEW_FORMAT_VERSION)
 
 
+def _excerpt(text: str, max_chars: int) -> str:
+    compact = " ".join(text.split())
+    if not compact:
+        return "_None_"
+    if len(compact) <= max_chars:
+        return compact
+    return compact[:max_chars] + "..."
+
+
 def review_turn_summary(
     msgs: list[ModelMessage], turn_idx: int, created_at=None
 ) -> str:
@@ -313,18 +330,24 @@ def review_turn_summary(
         if event.kind == "tool_call" and event.tool_name:
             tool_counts[event.tool_name] += 1
 
-    if len(user_text) > 100:
-        user_text = user_text[:100] + "..."
+    user_excerpt = _excerpt(user_text, max_chars=100)
+    final_parts = [
+        event.text
+        for event in trace.events
+        if event.kind == "assistant_text" and event.is_final and event.text
+    ]
+    final_excerpt = _excerpt("\n".join(final_parts), max_chars=120)
 
     date_str = f" — {created_at.strftime('%Y-%m-%d')}" if created_at else ""
 
     parts = [
         f"## Turn {turn_idx}{date_str}",
-        f"**User**: {user_text}",
+        f"**User**: {user_excerpt}",
     ]
     if tool_counts:
         tools = ", ".join(f"{n}({c})" for n, c in tool_counts.items())
         parts.append(f"Tools: {tools}")
+    parts.append(f"Final: {final_excerpt}")
     parts.append(f"[Details]({turn_idx}/turn.md)")
     return "\n".join(parts)
 
@@ -344,25 +367,26 @@ def review_chat(user_id: int, chat_id: int) -> Path:
 
     review_base = REVIEWS_DIR / str(user_id) / str(chat_id)
     review_base.mkdir(parents=True, exist_ok=True)
+    turn_summaries: list[str] = []
 
     for turn in db_chat.turns:
+        msgs = load_turn_messages(DATA_DIR / turn.obj_fp)
         turn_dir = review_base / str(turn.idx)
         if _turn_review_is_current(turn_dir):
+            turn_summaries.append(
+                review_turn_summary(msgs, turn.idx, created_at=turn.created_at)
+            )
             continue
-        msgs = load_turn_messages(DATA_DIR / turn.obj_fp)
         review_turn(msgs, turn_dir, turn.idx)
-        summary = review_turn_summary(msgs, turn.idx, created_at=turn.created_at)
-        (turn_dir / "summary.md").write_text(summary)
+        turn_summaries.append(review_turn_summary(msgs, turn.idx, created_at=turn.created_at))
 
     chat_lines = [f"# Chat {chat_id}", ""]
-    for turn in db_chat.turns:
-        summary_fp = review_base / str(turn.idx) / "summary.md"
-        if summary_fp.exists():
-            chat_lines.append(summary_fp.read_text())
-            chat_lines.append("")
+    for summary in turn_summaries:
+        chat_lines.append(summary)
+        chat_lines.append("")
     (review_base / "chat.md").write_text("\n".join(chat_lines))
     return review_base
 
 
 if __name__ == "__main__":
-    review_chat(1, 61)
+    review_chat(1, 62)
