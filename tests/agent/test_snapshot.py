@@ -73,7 +73,7 @@ def test_snapshot_tool_uses_current_url_when_url_is_omitted(
 
     result = asyncio.run(assistant_module.Snapshot(ctx))
 
-    assert result == "/dashboard/sales?region=North"
+    assert result == "/tmp/snapshots"
     assert calls == [(7, "/dashboard/sales?region=North")]
 
 
@@ -101,8 +101,48 @@ def test_snapshot_tool_uses_explicit_url_over_current_url(
 
     result = asyncio.run(assistant_module.Snapshot(ctx, url="/dashboard/sales?region=South"))
 
-    assert result == "/dashboard/sales?region=South"
+    assert result == "/tmp/snapshots"
     assert calls == [(7, "/dashboard/sales?region=South")]
+
+
+@pytest.mark.parametrize(
+    ("folder", "expected"),
+    [
+        (
+            Path("/workspace/user/7/dashboard/sales/snapshots/a=1&b=2"),
+            "/dashboard/sales/snapshots/a=1&b=2",
+        ),
+        (Path("/tmp/snapshots/outside"), "/tmp/snapshots/outside"),
+    ],
+)
+def test_snapshot_tool_normalizes_returned_folder_path(
+    assistant_module, monkeypatch, folder: Path, expected: str
+) -> None:
+    snapshot_model = importlib.import_module("varro.agent.snapshot")
+
+    async def fake_snapshot_dashboard_url(user_id: int, url: str):
+        return snapshot_model.SnapshotResult(url=url, folder=folder)
+
+    monkeypatch.setattr(
+        assistant_module,
+        "snapshot_dashboard_url",
+        fake_snapshot_dashboard_url,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: Path("/workspace/user/7"),
+    )
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: "/dashboard/sales?region=North",
+        )
+    )
+
+    result = asyncio.run(assistant_module.Snapshot(ctx))
+
+    assert result == expected
 
 
 def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatch) -> None:

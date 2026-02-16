@@ -91,8 +91,9 @@ This url structure is then reflected in the folder structure on disk in the foll
 
 Notice that the folder name of the snapshot are the filter values used in the url. In this way the AI agent can easily navigate the app using the url and "view" the app using the url. 
 
-####  App as playground
-Now that 
+####  Chat as trajectory
+Each chat interaction is an agent trajectory. The goal is to complete the user request and the agents trajectory is the observe -> decide -> act -> observe -> decide -> act ... loop the agent is running using the tools at its disposal.
+
 
 
 **Example**:

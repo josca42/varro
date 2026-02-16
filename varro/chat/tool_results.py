@@ -32,7 +32,14 @@ def extract_tool_render_records(request) -> list[ToolRenderRecord]:
         return []
 
     records = [ToolRenderRecord(part=part) for part in tool_parts]
-    expected = [record for record in records if _tool_exposes_content(record.part)]
+    expected = []
+    unknown = []
+    for record in records:
+        flag = _tool_content_flag(record.part)
+        if flag is True:
+            expected.append(record)
+        elif flag is None:
+            unknown.append(record)
 
     content_idx = 0
     for record in expected:
@@ -41,8 +48,10 @@ def extract_tool_render_records(request) -> list[ToolRenderRecord]:
         record.tool_content = supplemental_contents[content_idx]
         content_idx += 1
 
-    if not expected and len(records) == 1 and len(supplemental_contents) == 1:
-        records[0].tool_content = supplemental_contents[0]
+    remaining = supplemental_contents[content_idx:]
+    if unknown and remaining and len(unknown) == len(remaining):
+        for record, content in zip(unknown, remaining):
+            record.tool_content = content
 
     return records
 
@@ -56,13 +65,16 @@ def _iter_request_parts(request):
             yield part
 
 
-def _tool_exposes_content(part: ToolReturnPart) -> bool:
+def _tool_content_flag(part: ToolReturnPart) -> bool | None:
     if not isinstance(part.metadata, dict):
-        return False
+        return None
     ui = part.metadata.get("ui")
     if not isinstance(ui, dict):
-        return False
-    return bool(ui.get("has_tool_content"))
+        return None
+    flag = ui.get("has_tool_content")
+    if isinstance(flag, bool):
+        return flag
+    return None
 
 
 def _has_content(content: Any) -> bool:

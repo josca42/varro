@@ -94,7 +94,7 @@ def write_file(file_path: str, content: str, user_id: int = DEMO_USER_ID) -> str
         path.write_text(content, encoding="utf-8")
     except OSError as exc:
         return _error(str(exc))
-    return f"Wrote {len(content)} bytes."
+    return f"Wrote {len(content)} bytes to {file_path}."
 
 
 def edit_file(
@@ -138,4 +138,4 @@ def edit_file(
         path.write_text(new_content, encoding="utf-8")
     except OSError as exc:
         return _error(str(exc))
-    return f"Replaced {replaced} occurrence(s)."
+    return f"Replaced {replaced} occurrence(s) in {file_path}."

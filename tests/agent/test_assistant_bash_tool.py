@@ -45,7 +45,7 @@ def test_bash_returns_command_output_and_persists_cwd(assistant_module, monkeypa
     ctx = SimpleNamespace(deps=SimpleNamespace(user_id=42, chat_id=7))
     output = assistant_module.Bash(ctx, command="ls /subjects")
 
-    assert output == "command output"
+    assert output == "command output\n[cwd=/next]"
     assert calls == [
         ("load", 42, 7),
         ("run", 42, "/start", "ls /subjects"),
@@ -74,7 +74,7 @@ def test_bash_uses_loaded_root_cwd_when_store_returns_root(assistant_module, mon
     ctx = SimpleNamespace(deps=SimpleNamespace(user_id=9, chat_id=2))
     output = assistant_module.Bash(ctx, command="pwd")
 
-    assert output == "pwd output"
+    assert output == "pwd output\n[cwd=/]"
     assert calls == [
         ("load", 9, 2),
         ("run", 9, "/", "pwd"),

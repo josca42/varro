@@ -27,6 +27,7 @@ from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
 from varro.agent.snapshot import snapshot_dashboard_url
+from varro.agent.workspace import user_workspace_root
 # import logfire
 
 # logfire.configure(scrubbing=False)
@@ -340,6 +341,7 @@ async def Snapshot(ctx: RunContext[AssistantRunDeps], url: str | None = None) ->
     except Exception as exc:
         raise ModelRetry(str(exc))
 
+    # TODO: Return both the url and the folder path.
     return result.url
 
 

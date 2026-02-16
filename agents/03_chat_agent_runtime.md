@@ -117,15 +117,23 @@ Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DI
 Structure per chat:
 
 - `chat.md` — overview with one summary block per turn
-- `{turn_idx}/turn.md` — detailed turn report (user prompt, thinking, tool calls with args/results, response, usage)
+- `{turn_idx}/turn.md` — trajectory-first turn report: `User`, `Trajectory` (`Step N` with `Decision`, `Actions`, `Observations`), `Final response`, `Usage`
 - `{turn_idx}/summary.md` — short summary used to build `chat.md`
 - `{turn_idx}/tool_calls/` — extracted SQL queries, Jupyter code, large tool results
-- `{turn_idx}/images/` — extracted binary images from user prompts or tool returns
+- `{turn_idx}/images/` — extracted binary images from review events
+- `{turn_idx}/.review_version` — renderer format marker for invalidating old derived output
+
+Trace extraction:
+
+- `varro/chat/trace.py` is the canonical message-to-event projection for review.
+- Event kinds: `user`, `thinking`, `assistant_text`, `tool_call`, `tool_return`, `tool_retry`.
+- Tool return supplemental content pairing is shared via `varro/chat/tool_results.py`.
+- `UserPromptPart` entries in tool-return requests are treated as tool supplemental content, not user input.
 
 Idempotent processing:
 
-- `.mpk` files are immutable after write, so if `turn.md` already exists the turn is skipped.
-- Only new turns are processed on repeated calls.
+- `.mpk` files are immutable after write.
+- A turn is skipped only when `turn.md` exists and `.review_version` matches the current renderer version.
 - `chat.md` is rebuilt cheaply by concatenating existing `summary.md` files.
 
 Strict separation from source data:

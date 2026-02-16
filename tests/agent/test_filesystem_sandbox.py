@@ -121,8 +121,8 @@ def test_write_and_edit_file_use_user_workspace_root(
         user_id=1,
     )
 
-    assert write_res == "Wrote 5 bytes."
-    assert edit_res == "Replaced 1 occurrence(s)."
+    assert write_res == "Wrote 5 bytes to /dashboard/note.txt."
+    assert edit_res == "Replaced 1 occurrence(s) in /dashboard/note.txt."
     assert (data_dir / "user" / "1" / "dashboard" / "note.txt").read_text(
         encoding="utf-8"
     ) == "beta"

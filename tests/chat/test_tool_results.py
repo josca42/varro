@@ -60,3 +60,30 @@ def test_extract_tool_render_records_legacy_fallback_for_single_tool() -> None:
     assert len(records) == 1
     assert records[0].part.tool_name == "Jupyter"
     assert records[0].tool_content == [image]
+
+
+def test_extract_tool_render_records_legacy_fallback_when_counts_align() -> None:
+    image_a = BinaryContent(data=b"a", media_type="image/png")
+    image_b = BinaryContent(data=b"b", media_type="image/png")
+    request = ModelRequest(
+        parts=[
+            ToolReturnPart(
+                tool_name="Jupyter",
+                content="stdout a",
+                tool_call_id="legacy_a",
+            ),
+            ToolReturnPart(
+                tool_name="Jupyter",
+                content="stdout b",
+                tool_call_id="legacy_b",
+            ),
+            UserPromptPart(content=[image_a]),
+            UserPromptPart(content=[image_b]),
+        ]
+    )
+
+    records = extract_tool_render_records(request)
+
+    assert len(records) == 2
+    assert records[0].tool_content == [image_a]
+    assert records[1].tool_content == [image_b]
