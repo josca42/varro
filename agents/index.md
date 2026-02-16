@@ -1,6 +1,6 @@
 # Varro Notes Index
 
-Last updated: 2026-02-15.
+Last updated: 2026-02-16.
 
 ## Core notes
 
@@ -9,6 +9,11 @@ Last updated: 2026-02-15.
 - [03 Chat + Agent Runtime](03_chat_agent_runtime.md)
 - [04 Dashboard Framework](04_dashboard_framework.md)
 - [05 Data + Context Pipeline](05_data_context_pipeline.md)
+
+## Dev
+
+- [Dev Loop](dev/loop.md) — Test → Review → Implement cycle
+- [Test Plan](dev/test_plan.md) — Questions to test the app with
 
 ## Suggested reading order
 
