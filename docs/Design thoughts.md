@@ -1,12 +1,14 @@
 
 # From soft ware you have come to soft ware you shall become
+
+I have designed this app from the view point of the agent and not the human user. The central premise is that the AI agent *is* the software and the app backend can be viewed tools that the agent can use to investigate user queries and the frontend as UI elements the agent can use to communicate with the user.
 #### Example used to illustrate each of the statements: Varro.dk
 I am creating a dashboard app, where an AI agent create dashboards to answer question about Denmark. The agent does this by finding relevant tables from statistics Denmark, creating sql queries to extract relevant data from these tables, plotting it using python and then exposing the analysis as a dashboard.
-#### File over app
+### 1 - File over app
 AI agents are good at reading files and navigating filesystems using bash commands. So if the app mostly reads/writes/edits files then it can be easily navigated and extended by an AI agent.
 
 In practice this means that UI elements are represented as files that are human readable and in my case by choosing to send html instead of json from the server to the browser.
-In many cases it can be easier to read a markdown file than an html file so I use markdown files for most things and then use a standard markdown to html converter. Having this approach allows me to add some custom markdown syntax such that I can represent for instance dashboards as markdown files.
+In many cases it can be easier to read a markdown file than an html file so I use markdown files for most things and then use a custom markdown to html converter. Having this approach allows me to add some custom markdown syntax such that I can represent for instance dashboards as markdown files.
 
 **Example**:
 I have implemented my dashboard application by letting a dashboard be represented by a set of query_name.sql files, an outputs.py file specifying figures and tables created from those queries and then a markdown file specifying the layout and various titles and comments.
@@ -67,13 +69,13 @@ So the above markdown can be converted to html and the figures/tables/metrics ca
 
 In this way dashboards are represented as files that are easily read by humans and therefore by AI agents. Hence, new dashboards can easily be created by the AI agent using components it knows well such as sql, python and markdown.
 
-#### Url as state and path
+### 2 - Url as state and path
 By letting the state of the app be determined by the url and [making the url readable](https://alfy.blog/2025/10/31/your-url-is-your-state.html) then the AI agent can navigate - and infer state of - the application by updating/reading the url. Since the AI agent will have likely read billions of urls during training on internet data then navigating the app using the url will be second nature.
-To keep the file over app approach consistent I let the folder structure and url structure mirror each other (to the extent it makes sense).
+To keep the file over app approach consistent I let the folder structure and url structure mirror each other.
 
 **Example**:
 In my dashboard application then if I go to the sales dashboard the relative url is /dashboard/sales and if filter on regions so I only have regions from "North" then the url is /dashboard/sales?region=North.
-This url structure is then reflected in the folder structure on disk in the following way. The sales dashboard folder is /dashboard/sales . But more importantly I have given then AI agent the ability to take a snapshot of dashboards. The snapshot is taken by providing an url and in the case snapshot(url=/dashboard/sales?region=North) then the following folder structure would be produced
+This url structure is then reflected in the folder structure on disk in the following way. The sales dashboard folder is /dashboard/sales . But more importantly I have given then AI agent the ability to take a snapshots of dashboards. The snapshot is taken by providing an url and in the case of snapshot(url=/dashboard/sales?region=North) then the following folder structure would be produced
 
 ```
 /dashboards/sales/
@@ -91,8 +93,10 @@ This url structure is then reflected in the folder structure on disk in the foll
 
 Notice that the folder name of the snapshot are the filter values used in the url. In this way the AI agent can easily navigate the app using the url and "view" the app using the url. 
 
-####  Chat as trajectory
-Each chat interaction is an agent trajectory. The goal is to complete the user request and the agents trajectory is the observe -> decide -> act -> observe -> decide -> act ... loop the agent is running using the tools at its disposal.
+#### 3) App as playground environment
+Each chat interaction can be viewed as an agent trajectory. The goal is to complete the user request and the agents trajectory is the observe -> decide -> act -> observe -> decide -> act ... loop the agent is running using the tools at its disposal.
+In my case I have renamed the loop to be: thinking -> act -> observe -> ... where the actions are tool calls and the observations are tool results.
+To enable
 
 
 
