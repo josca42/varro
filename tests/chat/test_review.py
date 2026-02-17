@@ -15,8 +15,8 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 
-from varro.chat import review as review_module
-from varro.chat.review import REVIEW_FORMAT_VERSION, review_turn, review_turn_summary
+from varro.playground import review as review_module
+from varro.playground.review import REVIEW_FORMAT_VERSION, review_turn, review_turn_summary
 
 SYSTEM_PROMPT = """
 <role>

@@ -41,7 +41,7 @@ Elegant minimalism. Every line should earn its place.
 - Identity vs state: a chat ID is an identity; its state is the sequence of turn values
 - Layout vs data vs transforms: `dashboard.md` vs `queries/` vs `outputs.py`
 
-**Built for AI review.** The review system (`varro/chat/review.py`) generates readable markdown and extracted tool calls from binary turn data. The primary consumer is an AI review agent that evaluates system performance — inspecting real user conversations, investigating bugs, and identifying where the statistician agent struggled or could be helped by better tool outputs. Optimizing for AI reviewability means: text over binary, extracted code over inline blobs, clear structure over compact encoding.
+**Built for AI review.** The review system (`varro/playground/review.py`) generates readable markdown and extracted tool calls from binary turn data. The primary consumer is an AI review agent that evaluates system performance — inspecting real user conversations, investigating bugs, and identifying where the statistician agent struggled or could be helped by better tool outputs. Optimizing for AI reviewability means: text over binary, extracted code over inline blobs, clear structure over compact encoding.
 
 When adding new features, ask: can the result be represented as an immutable value on disk? Can an AI review agent inspect it by reading files? Is the transition function explicit? If yes, the feature will compose well with the rest of the system.
 

@@ -1,20 +1,26 @@
 ---
 name: chat-review
 description: >
-  Review and evaluate agent conversations to find improvements for tooling,
-  instructions, and documentation. The goal is NOT to judge answer correctness
-  but to identify what system changes would help the agent take better trajectories.
-  Use when asked to: review a chat, evaluate agent performance, find tooling
-  improvements, analyze a conversation, inspect what happened in a chat, or when
-  given a chat ID to review.
+  Retrospective audit of completed agent chats to identify concrete improvements
+  to instructions, tools, and documentation. This is post-hoc analysis, not an
+  interactive exploration loop.
 ---
 
 # Chat Review
 
+## When to use this skill
+
+Use `$chat-review` when you already have a completed chat (or set of chats) and
+you want a concise audit of what happened and what should be improved.
+
+Use `$playground-explorer` instead when you want to iteratively ask new
+questions, inspect trajectories as they unfold, and probe hypotheses in the
+playground.
+
 ## Generate review files
 
 ```bash
-uv run python -c "from varro.chat.review import review_chat; print(review_chat(user_id=USER_ID, chat_id=CHAT_ID))"
+uv run python -c "from varro.playground.review import review_chat; print(review_chat(user_id=USER_ID, chat_id=CHAT_ID))"
 ```
 
 Idempotent: turns regenerate only when `turn.md` is missing or `.review_version` is outdated.
@@ -33,52 +39,36 @@ tool_instructions.md       # all tools with descriptions and parameter schemas
   images/                  # extracted plots and images
 ```
 
-## Review process
+## Review process (retrospective)
 
 1. Read `chat.md` for the overview
-2. Read `system_instructions.md` and `tool_instructions.md` once to understand what the agent was given
+2. Read `system_instructions.md` and `tool_instructions.md` once
 3. For each turn, read `turn.md` and inspect extracted artifacts in `tool_calls/`
-4. Evaluate each turn against the framework below
+4. Evaluate root causes and propose concrete system changes
 5. Write findings to `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`
 
 ## Evaluation framework
 
-Focus on what **system builders can change** (instructions, tools, documentation), not on what the model should have known.
+Focus on what system builders can change (instructions, tool output, docs), not
+what the model "should have known."
 
 ### Instructions quality
 
-Does the system prompt give the agent precise enough guidance?
-
-- Agent guessing at workflow steps that instructions could have specified
-- Agent ignoring instructions that exist (too buried or unclear)
-- Missing guidance for a common question pattern
-- Ambiguity that caused the agent to pick a suboptimal path
+- Missing workflow guidance for common question patterns
+- Ambiguous wording that led to suboptimal trajectories
+- Guidance that exists but is hard to follow in practice
 
 ### Tool adequacy
 
-Do tools return clear, actionable output that makes the next decision obvious?
-
-- Tool output missing information the agent needed next (row count, available levels, column names)
-- Agent calling the same tool repeatedly to get information one call could have returned
-- Agent working around a tool limitation using Bash/SQL when a dedicated tool or a small tool change would be cleaner
-- Tool descriptions that are misleading or incomplete
-- Fuzzy matching returning unhelpful results
+- Output missing key next-step signals (row count, levels, column names)
+- Repeated tool calls to collect information that should be returned once
+- Tool descriptions that are misleading, incomplete, or hard to operationalize
 
 ### Trajectory efficiency
 
-Did the agent take unnecessary steps because of instruction or tool gaps?
-
-- Steps that only exist because prior tool output was incomplete
-- Exploratory steps that instructions could have eliminated
-- Repeated queries that differ only in filter values the agent was searching for
-- Trial-and-error discovery of something documentation could have stated
-
-### Relevance
-
-Is the user question within scope for the state statistician?
-
-- Questions the agent shouldn't need to handle (general chat, non-data questions)
-- Questions that are borderline — note whether the agent should redirect or attempt
+- Detours caused by unclear observations
+- Repeated near-identical queries during discovery
+- Trial-and-error that clearer docs or tool output could remove
 
 ## Output format
 
@@ -88,49 +78,30 @@ Write findings to `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`:
 # Review: Chat {chat_id}
 
 ## Summary
-{1-3 sentences: what the user asked, overall assessment of how the system supported the agent}
+{1-3 sentences: request + overall system support quality}
 
 ## Findings
 
 ### {short title}
 **Dimension**: {Instructions | Tool | Trajectory | Documentation}
 **Turn**: {turn_idx}, Step {step_idx}
-**Observation**: {What happened — reference actual tool calls and results}
-**Suggestion**: {Concrete change to instructions, tool output, or documentation}
-**Impact**: {Steps saved, or what class of questions this helps}
-
-...
+**Observation**: {What happened with references}
+**Suggestion**: {Specific system change}
+**Impact**: {Expected effect on trajectory quality}
 
 ## Verdict
-{The single most impactful improvement from this review}
+{Single most impactful improvement}
 ```
 
-**Guidelines:**
-- Be concrete. Reference actual step numbers, tool calls, and results.
-- Suggest specific changes. "Add row count to Sql tool output" not "improve tool output."
-- Estimate impact. "Would save 2-3 steps for geographical queries" is useful.
-- One finding per root cause. Group repeated issues across turns.
-- Skip clean turns — only note what can be improved.
+Note: exploratory sessions produced with `$playground-explorer` may provide
+richer evidence trails; this retrospective format should summarize those into
+clear, actionable changes.
 
-## Agent environment (reference)
+## Playground definition
 
-The reviewed agent (Rigsstatistikeren) operates in a sandboxed filesystem:
+In Varro, the playground is the environment in the observation-action loop where
+tools and UI are the agent interface:
 
 ```
-/subjects/{root}/{mid}/{leaf}.md   — subject overviews listing available tables
-/fact/{root}/{mid}/{leaf}/{id}.md  — per-table docs: columns, joins, value ranges
-/dim/                              — dimension table docs
-/dashboard/                        — saved dashboard definitions
-/skills/                           — guides for complex tasks (e.g., dashboard creation)
+observe → decide → act → observe ...
 ```
-
-Tools: `ColumnValues`, `Sql`, `Jupyter`, `Read`, `Write`, `Edit`, `Bash`, `UpdateUrl`, `Snapshot`, `WebSearch`
-
-Typical efficient trajectory for data analysis:
-1. Identify subject area → `Bash ls`
-2. Read subject overview → `Read`
-3. Read table docs → `Read`
-4. Check column values → `ColumnValues`
-5. Query data → `Sql` with `df_name`
-6. Visualize → `Jupyter` with `show`
-7. Explain → final response

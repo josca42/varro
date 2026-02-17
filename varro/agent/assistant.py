@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from dataclasses import dataclass
+from pathlib import Path
 import pandas as pd
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from typing import Callable
@@ -28,17 +29,20 @@ from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.agent.workspace import user_workspace_root
-# import logfire
+import logfire
 
-# logfire.configure(scrubbing=False)
-# logfire.instrument_pydantic_ai()
+logfire.configure(scrubbing=False)
+logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
-sonnet_model = AnthropicModel("claude-sonnet-4-5")
+sonnet_model = AnthropicModel("claude-opus-4-6")
 sonnet_settings = AnthropicModelSettings(
     anthropic_thinking={"type": "enabled", "budget_tokens": 3000},
     parallel_tool_calls=True,
+    anthropic_cache_instructions="1h",
+    anthropic_cache_tool_definitions="1h",
+    anthropic_cache_messages="5m",  # Also cache the last message
 )
 
 
@@ -341,8 +345,15 @@ async def Snapshot(ctx: RunContext[AssistantRunDeps], url: str | None = None) ->
     except Exception as exc:
         raise ModelRetry(str(exc))
 
-    # TODO: Return both the url and the folder path.
-    return result.url
+    folder = str(result.folder)
+    workspace = user_workspace_root(ctx.deps.user_id)
+    try:
+        rel = Path(folder).resolve().relative_to(workspace.resolve()).as_posix()
+        folder = f"/{rel}" if rel != "." else "/"
+    except ValueError:
+        pass
+    payload = {"url": result.url, "folder": folder}
+    return f"SNAPSHOT_RESULT {json.dumps(payload, ensure_ascii=False)}"
 
 
 @agent.tool(docstring_format="google")

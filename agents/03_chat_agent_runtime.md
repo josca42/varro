@@ -110,7 +110,7 @@ Runtime state:
 
 ## Chat review / observability
 
-`varro/chat/review.py` generates markdown reports from persisted `.mpk` turn files.
+`varro/playground/review.py` generates markdown reports from persisted `.mpk` turn files.
 
 Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DIR` in `varro/config.py`) — separate from source data in `chats/`.
 
@@ -142,6 +142,30 @@ Strict separation from source data:
 - Review dir is NOT deleted when a chat is deleted. Reviews are independently managed.
 - Can be deleted with `shutil.rmtree(REVIEWS_DIR / user_id / chat_id)` when desired.
 - Can be regenerated from source `.mpk` files at any time.
+
+## Playground CLI
+
+Interactive review CLI entrypoint:
+
+- `uv run python -m varro.playground.cli`
+
+Behavior:
+
+- starts a new chat by default (or resumes with `--chat-id`),
+- sends plain input lines as user turns through `run_agent(...)`,
+- regenerates review artifacts after each turn via `varro.playground.review.review_chat(...)`,
+- supports review commands (`:help`, `:status`, `:url`, `:review`, `:snapshot`, `:quit`),
+- keeps all artifacts in existing stores (`chats/` and `chat_reviews/`).
+
+Related skill split:
+
+- `$playground-explorer` for interactive CLI-first probing and trajectory improvement discovery.
+- `$chat-review` for retrospective audit of completed chats.
+
+Snapshot contract:
+
+- `Snapshot` tool return is parseable payload:
+  - `SNAPSHOT_RESULT {"url":"...","folder":"..."}`
 
 ## Design patterns
 

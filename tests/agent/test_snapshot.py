@@ -72,8 +72,12 @@ def test_snapshot_tool_uses_current_url_when_url_is_omitted(
     )
 
     result = asyncio.run(assistant_module.Snapshot(ctx))
-
-    assert result == "/tmp/snapshots"
+    assert result.startswith("SNAPSHOT_RESULT ")
+    payload = json.loads(result.removeprefix("SNAPSHOT_RESULT ").strip())
+    assert payload == {
+        "url": "/dashboard/sales?region=North",
+        "folder": "/tmp/snapshots",
+    }
     assert calls == [(7, "/dashboard/sales?region=North")]
 
 
@@ -100,8 +104,12 @@ def test_snapshot_tool_uses_explicit_url_over_current_url(
     )
 
     result = asyncio.run(assistant_module.Snapshot(ctx, url="/dashboard/sales?region=South"))
-
-    assert result == "/tmp/snapshots"
+    assert result.startswith("SNAPSHOT_RESULT ")
+    payload = json.loads(result.removeprefix("SNAPSHOT_RESULT ").strip())
+    assert payload == {
+        "url": "/dashboard/sales?region=South",
+        "folder": "/tmp/snapshots",
+    }
     assert calls == [(7, "/dashboard/sales?region=South")]
 
 
@@ -141,8 +149,12 @@ def test_snapshot_tool_normalizes_returned_folder_path(
     )
 
     result = asyncio.run(assistant_module.Snapshot(ctx))
-
-    assert result == expected
+    assert result.startswith("SNAPSHOT_RESULT ")
+    payload = json.loads(result.removeprefix("SNAPSHOT_RESULT ").strip())
+    assert payload == {
+        "url": "/dashboard/sales?region=North",
+        "folder": expected,
+    }
 
 
 def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatch) -> None:

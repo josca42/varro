@@ -1,0 +1,4 @@
+interface:
+  display_name: "Playground Explorer"
+  short_description: "Explore live agent trajectories and propose playground improvements"
+  default_prompt: "Use $playground-explorer to run iterative CLI probes, inspect trajectory artifacts, and produce concrete improvements to tools, prompts, docs, and UI-as-agent-tools."
