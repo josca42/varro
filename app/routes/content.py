@@ -6,6 +6,7 @@ from fasthtml.common import APIRouter, A, Button, Div, Form, Input, NotStr, Text
 from ui.app.layout import AppShell, SettingsPage
 from varro.agent.workspace import ensure_user_workspace
 from varro.dashboard.routes import list_dashboards
+from varro.db import crud
 
 ar = APIRouter()
 
@@ -19,7 +20,13 @@ def _app_or_fragment(req, sess, content):
     chat = None
     if chat_id := sess.get("chat_id"):
         chat = req.state.chats.get(chat_id, with_turns=True)
-    return AppShell(chat, content)
+    db_user = crud.user.get(sess.get("user_id"))
+    return AppShell(
+        chat,
+        content,
+        user_name=db_user.name if db_user else None,
+        user_email=db_user.email if db_user else None,
+    )
 
 
 def _content_hash(content: str) -> str:
@@ -128,4 +135,9 @@ async def app_code_save(req, sess):
 
 @ar.get("/settings")
 def settings(req, sess):
-    return _app_or_fragment(req, sess, SettingsPage())
+    db_user = crud.user.get(sess.get("user_id"))
+    page = SettingsPage(
+        user_name=db_user.name if db_user else None,
+        user_email=db_user.email if db_user else None,
+    )
+    return _app_or_fragment(req, sess, page)

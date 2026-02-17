@@ -1,17 +1,10 @@
-"""ui.app.navbar
-
-Mock navbar used in the demo app (`main.py`).
-
-This is intentionally specific to the Lovable-style mock layout.
-"""
-
 from __future__ import annotations
 
 from fasthtml.common import *
 from fasthtml.components import ft_hx
 
 from ui.core import cn
-from ui.components import Button
+from ui.components import Button, GameOfLifeAnimation
 from ui.daisy import Navbar as DaisyNavbar, NavbarStart, NavbarCenter, NavbarEnd, Kbd
 
 
@@ -21,6 +14,8 @@ _ICONS = {
     "overview": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
     "settings": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
     "search": '<svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></g></svg>',
+    "logout": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+    "user": '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
 }
 
 _TAB_ITEMS = [
@@ -40,7 +35,58 @@ def _nav_tab(icon_key: str, label: str, action: str):
     )
 
 
-# TODO: Is this needed?. Could I replace with native htmx functionality?.
+def _user_initial(name: str | None, email: str | None) -> str:
+    if name:
+        return name[0].upper()
+    if email:
+        return email[0].upper()
+    return "U"
+
+
+def _user_dropdown(user_name: str | None = None, user_email: str | None = None):
+    initial = _user_initial(user_name, user_email)
+    display_name = user_name or (user_email or "User")
+
+    return Div(
+        Div(
+            Div(
+                Span(initial, cls="text-xs font-medium"),
+                cls="w-8 h-8 rounded-full bg-base-300 flex items-center justify-center cursor-pointer hover:bg-base-content/20 transition-colors",
+                tabindex="0",
+                role="button",
+            ),
+            Ul(
+                Li(
+                    Div(
+                        Span(display_name, cls="text-sm font-medium"),
+                        Span(user_email or "", cls="text-xs text-base-content/50") if user_email else None,
+                        cls="flex flex-col px-2 py-1.5",
+                    ),
+                    cls="menu-title p-0",
+                ),
+                Li(cls="divider my-1"),
+                Li(A(
+                    NotStr(f'<span class="w-4 h-4">{_ICONS["settings"]}</span>'),
+                    Span("Settings"),
+                    href="/settings",
+                    hx_get="/settings",
+                    hx_target="#content-panel",
+                    hx_swap="innerHTML",
+                    hx_push_url="true",
+                )),
+                Li(A(
+                    NotStr(f'<span class="w-4 h-4">{_ICONS["logout"]}</span>'),
+                    Span("Log out"),
+                    href="/logout",
+                )),
+                cls="dropdown-content menu bg-base-100 rounded-box border border-base-300 w-56 p-2 shadow-lg z-50",
+                tabindex="0",
+            ),
+            cls="dropdown dropdown-end",
+        ),
+    )
+
+
 def NavbarNavScript():
     return Script(
         """
@@ -91,13 +137,11 @@ def NavbarNavScript():
 
 
 def Navbar(
-    project_name: str = "Dash Companion",
-    status: str = "Previewing last saved version",
+    user_name: str | None = None,
+    user_email: str | None = None,
     cls: str = "",
     **kw,
 ):
-    """Top navigation bar."""
-
     tabs = Div(
         *[_nav_tab(icon, label, action) for icon, label, action in _TAB_ITEMS],
         cls="flex gap-1",
@@ -120,9 +164,8 @@ def Navbar(
     )
 
     end = NavbarEnd(
-        Button(NotStr(_ICONS["settings"]), variant="ghost", size="icon"),
-        Button("Publish", variant="default", size="default"),
-        cls="flex gap-2",
+        _user_dropdown(user_name, user_email),
+        cls="flex gap-2 items-center",
     )
 
     return DaisyNavbar(

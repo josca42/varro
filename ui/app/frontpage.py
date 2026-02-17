@@ -3,13 +3,21 @@ from fasthtml.common import A, Div, Footer, Nav, P, Section, Span, Title
 from ui.components import GameOfLifeAnimation
 
 
+def _logo_mark():
+    return GameOfLifeAnimation(
+        width=32, height=28, cell_size=2,
+        text="V", color="#9b2743",
+    )
+
+
 def Frontpage():
     nav = Nav(
         Div(
             A(
-                "varro",
+                _logo_mark(),
+                Span("Varro", cls="text-lg font-semibold tracking-tight"),
                 href="/",
-                cls="text-lg font-semibold tracking-tight text-base-content no-underline hover:no-underline",
+                cls="flex items-center gap-2 text-base-content no-underline hover:no-underline",
             ),
             Div(
                 A(
@@ -20,13 +28,13 @@ def Frontpage():
                 A(
                     "Get Started",
                     href="/signup",
-                    cls="btn btn-primary btn-sm",
+                    cls="btn btn-neutral btn-sm rounded-lg",
                 ),
                 cls="flex items-center gap-6",
             ),
             cls="max-w-5xl mx-auto w-full px-6 flex items-center justify-between",
         ),
-        cls="py-5",
+        cls="py-4",
     )
 
     hero = Section(
@@ -37,16 +45,16 @@ def Frontpage():
             ),
             P(
                 "The Danish AI State Statistician",
-                cls="text-lg text-base-content/55 max-w-xl leading-relaxed",
+                cls="text-lg text-base-content/50 max-w-xl leading-relaxed",
             ),
             A(
                 "Get Started for Free \u2192",
                 href="/signup",
-                cls="btn btn-primary px-8 h-11 rounded-lg text-sm font-medium tracking-wide",
+                cls="btn btn-neutral px-8 h-11 rounded-lg text-sm font-medium tracking-wide",
             ),
             P(
                 "Free to explore. No credit card required.",
-                cls="text-sm text-base-content/35",
+                cls="text-sm text-base-content/30",
             ),
             cls="flex flex-col items-center text-center gap-6",
         ),
@@ -74,7 +82,7 @@ def Frontpage():
 
     footer = Footer(
         Div(
-            Span("varro", cls="text-sm font-medium text-base-content/40"),
+            Span("Varro", cls="text-sm font-medium text-base-content/40"),
             Span("\u00a9 2026", cls="text-sm text-base-content/25"),
             cls="max-w-5xl mx-auto px-6 flex items-center justify-between",
         ),

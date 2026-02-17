@@ -5,7 +5,7 @@ Split-panel application shell for chat + URL-driven content.
 
 from __future__ import annotations
 
-from fasthtml.common import A, Div, H1, Li, P, Script, Ul
+from fasthtml.common import A, Div, H1, Li, P, Script, Span, Ul
 
 from ui.core import cn
 from ui.app.chat import ChatPanel, ChatClientScript
@@ -51,12 +51,59 @@ def OverviewPage():
     return DashboardOverviewPage([])
 
 
-def SettingsPage():
+def SettingsPage(user_name: str | None = None, user_email: str | None = None):
+    initial = (user_name or user_email or "U")[0].upper()
+
+    profile_section = Div(
+        Div(
+            Div(
+                Span(initial, cls="text-lg font-semibold"),
+                cls="w-14 h-14 rounded-full bg-base-300 flex items-center justify-center",
+            ),
+            Div(
+                Div(user_name or "—", cls="text-base font-semibold"),
+                Div(user_email or "—", cls="text-sm text-base-content/50"),
+                cls="flex flex-col gap-0.5",
+            ),
+            cls="flex items-center gap-4",
+        ),
+        cls="pb-6 border-b border-base-300",
+    )
+
+    account_section = Div(
+        H1("Account", cls="text-lg font-semibold mb-4"),
+        Div(
+            Div(
+                Div("Email", cls="text-sm font-medium"),
+                Div(user_email or "—", cls="text-sm text-base-content/60"),
+                cls="flex flex-col gap-1",
+            ),
+            Div(
+                Div("Name", cls="text-sm font-medium"),
+                Div(user_name or "—", cls="text-sm text-base-content/60"),
+                cls="flex flex-col gap-1",
+            ),
+            cls="space-y-4",
+        ),
+        cls="py-6 border-b border-base-300",
+    )
+
+    danger_section = Div(
+        A(
+            "Log out",
+            href="/logout",
+            cls="btn btn-outline btn-error btn-sm",
+        ),
+        cls="pt-6",
+    )
+
     return Div(
         Div(
-            H1("Settings", cls="text-2xl font-semibold mb-2"),
-            P("Settings page placeholder.", cls="text-base-content/70"),
-            cls="p-6",
+            H1("Settings", cls="text-2xl font-semibold mb-6"),
+            profile_section,
+            account_section,
+            danger_section,
+            cls="max-w-2xl p-6",
         ),
         data_slot="settings-page",
     )
@@ -137,6 +184,8 @@ def UrlStateScript():
 def AppShell(
     chat,
     content,
+    user_name: str | None = None,
+    user_email: str | None = None,
 ):
     chat_root = Div(
         ChatPanel(chat),
@@ -165,7 +214,7 @@ def AppShell(
             data_slot="resize-handle",
         ),
         Div(
-            Navbar(),
+            Navbar(user_name=user_name, user_email=user_email),
             content_panel,
             cls="flex flex-col min-h-0 flex-1",
             data_slot="content-wrap",
