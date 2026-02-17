@@ -12,12 +12,8 @@ class User(SQLModel, table=True):
     password_hash: str | None = None
     is_active: bool = Field(default=True)
     created_at: Optional[datetime] = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+        sa_column=Column(DateTime, server_default=func.now())
     )
     updated_at: Optional[datetime] = Field(
-        sa_column=Column(
-            DateTime(timezone=True),
-            server_default=func.now(),
-            onupdate=func.now(),
-        )
+        sa_column=Column(DateTime, server_default=func.now(), onupdate=func.now())
     )

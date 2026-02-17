@@ -5,7 +5,7 @@ An opinionated FastHTML + DaisyUI component library inspired by shadcn-ui. This 
 ## Philosophy
 
 - **shadcn-style API**: Components use `variant` + `size` props, with `cls` for Tailwind overrides
-- **No build step**: Uses Tailwind Browser runtime + CDN DaisyUI v5
+- **Minimal build step**: Tailwind Browser runtime + CDN DaisyUI v5, plus a built Typography CSS (`npm run build:prose`)
 - **Flat, compact aesthetic**: Minimal shadows, tight spacing, warm neutral palette
 - **Composition over configuration**: Build complex UIs by composing simple components
 
@@ -33,7 +33,8 @@ ui/
 │   └── textarea.py  # Textarea
 └── app/             # App-specific compositions (demo/reference)
     ├── navbar.py    # Navbar
-    ├── chat.py      # UserMessage, AssistantMessage, ChatInput
+    ├── chat.py      # ChatPanel + chat UI components
+    ├── layout.py    # AppShell, ContentNavbar, Welcome/Overview/Settings
     └── dashboard.py # MetricCard, ChartShell, DashboardPanel
 ```
 

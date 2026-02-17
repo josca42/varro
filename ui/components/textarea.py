@@ -11,8 +11,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Textarea as DaisyTextarea
+from ui.core import cn
+from ui.daisy import Textarea as DaisyTextarea
 
 
 TextareaVariant = Literal["default", "ghost"]
@@ -75,5 +75,3 @@ def Textarea(
         **kw,
     )
 
-
-__all__ = ["Textarea", "TextareaVariant", "TextareaSize", "TextareaColor"]

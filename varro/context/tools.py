@@ -4,46 +4,41 @@ from varro.config import TABLES_DOCS_DIR, SUBJECTS_DOCS_DIR
 
 def generate_hierarchy(docs_dir: Path = SUBJECTS_DOCS_DIR) -> str:
     """
-    Generate compact inline format from folder structure.
+    Generate compact hierarchy with roots and mids only.
+
+    The agent discovers leaves on demand via Bash("ls /subjects/{root}/{mid}/").
 
     Output format:
         root:
-          mid: leaf1, leaf2, leaf3
-          mid2: leaf4, leaf5
+          mid1
+          mid2
     """
     lines = []
 
     roots = sorted(d for d in docs_dir.iterdir() if d.is_dir())
 
     for root in roots:
-        lines.append(f"{root.name}:")
-
         mids = sorted(d for d in root.iterdir() if d.is_dir())
+        if not mids:
+            continue
+        lines.append(f"{root.name}:")
         for mid in mids:
-            leaves = sorted(
-                d.name
-                for d in mid.iterdir()
-                if d.is_dir() and (d / "README.md").exists()
-            )
-            if leaves:
-                leaves_str = ", ".join(leaves)
-                lines.append(f"  {mid.name}: {leaves_str}")
-
-        lines.append("")  # blank line between roots
+            lines.append(f"  {mid.name}")
+        lines.append("")
 
     return "\n".join(lines).rstrip()
 
 
 def subject_overview_tool(leaf: str) -> str:
     """
-    Get the README for a leaf subject showing available tables.
+    Get docs for a leaf subject showing available tables.
 
     Args:
         leaf: Full path "arbejde_og_indkomst/indkomst_og_løn/løn"
               or unique leaf name "løn"
 
     Returns:
-        Content of the subject's README.md
+        Content of the subject's markdown file
 
     Raises:
         FileNotFoundError: No matching subject
@@ -51,18 +46,23 @@ def subject_overview_tool(leaf: str) -> str:
     """
     leaf = leaf.strip("/").lower()
 
-    # Try as full path first
-    full_path = SUBJECTS_DOCS_DIR / leaf / "README.md"
+    # Try as full path first (root/mid/leaf -> root/mid/leaf.md)
+    parts = leaf.split("/")
+    full_path = SUBJECTS_DOCS_DIR.joinpath(*parts[:-1], f"{parts[-1]}.md")
     if full_path.exists():
         return full_path.read_text()
 
     # Try as leaf name
-    matches = list(SUBJECTS_DOCS_DIR.glob(f"**/{leaf}/README.md"))
+    leaf_name = parts[-1]
+    matches = list(SUBJECTS_DOCS_DIR.glob(f"**/{leaf_name}.md"))
 
     if len(matches) == 1:
         return matches[0].read_text()
     elif len(matches) > 1:
-        paths = sorted(str(m.parent.relative_to(SUBJECTS_DOCS_DIR)) for m in matches)
+        paths = sorted(
+            str(m.relative_to(SUBJECTS_DOCS_DIR).with_suffix(""))
+            for m in matches
+        )
         raise ValueError(f"Ambiguous: {leaf!r} matches {paths}")
 
     raise FileNotFoundError(f"Subject not found: {leaf}")
@@ -88,9 +88,12 @@ def table_docs_tool(table_id: str) -> str:
     if "." in table_id:
         table_id = table_id.split(".")[-1]
 
-    path = TABLES_DOCS_DIR / f"{table_id}.md"
+    # Search through the subject hierarchy for the table doc
+    matches = list(TABLES_DOCS_DIR.glob(f"**/{table_id}.md"))
 
-    if not path.exists():
-        raise FileNotFoundError(f"No docs for table: {table_id}")
+    if len(matches) == 1:
+        return matches[0].read_text()
+    elif len(matches) > 1:
+        return matches[0].read_text()
 
-    return path.read_text()
+    raise FileNotFoundError(f"No docs for table: {table_id}")

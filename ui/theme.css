@@ -19,55 +19,63 @@ Conventions:
 [data-theme="warmink"] {
   color-scheme: light;
 
-  /* Base: warm paper */
-  --color-base-100: oklch(98.5% 0.005 85);
-  --color-base-200: oklch(96% 0.008 85);
-  --color-base-300: oklch(93% 0.01 85);
-  --color-base-content: oklch(15% 0.01 85);
+  /* Base: warm near-white */
+  --color-base-100: oklch(1 0 0);
+  --color-base-200: oklch(0.982 0.0041 91.45);
+  --color-base-300: oklch(0.9485 0.0109 95.17);
+  --color-base-content: oklch(0.230 0.005 270);
 
-  /* Brand: shadcn-esque neutral primary (ink) */
-  --color-primary: oklch(20% 0.005 85);
-  --color-primary-content: oklch(98% 0.005 85);
+  /* Prose overrides (Tailwind Typography defaults are too light) */
+  --tw-prose-body: oklch(0.260 0.005 270);
+  --tw-prose-headings: oklch(0.200 0.005 270);
 
-  /* Secondary/accent: subtle warm grays */
-  --color-secondary: oklch(55% 0.01 85);
-  --color-secondary-content: oklch(98% 0.005 85);
+  /* Brand: muted blue */
+  --color-primary: oklch(0.6059 0.1279 256.03);
+  --color-primary-content: oklch(0.9842 0.0034 247.86);
 
-  --color-accent: oklch(35% 0.01 85);
-  --color-accent-content: oklch(98% 0.005 85);
+  /* Secondary: purple */
+  --color-secondary: oklch(0.4828 0.1545 311.07);
+  --color-secondary-content: oklch(0.9818 0.0057 308.4);
 
-  --color-neutral: oklch(25% 0.008 85);
-  --color-neutral-content: oklch(98% 0.005 85);
+  /* Accent: warm red-orange */
+  --color-accent: oklch(0.5042 0.1516 26.97);
+  --color-accent-content: oklch(0.9822 0.0043 17.23);
+
+  --color-neutral: oklch(0.5693 0 0);
+  --color-neutral-content: oklch(0.9557 0.0027 286.35);
 
   /* Semantics */
-  --color-info: oklch(60% 0.15 240);
-  --color-info-content: oklch(98% 0.01 240);
+  --color-info: oklch(0.6059 0.1279 256.03);
+  --color-info-content: oklch(0.9842 0.0034 247.86);
 
-  --color-success: oklch(55% 0.15 145);
-  --color-success-content: oklch(98% 0.01 145);
+  --color-success: oklch(0.5723 0.1529 138.25);
+  --color-success-content: oklch(0.9844 0.0123 137.78);
 
-  --color-warning: oklch(75% 0.15 85);
-  --color-warning-content: oklch(20% 0.02 85);
+  --color-warning: oklch(0.5743 0.1176 58.48);
+  --color-warning-content: oklch(0.195 0.0239 83.97);
 
-  --color-error: oklch(55% 0.2 25);
-  --color-error-content: oklch(98% 0.01 25);
+  --color-error: oklch(0.5042 0.1516 26.97);
+  --color-error-content: oklch(0.9822 0.0043 17.23);
 
   /* Shape / density */
   --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.75rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
 
-  /* Visual style: keep it flat like shadcn */
-  --depth: 0;
+  /* Visual style */
+  --depth: 1;
   --noise: 0;
 
   /* Optional component vars */
-  --card-p: 1rem;            /* card padding */
-  --card-fs: 0.875rem;       /* card font size */
-  --cardtitle-fs: 0.95rem;   /* card title font size */
+  --card-p: 1rem;
+  /* card padding */
+  --card-fs: 0.875rem;
+  /* card font size */
+  --cardtitle-fs: 0.95rem;
+  /* card title font size */
 }
 
 /* ----------------------------------------------------------------------------
@@ -77,42 +85,42 @@ Conventions:
 [data-theme="warmink-dark"] {
   color-scheme: dark;
 
-  --color-base-100: oklch(18% 0.01 85);
-  --color-base-200: oklch(22% 0.012 85);
-  --color-base-300: oklch(26% 0.014 85);
-  --color-base-content: oklch(92% 0.005 85);
+  --color-base-100: oklch(18% 0.005 90);
+  --color-base-200: oklch(22% 0.005 90);
+  --color-base-300: oklch(26% 0.02 250);
+  --color-base-content: oklch(92% 0.01 250);
 
-  --color-primary: oklch(92% 0.005 85);
-  --color-primary-content: oklch(18% 0.01 85);
+  --color-primary: oklch(70% 0.12 250);
+  --color-primary-content: oklch(18% 0.01 250);
 
-  --color-secondary: oklch(70% 0.01 85);
-  --color-secondary-content: oklch(18% 0.01 85);
+  --color-secondary: oklch(65% 0.14 310);
+  --color-secondary-content: oklch(18% 0.01 310);
 
-  --color-accent: oklch(78% 0.01 85);
-  --color-accent-content: oklch(18% 0.01 85);
+  --color-accent: oklch(65% 0.14 27);
+  --color-accent-content: oklch(18% 0.01 27);
 
-  --color-neutral: oklch(40% 0.01 85);
-  --color-neutral-content: oklch(92% 0.005 85);
+  --color-neutral: oklch(40% 0.02 250);
+  --color-neutral-content: oklch(92% 0.01 250);
 
-  --color-info: oklch(70% 0.14 240);
-  --color-info-content: oklch(18% 0.01 85);
+  --color-info: oklch(70% 0.12 250);
+  --color-info-content: oklch(18% 0.01 250);
 
-  --color-success: oklch(66% 0.14 145);
-  --color-success-content: oklch(18% 0.01 85);
+  --color-success: oklch(66% 0.14 140);
+  --color-success-content: oklch(18% 0.01 140);
 
-  --color-warning: oklch(80% 0.12 85);
-  --color-warning-content: oklch(18% 0.01 85);
+  --color-warning: oklch(75% 0.12 60);
+  --color-warning-content: oklch(18% 0.02 60);
 
-  --color-error: oklch(70% 0.16 25);
-  --color-error-content: oklch(18% 0.01 85);
+  --color-error: oklch(65% 0.14 27);
+  --color-error-content: oklch(18% 0.01 27);
 
   --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.75rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
-  --depth: 0;
+  --depth: 1;
   --noise: 0;
 
   --card-p: 1rem;
@@ -143,6 +151,13 @@ body {
   transition-duration: 150ms;
 }
 
+/* Neutralize DaisyUI's purple focus ring on form inputs */
+textarea:focus,
+input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Focus ring closer to shadcn */
 :focus-visible {
   outline: 2px solid oklch(from var(--color-primary) l c h / 0.55);
@@ -151,13 +166,318 @@ body {
 
 /* Restore heading sizes stripped by Tailwind preflight (runtime Tailwind) */
 /* Using !important to override runtime-injected preflight rules. */
-h1 { font-size: 2rem !important; font-weight: 700 !important; margin-bottom: 1rem; }
-h2 { font-size: 1.5rem !important; font-weight: 600 !important; margin-bottom: 0.75rem; }
-h3 { font-size: 1.25rem !important; font-weight: 600 !important; margin-bottom: 0.5rem; }
-h4 { font-size: 1.125rem !important; font-weight: 600 !important; margin-bottom: 0.5rem; }
-h5 { font-size: 1rem !important; font-weight: 600 !important; margin-bottom: 0.25rem; }
-h6 { font-size: 0.875rem !important; font-weight: 600 !important; margin-bottom: 0.25rem; }
+h1 {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.75rem;
+}
+
+h3 {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem;
+}
+
+h5 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.25rem;
+}
+
+h6 {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.25rem;
+}
+
+/* Hide Alpine components until initialized */
+[x-cloak] {
+  display: none !important;
+}
 
 /* Optional utilities */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Tool call UI
+   ------------------------------------------------------------------------- */
+
+.tool-call-group {
+  border: 1px solid var(--color-base-300);
+  background: var(--color-base-100);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.tool-call-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tool-call-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.tool-call-meta,
+.tool-call-toggle {
+  font-size: 0.75rem;
+  color: var(--color-base-content);
+  opacity: 0.6;
+}
+
+.tool-call-chevron {
+  font-size: 0.7rem;
+  color: var(--color-base-content);
+  opacity: 0.6;
+  transition: transform 150ms ease;
+}
+
+.tool-call-text {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.tool-call-text .prose {
+  font-size: 0.875rem;
+}
+
+.tool-call-text .mb-4 {
+  margin-bottom: 0;
+}
+
+.tool-steps {
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--color-base-300);
+}
+
+.tool-steps-final {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: none;
+}
+
+.tool-steps-final .tool-step::before {
+  display: none;
+}
+
+.tool-step-note {
+  padding-top: 0.15rem;
+}
+
+.tool-step-note::before {
+  background: var(--color-base-300);
+  box-shadow: 0 0 0 1px var(--color-base-300);
+}
+
+.tool-note-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.6;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.tool-note-body {
+  font-size: 0.85rem;
+  color: var(--color-base-content);
+}
+
+.tool-note-thinking {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.tool-note-body .mb-4 {
+  margin-bottom: 0;
+}
+
+.chat-progress {
+  margin: 0.5rem 0 0.75rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.chat-progress .gol-animation {
+  background: transparent;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0;
+}
+
+.chat-progress .gol-canvas {
+  display: block;
+  border-radius: 0.35rem;
+}
+
+.tool-step {
+  position: relative;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.tool-step:last-child {
+  padding-bottom: 0;
+}
+
+.tool-step::before {
+  content: "";
+  position: absolute;
+  left: -1.35rem;
+  top: 0.55rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-base-300);
+  border: 2px solid var(--color-base-100);
+  box-shadow: 0 0 0 1px var(--color-base-300);
+}
+
+.tool-step[data-status="success"]::before {
+  background: var(--color-success);
+  box-shadow: 0 0 0 1px var(--color-success);
+}
+
+.tool-step[data-status="running"]::before {
+  background: var(--color-warning);
+  box-shadow: 0 0 0 1px var(--color-warning);
+}
+
+.tool-step[data-status="error"]::before {
+  background: var(--color-error);
+  box-shadow: 0 0 0 1px var(--color-error);
+}
+
+.tool-step-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.2rem 0.25rem;
+  border-radius: 0.5rem;
+}
+
+.tool-step-summary:hover {
+  background: var(--color-base-200);
+}
+
+.tool-step-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.tool-step-meta {
+  font-size: 0.75rem;
+  color: var(--color-base-content);
+  opacity: 0.6;
+}
+
+.tool-step-chevron {
+  font-size: 0.7rem;
+  color: var(--color-base-content);
+  opacity: 0.6;
+  margin-top: 0.2rem;
+  transition: transform 150ms ease;
+}
+
+.tool-step-details {
+  margin-top: 0.5rem;
+}
+
+.tool-card {
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tool-card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tool-card-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.6;
+}
+
+.tool-code-block {
+  background: var(--color-base-100);
+  border: 1px solid var(--color-base-300);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  overflow-x: auto;
+}
+
+.tool-code-meta {
+  font-size: 0.75rem;
+  color: var(--color-base-content);
+  opacity: 0.6;
+}
+
+.tool-output-block {
+  font-size: 0.75rem;
+  overflow-x: auto;
+}
+
+.tool-output-asset {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.tool-empty {
+  font-size: 0.75rem;
+  color: var(--color-base-content);
+  opacity: 0.6;
+}
+
+#chat-panel h1,
+#chat-panel h2 {
+  font-size: inherit !important;
+  margin-bottom: 0 !important;
+}
+
+[data-slot="public-frontpage"] .gol-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#chat-form textarea {
+  min-height: 1.5rem;
+  max-height: 12rem;
+}

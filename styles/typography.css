@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@source "./ui/**/*.py";
+@source "./app/**/*.py";
+@source "./varro/**/*.py";
+@source "./docs/**/*.md";

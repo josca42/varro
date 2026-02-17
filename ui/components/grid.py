@@ -9,7 +9,7 @@ from typing import Union
 
 from fasthtml.common import Div, FT
 
-from ..core import cn
+from ui.core import cn
 
 
 def Grid(
@@ -41,5 +41,3 @@ def Grid(
         **kw,
     )
 
-
-__all__ = ["Grid"]

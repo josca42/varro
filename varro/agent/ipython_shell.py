@@ -10,11 +10,15 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+
+import plotly.io as pio
+pio.renderers.default = None
+pio.templates.default = "plotly_white"
 """
 
 
 def run_cell(self, cell, timeout=None):
-    "Wrapper for original `run_cell` which adds timeout, memory limit, and output capture"
+    "Wrapper for original `run_cell` which adds timeout"
     if timeout:
 
         def handler(*args):
@@ -26,6 +30,7 @@ def run_cell(self, cell, timeout=None):
         with capture_output() as io:
             result = self.orig_run(cell)
         result.stdout = io.stdout
+        result.outputs = io.outputs  # See if this fixes anything
         return result
     except TimeoutError as e:
         result = self.ExecutionResult(error_before_exec=None, error_in_exec=e)

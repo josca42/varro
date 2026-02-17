@@ -5,10 +5,5 @@ POSTGRES_SQLALCHEMY_URI = f"postgresql+psycopg://{settings['DBUSER']}:{settings[
 POSTGRES_DSN = (
     f"postgresql://{settings['DBUSER']}:{settings['DBPASS']}@localhost:5432/neocortex"
 )
-ASYNC_DSN = f"postgresql+asyncpg://{settings['DBUSER']}:{settings['DBPASS']}@localhost:5432/neocortex"
-CHAINLIT_DSN = f"postgresql+asyncpg://{settings['DBUSER']}:{settings['DBPASS']}@localhost:5432/chainlit"
 
 engine = create_engine(POSTGRES_SQLALCHEMY_URI)
-
-
-POSTGRES_DSN = "postgresql://postgres:dme4yzx0a710xy5@localhost:5432/neocortex"

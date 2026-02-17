@@ -5,22 +5,26 @@ Execute SQL queries and call @output functions.
 
 from __future__ import annotations
 
+import hashlib
 import inspect
-from typing import Any, Literal
+import json
+from typing import Any
 
 import pandas as pd
-from sqlalchemy import text, bindparam, String, Date
+from sqlalchemy import text, bindparam, String, Date, Boolean
 from sqlalchemy.engine import Engine
 
-from .loader import Dashboard, extract_params
-from .models import Metric
+from varro.dashboard.loader import Dashboard, extract_params
+from varro.dashboard.models import Metric
+from varro.dashboard.filters import SelectFilter
+
+_query_cache: dict[tuple[str, str], pd.DataFrame] = {}
 
 
-OutputType = Literal["figure", "table", "metric"]
-
-
-def _infer_param_type(name: str):
+def _infer_param_type(name: str, value: Any = None):
     """Infer SQLAlchemy type from parameter name."""
+    if isinstance(value, bool):
+        return Boolean
     if "date" in name or "from" in name or "to" in name:
         return Date
     return String
@@ -37,55 +41,56 @@ def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.Dat
 
     # Build params dict, converting 'all' to None
     bound: dict[str, Any] = {}
+    param_types: dict[str, Any] = {}
     for param in params_needed:
         value = filters.get(param)
         bound[param] = None if value == "all" or value is None else value
+        param_types[param] = _infer_param_type(param, bound[param])
 
     # Create typed bindparams for NULL handling
     stmt = text(query)
     for param in params_needed:
-        stmt = stmt.bindparams(bindparam(param, type_=_infer_param_type(param)))
+        stmt = stmt.bindparams(bindparam(param, type_=param_types[param]))
 
     with engine.connect() as conn:
         return pd.read_sql(stmt, conn, params=bound)
 
 
+def execute_query_cached(
+    query: str, filters: dict[str, Any], engine: Engine
+) -> pd.DataFrame:
+    """Execute a SQL query with a simple cache keyed by query + filters."""
+    query_hash = hashlib.md5(query.encode()).hexdigest()
+    filters_key = json.dumps(filters, sort_keys=True, default=str)
+    key = (query_hash, filters_key)
+
+    cached = _query_cache.get(key)
+    if cached is not None:
+        return cached.copy()
+
+    df = execute_query(query, filters, engine)
+    _query_cache[key] = df
+    return df.copy()
+
+
+def clear_query_cache() -> None:
+    _query_cache.clear()
+
+
 def execute_options_query(
-    dash: Dashboard, filter_def: Any, engine: Engine
+    dash: Dashboard, f: SelectFilter, engine: Engine
 ) -> list[str]:
     """Execute an options query for a select filter.
 
     Returns a list of option values from the first column.
     """
-    options_attr = filter_def.attrs.get("options", "")
-    if not options_attr.startswith("query:"):
+    if not f.options_query:
         return []
+    query = dash.queries[f.options_query]
 
-    query_name = options_attr[6:]  # Remove "query:" prefix
-    if query_name not in dash.queries:
-        return []
-
-    query = dash.queries[query_name]
-    # Options queries don't receive filter params
     with engine.connect() as conn:
-        df = pd.read_sql(text(query), conn)
-
-    if df.empty:
-        return []
-
-    # Return first column values as strings
-    return df.iloc[:, 0].astype(str).tolist()
-
-
-def detect_output_type(result: Any) -> OutputType:
-    """Detect the type of an output result."""
-    if isinstance(result, pd.DataFrame):
-        return "table"
-    if isinstance(result, Metric):
-        return "metric"
-    if hasattr(result, "to_html"):  # Plotly figure
-        return "figure"
-    raise ValueError(f"Unknown output type: {type(result)}")
+        rows = conn.execute(text(query)).scalars().all()  # first column only
+    return [str(x) for x in rows]
 
 
 def execute_output(
@@ -93,10 +98,10 @@ def execute_output(
     output_name: str,
     filters: dict[str, Any],
     engine: Engine,
-) -> tuple[OutputType, Any]:
+) -> Any:
     """Execute an @output function.
 
-    Returns (type, result).
+    Returns the output function result.
     """
     if output_name not in dash.outputs:
         raise ValueError(f"Unknown output: {output_name}")
@@ -110,16 +115,7 @@ def execute_output(
         if param == "filters":
             kwargs["filters"] = filters
         elif param in dash.queries:
-            kwargs[param] = execute_query(dash.queries[param], filters, engine)
-
-    result = fn(**kwargs)
-    return detect_output_type(result), result
-
-
-__all__ = [
-    "OutputType",
-    "execute_query",
-    "execute_options_query",
-    "execute_output",
-    "detect_output_type",
-]
+            kwargs[param] = execute_query_cached(
+                dash.queries[param], filters, engine
+            )
+    return fn(**kwargs)

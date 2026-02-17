@@ -6,13 +6,13 @@ Import from here if you want building blocks:
 
     from ui.components import Button, Card, Input
 
-Most projects will use the top-level re-exports:
+Most projects should import directly:
 
-    from ui import Button, Card, Input
+    from ui.components import Button, Card, Input
 """
 
-from .button import Button, IconButton, ButtonVariant, ButtonSize
-from .card import (
+from ui.components.button import Button, LinkButton, IconButton, ButtonVariant, ButtonSize
+from ui.components.card import (
     Card,
     CardBody,
     CardHeader,
@@ -24,10 +24,10 @@ from .card import (
     CardSimple,
     CardVariant,
 )
-from .input import Input, Select, InputVariant, InputSize, InputColor
-from .textarea import Textarea, TextareaVariant, TextareaSize, TextareaColor
-from .separator import Separator, SeparatorOrientation, SeparatorColor
-from .field import (
+from ui.components.input import Input, Select, InputVariant, InputSize, InputColor
+from ui.components.textarea import Textarea, TextareaVariant, TextareaSize, TextareaColor
+from ui.components.separator import Separator, SeparatorOrientation, SeparatorColor
+from ui.components.field import (
     Field,
     FieldContent,
     FieldDescription,
@@ -38,18 +38,25 @@ from .field import (
     FieldSet,
     FormField,
 )
-from .prose import Prose, MarkdownProse
-from .badge import Badge, BadgeVariant, BadgeSize, BadgeColor
-from .alert import Alert, Callout, AlertVariant
-from .checkbox import Checkbox, CheckboxSize, CheckboxColor
-from .grid import Grid
-from .stack import Stack, HStack, VStack, StackDirection
-from .form import Form, FormLayout
-from .stat import Stat, StatSkeleton
+from ui.components.prose import Prose, MarkdownProse
+from ui.components.badge import Badge, BadgeVariant, BadgeSize, BadgeColor
+from ui.components.alert import Alert, Callout, AlertVariant
+from ui.components.checkbox import Checkbox, CheckboxSize, CheckboxColor
+from ui.components.grid import Grid
+from ui.components.stack import Stack, HStack, VStack, StackDirection
+from ui.components.form import Form, FormLayout
+from ui.components.stat import Stat, StatSkeleton
+from ui.components.link import Link, LinkColor
+from ui.components.metric import MetricValue, MetricFormat
+from ui.components.table import DataTable, TableVariant, TableSize
+from ui.components.figure import Figure, FigureSkeleton
+from ui.components.filter import SelectFilter, DateRangeFilter, CheckboxFilter
+from ui.components.game_of_life import GameOfLifeAnimation
 
 __all__ = [
     # Buttons
     "Button",
+    "LinkButton",
     "IconButton",
     "ButtonVariant",
     "ButtonSize",
@@ -118,4 +125,22 @@ __all__ = [
     # Stat
     "Stat",
     "StatSkeleton",
+    # Link
+    "Link",
+    "LinkColor",
+    # Metric
+    "MetricValue",
+    "MetricFormat",
+    # Table
+    "DataTable",
+    "TableVariant",
+    "TableSize",
+    # Figure
+    "Figure",
+    "FigureSkeleton",
+    "GameOfLifeAnimation",
+    # Filter
+    "SelectFilter",
+    "DateRangeFilter",
+    "CheckboxFilter",
 ]

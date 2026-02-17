@@ -20,8 +20,8 @@ from typing import Literal, Optional
 
 from fasthtml.common import *
 
-from ..core import cn
-from ..daisy import Input as DaisyInput, Select as DaisySelect
+from ui.core import cn
+from ui.daisy import Input as DaisyInput, Select as DaisySelect
 
 
 InputVariant = Literal["default", "ghost"]
@@ -145,11 +145,3 @@ def Select(
         **kw,
     )
 
-
-__all__ = [
-    "Input",
-    "Select",
-    "InputVariant",
-    "InputSize",
-    "InputColor",
-]

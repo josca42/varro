@@ -47,6 +47,3 @@ def get_outputs(module) -> dict[str, Callable]:
         for name, fn in vars(module).items()
         if callable(fn) and getattr(fn, "_is_output", False)
     }
-
-
-__all__ = ["Metric", "output", "get_outputs"]

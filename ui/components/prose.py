@@ -2,7 +2,7 @@
 
 Typography helpers for content rendered as "prose".
 
-This repo already ships `static/css/prose.css` which defines the look.
+Typography is provided by `static/css/prose.css`, built via Tailwind Typography.
 These components simply apply the right classes.
 
 If you use `MarkdownJS()` from FastHTML, it targets elements with the `marked`
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from fasthtml.common import *
 
-from ..core import cn
+from ui.core import cn
 
 
 def Prose(*c, cls: str = "", **kw):
@@ -36,6 +36,3 @@ def MarkdownProse(content, cls: str = "", **kw):
         data_slot="markdown",
         **kw,
     )
-
-
-__all__ = ["Prose", "MarkdownProse"]

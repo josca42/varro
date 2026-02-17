@@ -5,7 +5,7 @@ Parse dashboard.md into an AST.
 Syntax:
 - ::: container attrs  (open container)
 - :::                  (close container)
-- {% tag attrs /%}     (component tag)
+- <tag attrs />        (component tag)
 - Everything else is markdown
 """
 
@@ -14,6 +14,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from typing import Union
+
+from varro.dashboard.filters import Filter, filter_from_component
 
 
 @dataclass
@@ -27,7 +29,7 @@ class ContainerNode:
 
 @dataclass
 class ComponentNode:
-    """A component tag like {% figure name="revenue" /%}"""
+    """A component tag like <fig name="revenue" />"""
 
     type: str
     attrs: dict[str, str] = field(default_factory=dict)
@@ -40,13 +42,25 @@ class MarkdownNode:
     content: str
 
 
-ASTNode = Union[ContainerNode, ComponentNode, MarkdownNode]
+ASTNode = Union[ContainerNode, ComponentNode, MarkdownNode, Filter]
 
 
 # Regex patterns
 CONTAINER_OPEN = re.compile(r"^:::\s*(\w+)(?:\s+(.+))?$")
 CONTAINER_CLOSE = re.compile(r"^:::\s*$")
-COMPONENT_TAG = re.compile(r"\{%\s*(\w+)\s+([^%]*?)\s*/%\}")
+COMPONENT_NAMES = (
+    "fig",
+    "df",
+    "metric",
+    "filter-select",
+    "filter-date",
+    "filter-checkbox",
+)
+COMPONENT_TAG = re.compile(
+    r"<\s*(?P<type>"
+    + "|".join(re.escape(name) for name in COMPONENT_NAMES)
+    + r")\b(?P<attrs>[^/>]*?)\s*/\s*>"
+)
 ATTR_PATTERN = re.compile(r'(\w+)=(?:"([^"]*)"|(\S+))')
 
 
@@ -70,14 +84,17 @@ def parse_dashboard_md(content: str) -> list[ASTNode]:
     lines = content.split("\n")
     root: list[ASTNode] = []
     stack: list[list[ASTNode]] = [root]
+    container_stack: list[ContainerNode] = []
     md_buffer: list[str] = []
 
     def flush_markdown():
         nonlocal md_buffer
         if md_buffer:
-            text = "\n".join(md_buffer).strip()
+            text = "".join(md_buffer)
             if text:
-                stack[-1].append(MarkdownNode(content=text))
+                text = text.strip()
+                if text:
+                    stack[-1].append(MarkdownNode(content=text))
             md_buffer = []
 
     for line in lines:
@@ -86,6 +103,8 @@ def parse_dashboard_md(content: str) -> list[ASTNode]:
             flush_markdown()
             if len(stack) > 1:
                 stack.pop()
+                if container_stack:
+                    container_stack.pop()
             continue
 
         # Container open: ::: type attrs
@@ -96,54 +115,49 @@ def parse_dashboard_md(content: str) -> list[ASTNode]:
             node = ContainerNode(type=type_, attrs=attrs, children=[])
             stack[-1].append(node)
             stack.append(node.children)
+            container_stack.append(node)
             continue
 
-        # Component tag: {% type attrs /%}
-        if match := COMPONENT_TAG.search(line):
+        # Component tags (can appear inline)
+        cursor = 0
+        for match in COMPONENT_TAG.finditer(line):
+            if match.start() > cursor:
+                md_buffer.append(line[cursor : match.start()])
             flush_markdown()
-            type_ = match.group(1)
-            attrs = parse_attrs(match.group(2))
+            type_ = match.group("type")
+            attrs = parse_attrs(match.group("attrs"))
+            if container_stack and container_stack[-1].type == "filters":
+                f = filter_from_component(type_, attrs)
+                if f:
+                    stack[-1].append(f)
+                    cursor = match.end()
+                    continue
             stack[-1].append(ComponentNode(type=type_, attrs=attrs))
-            continue
+            cursor = match.end()
 
-        # Regular markdown
-        md_buffer.append(line)
+        md_buffer.append(line[cursor:])
+        md_buffer.append("\n")
 
     flush_markdown()
     return root
 
 
-def extract_filter_defs(ast: list[ASTNode]) -> list[ComponentNode]:
-    """Extract filter component definitions from AST.
+def extract_filters(ast: list[ASTNode]) -> list[Filter]:
+    """Extract filter definitions from AST.
 
-    Returns all select, daterange, checkbox components found in ::: filters containers.
+    Returns validated filter objects found in ::: filters containers.
     """
-    filters = []
+    filters: list[Filter] = []
 
     def walk(nodes: list[ASTNode]):
         for node in nodes:
             if isinstance(node, ContainerNode):
                 if node.type == "filters":
-                    for child in node.children:
-                        if isinstance(child, ComponentNode) and child.type in (
-                            "select",
-                            "daterange",
-                            "checkbox",
-                        ):
-                            filters.append(child)
+                    for f in node.children:
+                        if isinstance(f, Filter):
+                            filters.append(f)
                 else:
                     walk(node.children)
 
     walk(ast)
     return filters
-
-
-__all__ = [
-    "ASTNode",
-    "ContainerNode",
-    "ComponentNode",
-    "MarkdownNode",
-    "parse_dashboard_md",
-    "parse_attrs",
-    "extract_filter_defs",
-]

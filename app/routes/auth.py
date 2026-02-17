@@ -6,21 +6,36 @@ import os
 import secrets
 import time
 
-import httpx
-from fasthtml.common import *
+import resend
+from fasthtml.common import APIRouter, RedirectResponse
 from fasthtml.oauth import GoogleAppClient, redir_url
+
+from ui.app import (
+    AuthFormCard,
+    AuthSimpleCard,
+    AuthNotices,
+    AuthLinks,
+    AuthGoogleCta,
+    AuthLoginForm,
+    AuthSignupForm,
+    AuthVerificationResendForm,
+    AuthPasswordResetForm,
+    AuthPasswordResetConfirmForm,
+)
+from ui.components import Link, LinkButton
 
 from varro.config import settings
 from varro.db.crud.user import user as user_crud
 from varro.db.models.user import User
 
-GOOGLE_SCOPE = "openid email profile"
+GOOGLE_SCOPE = "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
 VERIFY_TTL_SECONDS = 60 * 60 * 24
 RESET_TTL_SECONDS = 60 * 60
 
 AUTH_SKIP = [
     r"/login",
     r"/signup",
+    r"/logout",
     r"/auth/.*",
     r"/verify-email.*",
     r"/password-reset.*",
@@ -49,14 +64,6 @@ INFO_MESSAGES = {
     "password_updated": "Password updated. You can sign in.",
 }
 
-AUTH_CSS = """
-.auth-card { max-width: 30rem; margin: 2.5rem auto; }
-.auth-error { color: #b42318; }
-.auth-info { color: #067647; }
-.auth-muted { color: #667085; }
-.auth-links { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-"""
-
 ar = APIRouter()
 
 
@@ -70,15 +77,6 @@ def auth_notices(error_code: str | None, info_code: str | None):
     if error_code and not error:
         error = "Something went wrong. Please try again."
     return error, info
-
-
-def notice_blocks(error: str | None, info: str | None):
-    blocks = []
-    if error:
-        blocks.append(P(error, cls="auth-error"))
-    if info:
-        blocks.append(P(info, cls="auth-info"))
-    return blocks
 
 
 def google_settings():
@@ -170,21 +168,19 @@ def app_base_url(req) -> str:
 def send_email(to_email: str, subject: str, text: str, html: str | None = None):
     api_key = config_value("RESEND_API_KEY")
     sender = config_value("RESEND_FROM")
-    payload = {
+    if not api_key or not sender:
+        print(f"Email config missing: api_key={bool(api_key)}, sender={bool(sender)}")
+        return
+    resend.api_key = api_key
+    params: resend.Emails.SendParams = {
         "from": sender,
         "to": [to_email],
         "subject": subject,
         "text": text,
     }
     if html:
-        payload["html"] = html
-    response = httpx.post(
-        "https://api.resend.com/emails",
-        headers={"Authorization": f"Bearer {api_key}"},
-        json=payload,
-        timeout=10,
-    )
-    response.raise_for_status()
+        params["html"] = html
+    resend.Emails.send(params)
 
 
 def send_verification_email(db_user: User, req):
@@ -215,94 +211,24 @@ If you did not request this, you can ignore this email.
     send_email(db_user.email, "Reset your password", text)
 
 
-def auth_card(
-    title: str,
-    form,
-    alt_link,
-    error: str | None = None,
-    info: str | None = None,
-):
-    if google_enabled():
-        google_cta = A("Continue with Google", href=auth_google, role="button")
-    else:
-        google_cta = P("Google login not configured.", cls="auth-muted")
-    return Titled(
-        title,
-        Card(
-            *notice_blocks(error, info),
-            form,
-            Hr(),
-            google_cta,
-            alt_link,
-            cls="auth-card",
-        ),
-    )
-
-
-def simple_card(title: str, *content):
-    return Titled(title, Card(*content, cls="auth-card"))
-
-
-def login_form():
-    return Form(action=login_post, method="post")(
-        Label("Email", Input(type="email", name="email", autocomplete="email")),
-        Label(
-            "Password",
-            Input(type="password", name="password", autocomplete="current-password"),
-        ),
-        Button("Sign in", type="submit"),
-    )
-
-
-def signup_form():
-    return Form(action=signup_post, method="post")(
-        Label("Name", Input(type="text", name="name", autocomplete="name")),
-        Label("Email", Input(type="email", name="email", autocomplete="email")),
-        Label(
-            "Password",
-            Input(type="password", name="password", autocomplete="new-password"),
-        ),
-        Button("Create account", type="submit"),
-    )
-
-
-def verification_resend_form():
-    return Form(action=verify_email_resend_post, method="post")(
-        Label("Email", Input(type="email", name="email", autocomplete="email")),
-        Button("Resend verification", type="submit"),
-    )
-
-
-def password_reset_form():
-    return Form(action=password_reset_post, method="post")(
-        Label("Email", Input(type="email", name="email", autocomplete="email")),
-        Button("Send reset link", type="submit"),
-    )
-
-
-def password_reset_confirm_form(token: str):
-    return Form(action=password_reset_confirm_post, method="post")(
-        Input(type="hidden", name="token", value=token),
-        Label(
-            "New password",
-            Input(type="password", name="password", autocomplete="new-password"),
-        ),
-        Button("Update password", type="submit"),
-    )
-
-
 @ar("/login", methods=["GET"])
 def login(sess, error: str | None = None, info: str | None = None):
     if sess.get("auth"):
         return RedirectResponse("/", status_code=303)
     error_msg, info_msg = auth_notices(error, info)
-    alt_link = Div(
-        A("Need an account? Sign up", href=signup),
-        A("Forgot password?", href=password_reset),
-        A("Resend verification", href=verify_email_resend),
-        cls="auth-links",
+    links = AuthLinks(
+        Link("Need an account? Sign up", href=signup),
+        Link("Forgot password?", href=password_reset),
+        Link("Resend verification", href=verify_email_resend),
     )
-    return auth_card("Sign in", login_form(), alt_link, error_msg, info_msg)
+    return AuthFormCard(
+        "Sign in",
+        AuthLoginForm(login_post),
+        subtitle="Log in to your account",
+        notices=AuthNotices(error_msg, info_msg),
+        oauth_cta=AuthGoogleCta(google_enabled(), auth_google),
+        links=links,
+    )
 
 
 @ar("/login", methods=["POST"])
@@ -328,12 +254,18 @@ def signup(sess, error: str | None = None, info: str | None = None):
     if sess.get("auth"):
         return RedirectResponse("/", status_code=303)
     error_msg, info_msg = auth_notices(error, info)
-    alt_link = Div(
-        A("Already have an account? Sign in", href=login),
-        A("Resend verification", href=verify_email_resend),
-        cls="auth-links",
+    links = AuthLinks(
+        Link("Already have an account? Sign in", href=login),
+        Link("Resend verification", href=verify_email_resend),
     )
-    return auth_card("Create account", signup_form(), alt_link, error_msg, info_msg)
+    return AuthFormCard(
+        "Create account",
+        AuthSignupForm(signup_post),
+        subtitle="Start exploring Danish statistics",
+        notices=AuthNotices(error_msg, info_msg),
+        oauth_cta=AuthGoogleCta(google_enabled(), auth_google),
+        links=links,
+    )
 
 
 @ar("/signup", methods=["POST"])
@@ -369,17 +301,25 @@ def signup_post(
 def verify_email(token: str | None = None):
     payload = verify_token(token, "verify")
     if not payload:
-        return simple_card(
+        return AuthSimpleCard(
             "Email verification",
-            P(ERROR_MESSAGES["invalid_token"], cls="auth-error"),
-            A("Resend verification", href=verify_email_resend, role="button"),
+            *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
+            LinkButton(
+                "Resend verification",
+                href=verify_email_resend,
+                variant="outline",
+            ),
         )
-    db_user = user_crud.get_by_id(payload.get("uid"))
+    db_user = user_crud.get(payload.get("uid"))
     if not db_user or db_user.email != payload.get("email"):
-        return simple_card(
+        return AuthSimpleCard(
             "Email verification",
-            P(ERROR_MESSAGES["invalid_token"], cls="auth-error"),
-            A("Resend verification", href=verify_email_resend, role="button"),
+            *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
+            LinkButton(
+                "Resend verification",
+                href=verify_email_resend,
+                variant="outline",
+            ),
         )
     if not db_user.is_active:
         db_user.is_active = True
@@ -390,12 +330,12 @@ def verify_email(token: str | None = None):
 @ar("/verify-email/resend", methods=["GET"])
 def verify_email_resend(error: str | None = None, info: str | None = None):
     error_msg, info_msg = auth_notices(error, info)
-    alt_link = Div(A("Back to sign in", href=login), cls="auth-links")
-    return simple_card(
+    links = AuthLinks(Link("Back to sign in", href=login))
+    return AuthFormCard(
         "Resend verification",
-        *notice_blocks(error_msg, info_msg),
-        verification_resend_form(),
-        alt_link,
+        AuthVerificationResendForm(verify_email_resend_post),
+        notices=AuthNotices(error_msg, info_msg),
+        links=links,
     )
 
 
@@ -415,16 +355,15 @@ def verify_email_resend_post(req, email: str | None = None):
 @ar("/password-reset", methods=["GET"])
 def password_reset(error: str | None = None, info: str | None = None):
     error_msg, info_msg = auth_notices(error, info)
-    alt_link = Div(
-        A("Back to sign in", href=login),
-        A("Need an account? Sign up", href=signup),
-        cls="auth-links",
+    links = AuthLinks(
+        Link("Back to sign in", href=login),
+        Link("Need an account? Sign up", href=signup),
     )
-    return simple_card(
+    return AuthFormCard(
         "Reset password",
-        *notice_blocks(error_msg, info_msg),
-        password_reset_form(),
-        alt_link,
+        AuthPasswordResetForm(password_reset_post),
+        notices=AuthNotices(error_msg, info_msg),
+        links=links,
     )
 
 
@@ -446,18 +385,22 @@ def password_reset_confirm(
 ):
     payload = verify_token(token, "reset")
     if not payload:
-        return simple_card(
+        return AuthSimpleCard(
             "Reset password",
-            P(ERROR_MESSAGES["invalid_token"], cls="auth-error"),
-            A("Request a new reset link", href=password_reset, role="button"),
+            *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     error_msg, info_msg = auth_notices(error, None)
-    alt_link = Div(A("Back to sign in", href=login), cls="auth-links")
-    return simple_card(
+    links = AuthLinks(Link("Back to sign in", href=login))
+    return AuthFormCard(
         "Reset password",
-        *notice_blocks(error_msg, info_msg),
-        password_reset_confirm_form(token),
-        alt_link,
+        AuthPasswordResetConfirmForm(password_reset_confirm_post, token),
+        notices=AuthNotices(error_msg, info_msg),
+        links=links,
     )
 
 
@@ -467,10 +410,14 @@ def password_reset_confirm_post(
     password: str | None = None,
 ):
     if not token:
-        return simple_card(
+        return AuthSimpleCard(
             "Reset password",
-            P(ERROR_MESSAGES["invalid_token"], cls="auth-error"),
-            A("Request a new reset link", href=password_reset, role="button"),
+            *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     if not password:
         return RedirectResponse(
@@ -479,17 +426,25 @@ def password_reset_confirm_post(
         )
     payload = verify_token(token, "reset")
     if not payload:
-        return simple_card(
+        return AuthSimpleCard(
             "Reset password",
-            P(ERROR_MESSAGES["invalid_token"], cls="auth-error"),
-            A("Request a new reset link", href=password_reset, role="button"),
+            *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
-    db_user = user_crud.get_by_id(payload.get("uid"))
+    db_user = user_crud.get(payload.get("uid"))
     if not db_user or db_user.email != payload.get("email"):
-        return simple_card(
+        return AuthSimpleCard(
             "Reset password",
-            P(ERROR_MESSAGES["invalid_token"], cls="auth-error"),
-            A("Request a new reset link", href=password_reset, role="button"),
+            *AuthNotices(ERROR_MESSAGES["invalid_token"], None),
+            LinkButton(
+                "Request a new reset link",
+                href=password_reset,
+                variant="outline",
+            ),
         )
     db_user.password_hash = user_crud.hash_password(password)
     user_crud.update(db_user)
@@ -545,3 +500,10 @@ def auth_google_callback(
         db_user = user_crud.create(User(email=email, name=name))
     sess["auth"] = db_user.id
     return RedirectResponse("/", status_code=303)
+
+
+@ar("/logout", methods=["GET"])
+def logout(sess):
+    sess.pop("auth", None)
+    sess.pop("oauth_state", None)
+    return RedirectResponse("/login", status_code=303)

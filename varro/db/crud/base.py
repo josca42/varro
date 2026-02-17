@@ -15,7 +15,7 @@ class CrudBase(Generic[ModelType]):
         self.model = model
         self.engine = engine
 
-    def get_by_id(self, pk_value: Any) -> Optional[ModelType]:
+    def get(self, pk_value: Any) -> Optional[ModelType]:
         if pk_value is None:
             return None
         with Session(self.engine) as session:

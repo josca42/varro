@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varro — Loading State Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        .logo-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        button {
+            padding: 12px 32px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            border: 2px solid #9b2743;
+            background: #9b2743;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #7a1f35;
+            border-color: #7a1f35;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            font-size: 13px;
+            color: #666;
+            min-height: 20px;
+        }
+        .status.loading {
+            color: #9b2743;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="actionBtn">Start Process</button>
+            <div class="status" id="status">Ready</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const actionBtn = document.getElementById('actionBtn');
+        const statusEl = document.getElementById('status');
+        
+        const size = 200;
+        const cellSize = 4;
+        canvas.width = size;
+        canvas.height = size;
+        
+        const cols = size / cellSize;
+        const rows = size / cellSize;
+        const color = '#9b2743';
+        
+        let grid = [];
+        let targetGrid = [];
+        let finalGrid = [];
+        let isAnimating = false;
+        let animationId = null;
+        
+        // Create V target
+        function createVTarget() {
+            targetGrid = [];
+            for (let x = 0; x < cols; x++) {
+                targetGrid[x] = [];
+                for (let y = 0; y < rows; y++) {
+                    targetGrid[x][y] = 0;
+                }
+            }
+            
+            const centerX = cols / 2;
+            const startY = Math.floor(rows * 0.1);
+            const endY = Math.floor(rows * 0.9);
+            const strokeWidth = 2;
+            
+            for (let y = startY; y <= endY; y++) {
+                const progress = (y - startY) / (endY - startY);
+                const spread = (1 - progress) * (cols * 0.4);
+                
+                for (let w = -strokeWidth; w <= strokeWidth; w++) {
+                    const xL = Math.round(centerX - spread + w);
+                    const xR = Math.round(centerX + spread + w);
+                    
+                    if (xL >= 0 && xL < cols) targetGrid[xL][y] = 1;
+                    if (xR >= 0 && xR < cols) targetGrid[xR][y] = 1;
+                }
+            }
+        }
+        
+        // Create organic final V state (V with slight imperfections)
+        function createFinalGrid() {
+            finalGrid = [];
+            for (let x = 0; x < cols; x++) {
+                finalGrid[x] = [];
+                for (let y = 0; y < rows; y++) {
+                    if (targetGrid[x][y] === 1) {
+                        // Slight organic variation - most cells stay, a few disappear
+                        const noise = Math.sin(x * 0.7 + y * 0.5) * Math.cos(x * 0.3 - y * 0.8);
+                        finalGrid[x][y] = (noise > 0.7 && Math.random() > 0.5) ? 0 : 1;
+                    } else {
+                        // A few stray cells outside the V for organic feel
+                        const nearV = isNearTarget(x, y);
+                        if (nearV && Math.random() > 0.92) {
+                            finalGrid[x][y] = 1;
+                        } else {
+                            finalGrid[x][y] = 0;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Check if cell is near the V target
+        function isNearTarget(x, y) {
+            for (let i = -2; i <= 2; i++) {
+                for (let j = -2; j <= 2; j++) {
+                    const nx = x + i;
+                    const ny = y + j;
+                    if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+                        if (targetGrid[nx][ny] === 1) return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Initialize with organic square
+        function initGrid() {
+            grid = [];
+            for (let x = 0; x < cols; x++) {
+                grid[x] = [];
+                for (let y = 0; y < rows; y++) {
+                    grid[x][y] = 0;
+                }
+            }
+            
+            const margin = cols * 0.15;
+            const left = margin;
+            const right = cols - margin;
+            const top = margin;
+            const bottom = rows - margin;
+            
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    const inSquare = x >= left && x <= right && y >= top && y <= bottom;
+                    
+                    if (inSquare) {
+                        const distToLeft = x - left;
+                        const distToRight = right - x;
+                        const distToTop = y - top;
+                        const distToBottom = bottom - y;
+                        const distToEdge = Math.min(distToLeft, distToRight, distToTop, distToBottom);
+                        const edgeFactor = Math.min(distToEdge / 6, 1);
+                        
+                        const noise = 
+                            Math.sin(x * 0.4 + y * 0.3) * 0.4 +
+                            Math.sin(x * 0.8 - y * 0.6) * 0.3 +
+                            Math.sin(x * 0.2 + y * 0.9) * 0.3;
+                        
+                        const threshold = 0.35 + (1 - edgeFactor) * 0.35 + noise * 0.15;
+                        
+                        if (Math.random() > threshold) {
+                            grid[x][y] = 1;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Set grid to final organic V state
+        function setFinalState() {
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    grid[x][y] = finalGrid[x][y];
+                }
+            }
+        }
+        
+        // Count neighbors
+        function countNeighbors(x, y) {
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    const nx = (x + i + cols) % cols;
+                    const ny = (y + j + rows) % rows;
+                    count += grid[nx][ny];
+                }
+            }
+            return count;
+        }
+        
+        // Biased Game of Life step
+        function step() {
+            const newGrid = [];
+            
+            for (let x = 0; x < cols; x++) {
+                newGrid[x] = [];
+                for (let y = 0; y < rows; y++) {
+                    const neighbors = countNeighbors(x, y);
+                    const isTarget = targetGrid[x][y] === 1;
+                    const alive = grid[x][y] === 1;
+                    
+                    let newState;
+                    
+                    if (alive) {
+                        newState = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+                    } else {
+                        newState = (neighbors === 3) ? 1 : 0;
+                    }
+                    
+                    if (isTarget) {
+                        if (newState === 0 && Math.random() < 0.04) newState = 1;
+                        if (newState === 0 && alive && Math.random() < 0.18) newState = 1;
+                    } else {
+                        if (newState === 1 && Math.random() < 0.05) newState = 0;
+                    }
+                    
+                    newGrid[x][y] = newState;
+                }
+            }
+            
+            grid = newGrid;
+        }
+        
+        // Draw
+        function draw() {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, size, size);
+            
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    if (grid[x][y] === 1) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+                    }
+                }
+            }
+        }
+        
+        // Animation loop
+        let lastTime = 0;
+        const interval = 80;
+        
+        function animate(time) {
+            if (!isAnimating) return;
+            
+            if (time - lastTime > interval) {
+                step();
+                draw();
+                lastTime = time;
+            }
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Start animation (loading state)
+        function startLoading() {
+            isAnimating = true;
+            initGrid();
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        // Stop animation and freeze to final organic V
+        function stopLoading() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            setFinalState();
+            draw();
+        }
+        
+        // Demo: Simulate a process
+        actionBtn.addEventListener('click', () => {
+            if (isAnimating) return;
+            
+            actionBtn.disabled = true;
+            actionBtn.textContent = 'Processing...';
+            statusEl.textContent = 'Loading data...';
+            statusEl.classList.add('loading');
+            
+            startLoading();
+            
+            setTimeout(() => {
+                statusEl.textContent = 'Analyzing...';
+            }, 1000);
+            
+            setTimeout(() => {
+                statusEl.textContent = 'Finalizing...';
+            }, 2000);
+            
+            setTimeout(() => {
+                stopLoading();
+                actionBtn.disabled = false;
+                actionBtn.textContent = 'Start Process';
+                statusEl.textContent = 'Complete';
+                statusEl.classList.remove('loading');
+                
+                setTimeout(() => {
+                    statusEl.textContent = 'Ready';
+                }, 2000);
+            }, 3000);
+        });
+        
+        // Initialize
+        createVTarget();
+        createFinalGrid();
+        setFinalState();
+        draw();
+    </script>
+</body>
+</html>

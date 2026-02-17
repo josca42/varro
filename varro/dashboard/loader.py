@@ -1,23 +1,22 @@
 """dashboard.loader
 
-Load dashboard folders and parse queries.sql.
+Load dashboard folders and queries from queries/ folder.
 """
 
 from __future__ import annotations
 
-import importlib.util
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from .models import get_outputs
-from .parser import (
-    ASTNode,
-    ComponentNode,
-    parse_dashboard_md,
-    extract_filter_defs,
-)
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+from varro.dashboard.models import Metric, output
+from varro.dashboard.filters import Filter, validate_options_queries
+from varro.dashboard.parser import ASTNode, parse_dashboard_md, extract_filters
 
 
 @dataclass
@@ -28,31 +27,26 @@ class Dashboard:
     queries: dict[str, str]
     outputs: dict[str, Callable]
     ast: list[ASTNode]
-    filter_defs: list[ComponentNode] = field(default_factory=list)
+    filters: list[Filter] = field(default_factory=list)
 
 
-def parse_queries(sql: str) -> dict[str, str]:
-    """Parse queries.sql into named queries.
+def load_queries(folder: Path) -> dict[str, str]:
+    """Load queries from a queries/ folder.
 
-    Format:
-        -- @query: query_name
-        SELECT ...
+    Each .sql file becomes a named query.
+    Filename (without extension) is the query name.
     """
+    queries_dir = folder / "queries"
+    if not queries_dir.exists() or not queries_dir.is_dir():
+        raise ValueError(f"Missing queries/ folder in {folder}")
+
     queries: dict[str, str] = {}
-    current: str | None = None
-    lines: list[str] = []
+    for sql_file in queries_dir.glob("*.sql"):
+        name = sql_file.stem
+        queries[name] = sql_file.read_text().strip()
 
-    for line in sql.split("\n"):
-        if match := re.match(r"--\s*@query:\s*(\w+)", line):
-            if current:
-                queries[current] = "\n".join(lines).strip()
-            current = match.group(1)
-            lines = []
-        elif current is not None:
-            lines.append(line)
-
-    if current:
-        queries[current] = "\n".join(lines).strip()
+    if not queries:
+        raise ValueError(f"No .sql files in {queries_dir}")
 
     return queries
 
@@ -65,45 +59,60 @@ def extract_params(query: str) -> set[str]:
     return set(re.findall(r"(?<!:):(\w+)", query))
 
 
+def load_outputs(outputs_file: Path) -> dict[str, Callable]:
+    """Load outputs with exec to avoid module caching."""
+    namespace: dict[str, object] = {
+        "output": output,
+        "Metric": Metric,
+        "px": px,
+        "go": go,
+        "pd": pd,
+        "__file__": str(outputs_file),
+        "__name__": f"dashboards.{outputs_file.parent.name}.outputs",
+    }
+    exec(outputs_file.read_text(), namespace)
+    return {
+        name: fn
+        for name, fn in namespace.items()
+        if callable(fn) and getattr(fn, "_is_output", False)
+    }
+
+
 def load_dashboard(folder: Path) -> Dashboard:
     """Load a dashboard from a folder.
 
-    Requires: queries.sql, outputs.py, dashboard.md
+    Requires: queries/, outputs.py, dashboard.md
     """
     name = folder.name
 
     # Validate required files
-    queries_file = folder / "queries.sql"
+    queries_dir = folder / "queries"
     outputs_file = folder / "outputs.py"
     md_file = folder / "dashboard.md"
 
-    for f in [queries_file, outputs_file, md_file]:
+    if not queries_dir.exists() or not queries_dir.is_dir():
+        raise ValueError(f"Missing queries/ folder in {folder}")
+    for f in [outputs_file, md_file]:
         if not f.exists():
             raise ValueError(f"Missing {f.name} in {folder}")
 
-    # Parse queries
-    queries = parse_queries(queries_file.read_text())
+    # Load queries from folder
+    queries = load_queries(folder)
 
-    # Import outputs module
-    spec = importlib.util.spec_from_file_location(
-        f"dashboards.{name}.outputs", outputs_file
-    )
-    if spec is None or spec.loader is None:
-        raise ValueError(f"Cannot load {outputs_file}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    outputs = get_outputs(module)
+    # Load outputs
+    outputs = load_outputs(outputs_file)
 
     # Parse markdown
     ast = parse_dashboard_md(md_file.read_text())
-    filter_defs = extract_filter_defs(ast)
+    filters = extract_filters(ast)
+    validate_options_queries(filters, queries)
 
     return Dashboard(
         name=name,
         queries=queries,
         outputs=outputs,
         ast=ast,
-        filter_defs=filter_defs,
+        filters=filters,
     )
 
 
@@ -121,12 +130,3 @@ def load_dashboards(dashboards_dir: str | Path) -> dict[str, Dashboard]:
             dashboards[dash.name] = dash
 
     return dashboards
-
-
-__all__ = [
-    "Dashboard",
-    "parse_queries",
-    "extract_params",
-    "load_dashboard",
-    "load_dashboards",
-]

@@ -9,7 +9,7 @@ from typing import Literal, Optional
 
 from fasthtml.common import Form as HtmlForm, FT
 
-from ..core import cn
+from ui.core import cn
 
 
 FormLayout = Literal["horizontal", "vertical"]
@@ -59,5 +59,3 @@ def Form(
         **kw,
     )
 
-
-__all__ = ["Form", "FormLayout"]
