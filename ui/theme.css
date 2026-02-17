@@ -471,6 +471,12 @@ h6 {
   margin-bottom: 0 !important;
 }
 
+[data-slot="public-frontpage"] .gol-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 #chat-form textarea {
   min-height: 1.5rem;
   max-height: 12rem;

@@ -293,7 +293,7 @@ def ErrorBlock(message: str):
 
 def ChatProgressStart():
     return Div(
-        GameOfLifeAnimation(run=True),
+        GameOfLifeAnimation(run=True, text="V", cell_size=1.5, size=60),
         id="chat-progress",
         cls="chat-progress",
         hx_swap_oob="outerHTML:#chat-progress",
@@ -302,7 +302,7 @@ def ChatProgressStart():
 
 def ChatProgressEnd():
     return Div(
-        GameOfLifeAnimation(run=False),
+        GameOfLifeAnimation(run=False, text="V", cell_size=1.5, size=60),
         id="chat-progress",
         cls="chat-progress",
         hx_swap_oob="outerHTML:#chat-progress",
@@ -311,7 +311,7 @@ def ChatProgressEnd():
 
 def ChatProgressPlaceholder():
     return Div(
-        GameOfLifeAnimation(run=False),
+        GameOfLifeAnimation(run=False, text="V", cell_size=1.5, size=60),
         id="chat-progress",
         cls="chat-progress",
     )

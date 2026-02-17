@@ -3,23 +3,43 @@
 ## App bootstrap (`app/main.py`)
 
 - Creates FastHTML app via `daisy_app(before=beforeware, live=True)`.
-- `beforeware` sets:
-  - `sess["user_id"]` (demo fallback user id 1),
-  - `req.state.chats = crud.chat.for_user(user_id)`.
-- Mounts:
-  - dashboard routes via `mount_dashboard_routes(...)`,
-  - chat routes via `app.routes.chat`,
-  - command palette search route via `app.routes.commands`.
-  - dashboard routes are user-scoped (`DATA_DIR/user/{id}/dashboard`).
+- `beforeware` now follows the auth-first pattern:
+  - `auth = req.scope["auth"] = sess.get("auth")`
+  - unauthenticated internal requests redirect to `/login` (303)
+  - authenticated requests set `sess["user_id"] = auth`
+  - chat state is initialized with `req.state.chats = crud.chat.for_user(auth)`
+- Auth skip list combines:
+  - static patterns,
+  - `AUTH_SKIP` from `app/routes/auth.py`,
+  - exact public root path `/`.
+- Mounted routes:
+  - dashboards via `mount_dashboard_routes(...)`,
+  - chat routes (`app/routes/chat.py`),
+  - command routes (`app/routes/commands.py`),
+  - content routes (`app/routes/content.py`),
+  - auth routes (`app/routes/auth.py`).
 - Starts/stops `RunManager` and `ShellPool` cleanup tasks on startup/shutdown.
+
+## Public vs authenticated routes
+
+- Public frontpage:
+  - `GET /` renders `ui/app/frontpage.py`.
+  - Signed-in users hitting `/` are redirected to `/app` (303).
+- Authenticated intro flow:
+  - `GET /app` renders welcome markdown inside `AppShell`.
+  - `GET /app/code` renders intro markdown editor inside `AppShell`.
+  - `PUT /app/code` saves editor content with hash guard for optimistic conflict handling.
+- Internal routes requiring auth include:
+  - `/app`, `/app/code`, `/settings`, `/chat*`, `/dashboard*`, `/commands/search`.
+- Legacy `/welcome/code` is no longer routed.
 
 ## Shell layout (`ui/app/layout.py`)
 
 `AppShell(chat, content)` renders a split layout:
 
-- left: chat panel (`#chat-root`) with chat client script,
-- center: resize handle (Alpine pointer drag),
-- right: navbar + URL-driven content panel (`#content-panel`).
+- left chat panel (`#chat-root`) with chat client script,
+- center resize handle (Alpine pointer drag),
+- right navbar + URL-driven content panel (`#content-panel`).
 
 Content panel behavior:
 
@@ -27,69 +47,27 @@ Content panel behavior:
 - `hx_boost="true"` so normal links become HTMX swaps,
 - `hx_target="#content-panel"` and `hx_swap="innerHTML"`.
 
-## Main routes
+## Navigation updates
 
-- `/` -> dashboard overview content (full shell or fragment for HTMX)
-- `/dashboard/{name}` -> dashboard (owned by `varro/dashboard/routes.py`)
-- `/settings` -> placeholder settings page
+- Navbar tab fallbacks (`ui/app/navbar.py`):
+  - dashboard fallback -> `/app`
+  - code fallback -> `/app/code`
+  - overview -> `/app`
+- Command palette Home command now targets `/app`.
+- `GET /chat` redirect target is `/app`.
 
-## Chat routes (`app/routes/chat.py`)
+## Markdown-first editing
 
-- `POST /chat/runs` starts a run and returns OOB fragments to:
-  - switch form to running state,
-  - show progress,
-  - connect SSE stream node.
-- `GET /chat/runs/{run_id}/stream` streams SSE `message` HTML blocks and a terminal `done` event.
-- `POST /chat/runs/{run_id}/cancel` cancels active run task.
-- `/chat/new`, `/chat/switch/{id}` return OOB chat panel swaps.
-- `/chat/history` returns dropdown list content.
-- `/chat/delete/{id}` deletes DB rows, turn files, runtime file, and shell snapshot.
-
-## Command palette (`app/routes/commands.py` + `ui/app/command_palette.py`)
-
-- Server side:
-  - discovers dashboards from configured dashboard folder,
-  - returns grouped filtered menu items for `/commands/search`.
-- Client side:
-  - `Cmd/Ctrl + K` open/close,
-  - keyboard navigation,
-  - HTMX navigation to target panels,
-  - pushes history when swap is not `"none"`.
+- Welcome source remains file-backed at `DATA_DIR/user/{user_id}/welcome.md`.
+- `{{dashboard_list}}` is replaced at render time with dashboard links.
+- Intro page and editor use URL-first HTMX routing at:
+  - `/app` for rendered content,
+  - `/app/code` for editing + save.
 
 ## UI library shape
 
 - `ui/core.py`: app headers (daisy/tailwind/plotly/alpine), class helpers.
 - `ui/daisy.py`: low-level class wrappers.
 - `ui/components/`: opinionated component API.
-- `ui/app/`: app-level compositions (layout, chat, navbar, auth UI).
+- `ui/app/`: app-level compositions (layout, chat, navbar, auth UI, frontpage).
 - Theme tokens: `ui/theme.css` (`warmink`, `warmink-dark`).
-
-## Auth modules
-
-- Auth routes and UI exist (`app/routes/auth.py`, `ui/app/auth.py`).
-- In current `app/main.py`, auth routes are not mounted.
-
-## Markdown-first editing pattern (2026-02-09)
-
-- Prefer file-backed pages for user-facing content:
-  - welcome page source at `DATA_DIR/user/{user_id}/welcome.md`,
-  - dashboard source at `DATA_DIR/user/{user_id}/dashboard/{slug}/dashboard.md`.
-- Keep HTMX navigation URL-first:
-  - `/dashboard/{slug}` for rendered dashboard,
-  - `/dashboard/{slug}/code` for source editing,
-  - `/` (or `/welcome`) for rendered welcome page,
-  - `/welcome/code` for editing welcome markdown.
-- Follow HTMX click-to-edit flow:
-  - view fragment with `hx-get` to load editor fragment,
-  - editor form with `hx-put` to save and swap back rendered fragment,
-  - optional autosave with `hx-trigger="keyup changed delay:1000ms"` and `hx-sync="closest form:replace"` to avoid save races.
-
-### Implemented in app (2026-02-09)
-
-- `/` now renders markdown from `DATA_DIR/user/{id}/welcome.md` (auto-created if missing).
-- `{{dashboard_list}}` placeholder in `welcome.md` is replaced at render time with markdown links to available dashboards.
-- `/welcome/code` provides textarea editor with `PUT` save and file-hash conflict guard.
-- Welcome code editor UI is minimal: raw textarea + `Save` + `View welcome page`.
-- Navbar tabs now perform URL-based HTMX navigation:
-  - `Code` routes to `/welcome/code` or `/dashboard/{slug}/code` based on current URL.
-- Dashboard code mode includes file tabs (`dashboard.md`, `outputs.py`, `queries/*.sql`) and edits the selected file in a textarea.

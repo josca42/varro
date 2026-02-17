@@ -35,6 +35,7 @@ RESET_TTL_SECONDS = 60 * 60
 AUTH_SKIP = [
     r"/login",
     r"/signup",
+    r"/logout",
     r"/auth/.*",
     r"/verify-email.*",
     r"/password-reset.*",
@@ -62,14 +63,6 @@ INFO_MESSAGES = {
     "reset_sent": "If the email exists, a reset link is on the way.",
     "password_updated": "Password updated. You can sign in.",
 }
-
-AUTH_CSS = """
-.auth-card { max-width: 30rem; margin: 2.5rem auto; }
-.auth-error { color: #b42318; }
-.auth-info { color: #067647; }
-.auth-muted { color: #667085; }
-.auth-links { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-"""
 
 ar = APIRouter()
 
@@ -231,6 +224,7 @@ def login(sess, error: str | None = None, info: str | None = None):
     return AuthFormCard(
         "Sign in",
         AuthLoginForm(login_post),
+        subtitle="Log in to your account",
         notices=AuthNotices(error_msg, info_msg),
         oauth_cta=AuthGoogleCta(google_enabled(), auth_google),
         links=links,
@@ -267,6 +261,7 @@ def signup(sess, error: str | None = None, info: str | None = None):
     return AuthFormCard(
         "Create account",
         AuthSignupForm(signup_post),
+        subtitle="Start exploring Danish statistics",
         notices=AuthNotices(error_msg, info_msg),
         oauth_cta=AuthGoogleCta(google_enabled(), auth_google),
         links=links,
@@ -315,7 +310,7 @@ def verify_email(token: str | None = None):
                 variant="outline",
             ),
         )
-    db_user = user_crud.get_by_id(payload.get("uid"))
+    db_user = user_crud.get(payload.get("uid"))
     if not db_user or db_user.email != payload.get("email"):
         return AuthSimpleCard(
             "Email verification",
@@ -440,7 +435,7 @@ def password_reset_confirm_post(
                 variant="outline",
             ),
         )
-    db_user = user_crud.get_by_id(payload.get("uid"))
+    db_user = user_crud.get(payload.get("uid"))
     if not db_user or db_user.email != payload.get("email"):
         return AuthSimpleCard(
             "Reset password",
@@ -505,3 +500,10 @@ def auth_google_callback(
         db_user = user_crud.create(User(email=email, name=name))
     sess["auth"] = db_user.id
     return RedirectResponse("/", status_code=303)
+
+
+@ar("/logout", methods=["GET"])
+def logout(sess):
+    sess.pop("auth", None)
+    sess.pop("oauth_state", None)
+    return RedirectResponse("/login", status_code=303)

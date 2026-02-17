@@ -27,6 +27,7 @@ from varro.dashboard.components import (
     render_figure,
 )
 from varro.dashboard.filters import Filter, SelectFilter
+from varro.db import crud
 from ui.app.layout import AppShell
 
 # TODO: remove the sess.get("user_id", 1) and use the user_id from the session directly. With no default value.
@@ -130,7 +131,9 @@ def _dashboard_code_files(folder: Path) -> list[str]:
     return files
 
 
-def _resolve_dashboard_code_file(folder: Path, files: list[str], file_name: str) -> Path | None:
+def _resolve_dashboard_code_file(
+    folder: Path, files: list[str], file_name: str
+) -> Path | None:
     if file_name not in files:
         return None
     path = (folder / file_name).resolve()
@@ -151,7 +154,13 @@ def _shell_or_fragment(req, sess, content):
     chats = getattr(req.state, "chats", None)
     if chats and (chat_id := sess.get("chat_id")):
         chat = chats.get(chat_id, with_turns=True)
-    return AppShell(chat, content)
+    db_user = crud.user.get(sess.get("user_id"))
+    return AppShell(
+        chat,
+        content,
+        user_name=db_user.name if db_user else None,
+        user_email=db_user.email if db_user else None,
+    )
 
 
 def _content_hash(content: str) -> str:
@@ -313,7 +322,9 @@ async def dashboard_code_save(name: str, req, sess):
     next_content = str(form.get("content", "")).replace("\r\n", "\n")
 
     if form_hash != _content_hash(current_content):
-        content = _render_dashboard_code_editor(name, files, selected_file, current_content)
+        content = _render_dashboard_code_editor(
+            name, files, selected_file, current_content
+        )
         return _shell_or_fragment(req, sess, content)
 
     path.write_text(next_content, encoding="utf-8")
