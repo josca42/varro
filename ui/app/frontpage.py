@@ -1,4 +1,6 @@
-from fasthtml.common import A, Br, Div, Footer, Nav, P, Section, Span, Title
+from fasthtml.common import A, Div, Footer, Nav, P, Section, Span, Title
+
+from ui.components import GameOfLifeAnimation
 
 
 def Frontpage():
@@ -29,16 +31,12 @@ def Frontpage():
 
     hero = Section(
         Div(
-            Div(
-                "Understand Denmark",
-                Br(),
-                "Through Data",
-                cls="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[1.08]",
+            GameOfLifeAnimation(
+                width=660, height=180, cell_size=3,
+                text="VARRO", color="#9b2743", autoplay=100,
             ),
             P(
-                "Varro is the AI state statistician that helps you",
-                Br(cls="hidden md:inline"),
-                " explore Danish public data through conversation.",
+                "The Danish AI State Statistician",
                 cls="text-lg text-base-content/55 max-w-xl leading-relaxed",
             ),
             A(
@@ -53,28 +51,6 @@ def Frontpage():
             cls="flex flex-col items-center text-center gap-6",
         ),
         cls="pt-24 pb-20 md:pt-36 md:pb-28 px-6 bg-base-200",
-    )
-
-    preview = Section(
-        Div(
-            Span(
-                "ASK VARRO",
-                cls="text-xs tracking-[0.15em] uppercase opacity-40",
-            ),
-            Div(
-                _query_example("How has housing prices changed in Copenhagen since 2015?"),
-                _query_example("Show me population growth by municipality over the last decade"),
-                _query_example("Compare unemployment rates across Danish regions"),
-                cls="flex flex-col gap-3 mt-6",
-            ),
-            P(
-                "Ask any question about Danish public statistics.",
-                cls="text-sm opacity-35 mt-6",
-            ),
-            cls="max-w-2xl mx-auto text-center",
-        ),
-        cls="py-16 md:py-24 px-6 bg-base-100 text-base-content",
-        data_theme="warmink-dark",
     )
 
     features = Section(
@@ -108,19 +84,10 @@ def Frontpage():
     return Title("Varro \u2014 Danish AI State Statistician"), Div(
         nav,
         hero,
-        preview,
         features,
         footer,
         cls="min-h-screen bg-base-200",
         data_slot="public-frontpage",
-    )
-
-
-def _query_example(text):
-    return Div(
-        Span("\u2192 ", cls="opacity-40"),
-        Span(text),
-        cls="text-sm md:text-base opacity-70 font-light",
     )
 
 
