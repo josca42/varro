@@ -61,12 +61,12 @@ def NavbarNavScript():
     const pathname = window.location.pathname || '/';
     const slug = dashboardSlug(pathname);
     if (tab === 'dashboard') {
-      return slug ? `/dashboard/${encodeURIComponent(slug)}` : '/';
+      return slug ? `/dashboard/${encodeURIComponent(slug)}` : '/app';
     }
     if (tab === 'code') {
-      return slug ? `/dashboard/${encodeURIComponent(slug)}/code` : '/welcome/code';
+      return slug ? `/dashboard/${encodeURIComponent(slug)}/code` : '/app/code';
     }
-    return '/';
+    return '/app';
   }
 
   window.__varroNavTab = function(tab) {

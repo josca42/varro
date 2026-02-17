@@ -186,7 +186,7 @@ async def chat_run_cancel(run_id: str, sess):
 
 @ar.get("/chat")
 def chat_page():
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/app", status_code=303)
 
 
 @ar.get("/chat/new")
