@@ -52,7 +52,7 @@ def test_read_file_uses_demo_user_workspace_root(tmp_path: Path, monkeypatch) ->
     _patch_workspace_paths(monkeypatch, data_dir)
 
     filesystem = importlib.import_module("varro.agent.filesystem")
-    output = filesystem.read_file("/subjects/topic.md")
+    output = filesystem.read_file("/subjects/topic.md", user_id=1)
 
     assert "Topic" in output
     assert (data_dir / "user" / "1" / "subjects" / "topic.md").exists()

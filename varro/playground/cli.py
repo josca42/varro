@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from varro.agent.snapshot import snapshot_dashboard_url
-from varro.agent.workspace import ensure_user_workspace
 from varro.chat.agent_run import run_agent
 from varro.chat.shell_pool import shell_pool
 from varro.chat.trace import extract_trace
@@ -177,7 +176,6 @@ def _create_or_resume_chat(user_id: int, chat_id: int | None) -> int:
 
 
 async def _run(args) -> int:
-    ensure_user_workspace(args.user_id)
     chat_id = _create_or_resume_chat(args.user_id, args.chat_id)
     session = PlaygroundSession(
         user_id=args.user_id,

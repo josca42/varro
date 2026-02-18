@@ -15,13 +15,16 @@ def get_long_dim_descr_md(dim_tables: set[str]):
 
 def get_short_dim_descrs_md(dim_tables: set[str]):
     import re
+
     blocks = []
     for dim_table in dim_tables:
         text = open(DIM_TABLE_DESCR_DIR / f"{dim_table}_short.md").read()
         m = re.match(r"# dim\.(\S+)\n(.+)", text, re.DOTALL)
         if m:
             dim_id, description = m.group(1), m.group(2).strip()
-            blocks.append(f"<table>\nid: {dim_id}\ndescription: {description}\n</table>")
+            blocks.append(
+                f"<table>\nid: {dim_id}\ndescription: {description}\n</table>"
+            )
         else:
             blocks.append(text.strip())
     return "\n".join(blocks)

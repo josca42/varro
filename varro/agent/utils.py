@@ -15,6 +15,36 @@ import matplotlib.pyplot as plt
 import io
 from typing import Any
 
+from pathlib import Path
+from varro.config import SUBJECTS_DIR
+
+
+def generate_hierarchy() -> str:
+    """
+    Generate compact hierarchy with roots and mids only.
+
+    The agent discovers leaves on demand via Bash("ls /subjects/{root}/{mid}/").
+
+    Output format:
+        root:
+          mid1
+          mid2
+    """
+    lines = []
+
+    roots = sorted(d for d in SUBJECTS_DIR.iterdir() if d.is_dir())
+
+    for root in roots:
+        mids = sorted(d for d in root.iterdir() if d.is_dir())
+        if not mids:
+            continue
+        lines.append(f"{root.name}:")
+        for mid in mids:
+            lines.append(f"  {mid.name}")
+        lines.append("")
+
+    return "\n".join(lines).rstrip()
+
 
 def get_dim_tables() -> tuple[str, ...]:
     with engine.connect() as conn:

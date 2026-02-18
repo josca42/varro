@@ -7,9 +7,9 @@ from varro.data.utils import (
 )
 from varro.db.db import engine
 
-TABLES_INFO_DIR = DATA_DIR / "metadata" / "tables_info_raw_da"
+TABLES_INFO_DIR = DATA_DIR / "dst" / "metadata" / "tables_info_raw_da"
 SKIP_VALUE_MAP_COLUMNS = {"tid", "alder"}
-DIM_LINKS_DIR = DATA_DIR / "dimension_links"
+DIM_LINKS_DIR = DATA_DIR / "dst" / "dimension_links"
 
 
 def get_distinct_values(table: str, columns: list[str]) -> dict[str, set]:

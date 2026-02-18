@@ -15,7 +15,7 @@ from sqlalchemy.engine import Engine
 from varro.agent.images import SNAPSHOT_MAX_PIXELS, save_png
 from varro.agent.playwright_render import url_to_png
 from varro.agent.utils import plotly_figure_to_png
-from varro.agent.workspace import ensure_user_workspace
+from varro.agent.workspace import user_workspace_root
 from varro.dashboard.executor import clear_query_cache, execute_output
 from varro.dashboard.loader import Dashboard, load_dashboard
 from varro.dashboard.models import Metric
@@ -102,7 +102,7 @@ async def snapshot_dashboard_url(
 
     slug, query = parse_dashboard_url(target_url)
 
-    workspace_root = ensure_user_workspace(user_id)
+    workspace_root = user_workspace_root(user_id)
     dashboard_dir = workspace_root / "dashboard" / slug
     if not dashboard_dir.exists():
         raise ValueError(f"dashboard not found: {slug}")

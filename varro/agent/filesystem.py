@@ -5,7 +5,6 @@ from pydantic_ai import BinaryContent
 from pydantic_ai.messages import ToolReturn
 from varro.data.utils import df_preview
 from varro.agent.workspace import (
-    DEMO_USER_ID,
     is_readonly_user_path,
     resolve_user_path,
 )
@@ -22,9 +21,9 @@ def _error(message: str) -> str:
 
 def read_file(
     file_path: str,
+    user_id: int,
     offset: int | None = None,
     limit: int | None = None,
-    user_id: int = DEMO_USER_ID,
 ) -> str | ToolReturn:
     resolved = resolve_user_path(
         user_id=user_id,
@@ -78,7 +77,7 @@ def read_file(
     return "\n".join(lines)
 
 
-def write_file(file_path: str, content: str, user_id: int = DEMO_USER_ID) -> str:
+def write_file(file_path: str, content: str, user_id: int) -> str:
     if is_readonly_user_path(file_path):
         return _error("file_path is read-only")
     resolved = resolve_user_path(user_id=user_id, file_path=file_path)
@@ -101,8 +100,8 @@ def edit_file(
     file_path: str,
     old_string: str,
     new_string: str,
+    user_id: int,
     replace_all: bool = False,
-    user_id: int = DEMO_USER_ID,
 ) -> str:
     if is_readonly_user_path(file_path):
         return _error("file_path is read-only")

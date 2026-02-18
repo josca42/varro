@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from safecmd.bashxtract import extract_commands
 
-from varro.agent.workspace import ensure_user_workspace
+from varro.agent.workspace import user_workspace_root
 
 BASH_TIMEOUT_SECONDS = 30
 BashMode = Literal["DEV", "BWRAP"]
@@ -141,7 +141,7 @@ def _user_workdir(user_id: int) -> Path:
     if _use_dev_root():
         DEV_ROOT.mkdir(parents=True, exist_ok=True)
         return DEV_ROOT.resolve()
-    return ensure_user_workspace(user_id)
+    return user_workspace_root(user_id)
 
 
 def _sanitize_cwd_rel(cwd_rel: str) -> str:

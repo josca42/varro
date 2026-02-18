@@ -4,7 +4,7 @@ import mistletoe
 from fasthtml.common import APIRouter, A, Button, Div, Form, Input, NotStr, Textarea
 
 from ui.app.layout import AppShell, SettingsPage
-from varro.agent.workspace import ensure_user_workspace
+from varro.agent.workspace import user_workspace_root
 from varro.dashboard.routes import list_dashboards
 from varro.db import crud
 
@@ -43,7 +43,7 @@ def _default_welcome_markdown() -> str:
 
 
 def _welcome_path(user_id: int):
-    path = ensure_user_workspace(user_id) / WELCOME_FILE_NAME
+    path = user_workspace_root(user_id) / WELCOME_FILE_NAME
     if not path.exists():
         path.write_text(_default_welcome_markdown(), encoding="utf-8")
     return path

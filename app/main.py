@@ -9,7 +9,6 @@ from app.routes.commands import ar as command_routes
 from app.routes.content import ar as content_routes
 from ui.app.frontpage import Frontpage
 from ui.core import daisy_app
-from varro.agent.workspace import ensure_user_workspace
 from varro.chat.run_manager import run_manager
 from varro.chat.shell_pool import shell_pool
 from varro.config import DATA_DIR
@@ -34,8 +33,6 @@ def before(req, sess):
     #     return LOGIN_REDIRECT
     auth = DEV_USER_ID
     sess["user_id"] = auth
-    # TODO: ensure_user_workspace should be called, when user is created in the database. And not every time the user is authenticated.
-    ensure_user_workspace(auth)
     req.state.chats = crud.chat.for_user(auth)
 
 
