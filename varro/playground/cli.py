@@ -62,7 +62,7 @@ def _collect_turn_outcome(msgs, current_url: str) -> tuple[str, str]:
 
 
 def _turn_artifact_path(user_id: int, chat_id: int, turn_idx: int) -> Path:
-    return DATA_DIR / "chats" / str(user_id) / str(chat_id) / f"{turn_idx}.mpk"
+    return DATA_DIR / "chat" / str(user_id) / str(chat_id) / f"{turn_idx}.mpk"
 
 
 def _print_help() -> None:

@@ -20,7 +20,7 @@ Below is a thorough analysis and a concrete direction.
 
 Per turn you save:
 
-* `data/chats/{user_id}/{chat_id}/{idx}.mpk` via `save_turn_messages()` (msgpack+zstd)
+* `data/chat/{user_id}/{chat_id}/{idx}.mpk` via `save_turn_messages()` (msgpack+zstd)
 * plus a render cache `.../{idx}.cache.json` via `save_turn_render_cache()`
 * DB row `Turn(...)` with `obj_fp` pointing at the `.mpk`
 

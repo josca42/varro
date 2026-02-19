@@ -208,7 +208,7 @@ inside it:
 
 ```python
 # What it does today (simplified)
-async def run_agent(user_text, *, chats, env, current_url):
+async def run_agent(user_text, *, chat, env, current_url):
     # 1. Load history
     # 2. Run the loop, yielding UI blocks     ← the actual loop
     # 3. Save messages to disk                 ← persistence wrapper

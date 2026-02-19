@@ -17,7 +17,7 @@ def _utc_now() -> datetime:
 
 
 def shell_snapshot_fp(user_id: int, chat_id: int) -> Path:
-    return DATA_DIR / "chats" / str(user_id) / str(chat_id) / "shell.pkl"
+    return DATA_DIR / "chat" / str(user_id) / str(chat_id) / "shell.pkl"
 
 
 @dataclass

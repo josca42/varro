@@ -353,7 +353,7 @@ def review_turn_summary(
 
 
 def _load_chat_instructions(user_id: int, chat_id: int) -> str:
-    fp = DATA_DIR / "chats" / str(user_id) / str(chat_id) / "0.mpk"
+    fp = DATA_DIR / "chat" / str(user_id) / str(chat_id) / "0.mpk"
     msgs = load_turn_messages(fp)
     for msg in msgs:
         instructions = getattr(msg, "instructions", None)

@@ -15,7 +15,7 @@ _zstd_decompressor = zstd.ZstdDecompressor()
 
 
 def chat_turn_dir(user_id: int, chat_id: int) -> Path:
-    return DATA_DIR / "chats" / str(user_id) / str(chat_id)
+    return DATA_DIR / "chat" / str(user_id) / str(chat_id)
 
 
 def turn_fp(user_id: int, chat_id: int, turn_idx: int) -> Path:

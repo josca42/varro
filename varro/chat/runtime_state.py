@@ -7,7 +7,7 @@ from varro.config import DATA_DIR
 
 
 def runtime_state_fp(user_id: int, chat_id: int) -> Path:
-    return DATA_DIR / "chats" / str(user_id) / str(chat_id) / "runtime.json"
+    return DATA_DIR / "chat" / str(user_id) / str(chat_id) / "runtime.json"
 
 
 def load_bash_cwd(user_id: int, chat_id: int) -> str:

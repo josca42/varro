@@ -19,7 +19,7 @@ def test_turn_fp_creates_expected_path(tmp_path, monkeypatch):
 
     fp = turn_store.turn_fp(user_id=7, chat_id=11, turn_idx=3)
 
-    assert fp == tmp_path / "chats" / "7" / "11" / "3.mpk"
+    assert fp == tmp_path / "chat" / "7" / "11" / "3.mpk"
     assert fp.parent.exists()
 
 

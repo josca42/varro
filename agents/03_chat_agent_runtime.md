@@ -56,7 +56,7 @@ Behavior:
 - alive window: during active lease (agent run) and 10 minutes after lease release
 - idle eviction sweep: startup interval 60s
 - snapshot path:
-  - `data/chats/{user_id}/{chat_id}/shell.pkl`
+  - `data/chat/{user_id}/{chat_id}/shell.pkl`
 
 Snapshot behavior:
 
@@ -67,12 +67,12 @@ Snapshot behavior:
 
 Turn files:
 
-- `data/chats/{user_id}/{chat_id}/{idx}.mpk` (msgpack+zstd)
-- `data/chats/{user_id}/{chat_id}/{idx}.cache.json` (fig/df render cache)
+- `data/chat/{user_id}/{chat_id}/{idx}.mpk` (msgpack+zstd)
+- `data/chat/{user_id}/{chat_id}/{idx}.cache.json` (fig/df render cache)
 
 Runtime state:
 
-- `data/chats/{user_id}/{chat_id}/runtime.json`
+- `data/chat/{user_id}/{chat_id}/runtime.json`
 - schema: `{"bash_cwd": "/..."}`
 
 ## Agent orchestration (`varro/chat/agent_run.py`)
@@ -112,12 +112,12 @@ Runtime state:
 
 `varro/playground/review.py` generates markdown reports from persisted `.mpk` turn files.
 
-Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DIR` in `varro/config.py`) — separate from source data in `chats/`.
+Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DIR` in `varro/config.py`) — separate from source data in `chat/`.
 
 Structure per chat:
 
 - `chat.md` — overview with one summary block per turn
-- `system_instructions.md` — full system prompt used by the agent (dumped from `chats/{user_id}/{chat_id}/0.mpk`)
+- `system_instructions.md` — full system prompt used by the agent (dumped from `chat/{user_id}/{chat_id}/0.mpk`)
 - `tool_instructions.md` — tool descriptions + parameter JSON schemas from `assistant.agent._function_toolset.tools`
 - `{turn_idx}/turn.md` — trajectory-first turn report: `User`, `Trajectory` (`Step N` with `Thinking`, `Actions`, `Observations`), `Final response`, `Usage`
 - `{turn_idx}/tool_calls/` — extracted SQL queries, Jupyter code, large tool results
@@ -155,7 +155,7 @@ Behavior:
 - sends plain input lines as user turns through `run_agent(...)`,
 - regenerates review artifacts after each turn via `varro.playground.review.review_chat(...)`,
 - supports review commands (`:help`, `:status`, `:url`, `:review`, `:snapshot`, `:quit`),
-- keeps all artifacts in existing stores (`chats/` and `chat_reviews/`).
+- keeps all artifacts in existing stores (`chat/` and `chat_reviews/`).
 
 Related skill split:
 
@@ -169,5 +169,5 @@ Snapshot contract:
 
 ## Design patterns
 
-- **Source vs. derived separation**: keep generated/derived artifacts in a parallel directory tree, not mixed into the source data folder. Lifecycle is independent — deleting source doesn't cascade to derived, and derived can be regenerated from source at any time. Applied here: `chats/` (source `.mpk`) vs `chat_reviews/` (derived `.md` reports).
+- **Source vs. derived separation**: keep generated/derived artifacts in a parallel directory tree, not mixed into the source data folder. Lifecycle is independent — deleting source doesn't cascade to derived, and derived can be regenerated from source at any time. Applied here: `chat/` (source `.mpk`) vs `chat_reviews/` (derived `.md` reports).
 - **Idempotent processing via immutable source**: when source files are write-once (like `.mpk` turns), check for output existence to skip reprocessing. Keeps repeated calls cheap.

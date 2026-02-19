@@ -13,7 +13,7 @@ Snapshot date: 2026-02-17.
 ## Skill split (important)
 
 - `chat-review` is retrospective:
-  - post-hoc audit of completed chats
+  - post-hoc audit of completed chat
   - summarize root causes and improvements
 - `playground-explorer` is interactive:
   - CLI-first probing with follow-up questions
@@ -44,7 +44,7 @@ Default behavior:
 
 ## Artifact model
 
-- source turns: `mnt/chats/{user_id}/{chat_id}/{idx}.mpk`
+- source turns: `mnt/chat/{user_id}/{chat_id}/{idx}.mpk`
 - derived reviews: `mnt/chat_reviews/{user_id}/{chat_id}/`
 - exploration output stays in existing review tree:
   - `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`

@@ -105,8 +105,8 @@ POST /chat/runs
   - writes snapshot (max 512MB), then resets/disposes shell.
 
 Snapshot paths:
-- `data/chats/{user_id}/{chat_id}/shell.pkl`
-- `data/chats/{user_id}/{chat_id}/shell.meta.json`
+- `data/chat/{user_id}/{chat_id}/shell.pkl`
+- `data/chat/{user_id}/{chat_id}/shell.meta.json`
 
 ## Cancel Semantics
 
@@ -131,9 +131,9 @@ Snapshot paths:
 ## Turn/runtime persistence
 
 Turn files:
-- `data/chats/{user_id}/{chat_id}/{idx}.mpk` (`ModelMessage` list, msgpack+zstd)
-- `data/chats/{user_id}/{chat_id}/{idx}.cache.json` (fig/df cached HTML)
+- `data/chat/{user_id}/{chat_id}/{idx}.mpk` (`ModelMessage` list, msgpack+zstd)
+- `data/chat/{user_id}/{chat_id}/{idx}.cache.json` (fig/df cached HTML)
 
 Runtime state:
-- `data/chats/{user_id}/{chat_id}/runtime.json`
+- `data/chat/{user_id}/{chat_id}/runtime.json`
 - schema: `{"bash_cwd": "/..."}`
