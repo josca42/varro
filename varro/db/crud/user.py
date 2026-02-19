@@ -2,7 +2,7 @@ from varro.db.crud.base import CrudBase
 from sqlmodel import Session, select
 from varro.db.models.user import User
 from typing import Optional
-from varro.db.db import engine
+from varro.db.db import user_engine
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from varro.agent.workspace import ensure_user_workspace
@@ -64,4 +64,4 @@ class CrudUser(CrudBase[User]):
         return db_user
 
 
-user = CrudUser(User, engine)
+user = CrudUser(User, user_engine)

@@ -10,11 +10,11 @@ from pydantic_ai.messages import ModelMessage
 
 from varro.chat.trace import TraceEvent, extract_trace
 from varro.chat.turn_store import load_turn_messages
-from varro.config import DATA_DIR, REVIEWS_DIR
+from varro.config import DATA_DIR, TRAJECTORIES_DIR
 from varro.db.crud.chat import chat as chat_crud
 
 MAX_RESULT_CHARS = 500
-REVIEW_FORMAT_VERSION = "3"
+TRAJECTORY_FORMAT_VERSION = "4"
 
 
 def _truncate(text: str, max_chars: int = MAX_RESULT_CHARS) -> tuple[str, bool]:
@@ -227,7 +227,7 @@ def _render_observations(
         lines.pop()
 
 
-def review_turn(msgs: list[ModelMessage], turn_dir: Path, turn_idx: int) -> None:
+def generate_turn(msgs: list[ModelMessage], turn_dir: Path, turn_idx: int) -> None:
     turn_dir.mkdir(parents=True, exist_ok=True)
     tc_dir = turn_dir / "tool_calls"
     img_dir = turn_dir / "images"
@@ -303,7 +303,7 @@ def review_turn(msgs: list[ModelMessage], turn_dir: Path, turn_idx: int) -> None
     lines.append("")
 
     (turn_dir / "turn.md").write_text("\n".join(lines))
-    (turn_dir / ".review_version").write_text(REVIEW_FORMAT_VERSION)
+    (turn_dir / ".trajectory_version").write_text(TRAJECTORY_FORMAT_VERSION)
 
 
 def _excerpt(text: str, max_chars: int) -> str:
@@ -315,7 +315,7 @@ def _excerpt(text: str, max_chars: int) -> str:
     return compact[:max_chars] + "..."
 
 
-def review_turn_summary(
+def turn_summary(
     msgs: list[ModelMessage], turn_idx: int, created_at=None
 ) -> str:
     trace = extract_trace(msgs)
@@ -382,45 +382,45 @@ def _load_tool_instructions() -> str:
     return "\n".join(lines)
 
 
-def _turn_review_is_current(turn_dir: Path) -> bool:
-    version_fp = turn_dir / ".review_version"
+def _turn_is_current(turn_dir: Path) -> bool:
+    version_fp = turn_dir / ".trajectory_version"
     turn_fp = turn_dir / "turn.md"
     if not turn_fp.exists() or not version_fp.exists():
         return False
-    return version_fp.read_text().strip() == REVIEW_FORMAT_VERSION
+    return version_fp.read_text().strip() == TRAJECTORY_FORMAT_VERSION
 
 
-def review_chat(user_id: int, chat_id: int) -> Path:
+def generate_chat_trajectory(user_id: int, chat_id: int) -> Path:
     db_chat = chat_crud.for_user(user_id).get(chat_id, with_turns=True)
     if not db_chat:
         raise ValueError(f"Chat {chat_id} not found for user {user_id}")
 
-    review_base = REVIEWS_DIR / str(user_id) / str(chat_id)
-    review_base.mkdir(parents=True, exist_ok=True)
+    traj_base = TRAJECTORIES_DIR / str(user_id) / str(chat_id)
+    traj_base.mkdir(parents=True, exist_ok=True)
     system_instructions = _load_chat_instructions(user_id, chat_id)
     tool_instructions = _load_tool_instructions()
-    (review_base / "system_instructions.md").write_text(system_instructions)
-    (review_base / "tool_instructions.md").write_text(tool_instructions)
+    (traj_base / "system_instructions.md").write_text(system_instructions)
+    (traj_base / "tool_instructions.md").write_text(tool_instructions)
     turn_summaries: list[str] = []
 
     for turn in db_chat.turns:
         msgs = load_turn_messages(DATA_DIR / turn.obj_fp)
-        turn_dir = review_base / str(turn.idx)
-        if _turn_review_is_current(turn_dir):
+        turn_dir = traj_base / str(turn.idx)
+        if _turn_is_current(turn_dir):
             turn_summaries.append(
-                review_turn_summary(msgs, turn.idx, created_at=turn.created_at)
+                turn_summary(msgs, turn.idx, created_at=turn.created_at)
             )
             continue
-        review_turn(msgs, turn_dir, turn.idx)
-        turn_summaries.append(review_turn_summary(msgs, turn.idx, created_at=turn.created_at))
+        generate_turn(msgs, turn_dir, turn.idx)
+        turn_summaries.append(turn_summary(msgs, turn.idx, created_at=turn.created_at))
 
     chat_lines = [f"# Chat {chat_id}", ""]
     for summary in turn_summaries:
         chat_lines.append(summary)
         chat_lines.append("")
-    (review_base / "chat.md").write_text("\n".join(chat_lines))
-    return review_base
+    (traj_base / "chat.md").write_text("\n".join(chat_lines))
+    return traj_base
 
 
 if __name__ == "__main__":
-    review_chat(1, 62)
+    generate_chat_trajectory(1, 62)

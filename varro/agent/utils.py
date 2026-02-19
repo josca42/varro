@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from varro.db.db import engine
+from varro.db.db import dst_read_engine
 from pydantic_ai import BinaryContent
 import plotly.io as pio
 import plotly.graph_objects as go

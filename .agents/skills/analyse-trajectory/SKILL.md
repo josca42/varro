@@ -1,33 +1,33 @@
 ---
-name: chat-review
+name: analyse-trajectory
 description: >
   Retrospective audit of completed agent chats to identify concrete improvements
   to instructions, tools, and documentation. This is post-hoc analysis, not an
   interactive exploration loop.
 ---
 
-# Chat Review
+# Analyse Trajectory
 
 ## When to use this skill
 
-Use `$chat-review` when you already have a completed chat (or set of chats) and
+Use `$analyse-trajectory` when you already have a completed chat (or set of chats) and
 you want a concise audit of what happened and what should be improved.
 
 Use `$playground-explorer` instead when you want to iteratively ask new
 questions, inspect trajectories as they unfold, and probe hypotheses in the
 playground.
 
-## Generate review files
+## Generate trajectory files
 
 ```bash
-uv run python -c "from varro.playground.review import review_chat; print(review_chat(user_id=USER_ID, chat_id=CHAT_ID))"
+uv run python -c "from varro.playground.trajectory import generate_chat_trajectory; print(generate_chat_trajectory(user_id=USER_ID, chat_id=CHAT_ID))"
 ```
 
-Idempotent: turns regenerate only when `turn.md` is missing or `.review_version` is outdated.
+Idempotent: turns regenerate only when `turn.md` is missing or `.trajectory_version` is outdated.
 
-## Review file structure
+## Trajectory file structure
 
-Output at `mnt/chat_reviews/{user_id}/{chat_id}/`:
+Output at `mnt/trajectory/{user_id}/{chat_id}/`:
 
 ```
 chat.md                    # one-line summary per turn: user input, tools, final excerpt
@@ -45,7 +45,7 @@ tool_instructions.md       # all tools with descriptions and parameter schemas
 2. Read `system_instructions.md` and `tool_instructions.md` once
 3. For each turn, read `turn.md` and inspect extracted artifacts in `tool_calls/`
 4. Evaluate root causes and propose concrete system changes
-5. Write findings to `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`
+5. Write findings to `mnt/trajectory/{user_id}/{chat_id}/findings.md`
 
 ## Evaluation framework
 
@@ -72,7 +72,7 @@ what the model "should have known."
 
 ## Output format
 
-Write findings to `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`:
+Write findings to `mnt/trajectory/{user_id}/{chat_id}/findings.md`:
 
 ```markdown
 # Review: Chat {chat_id}

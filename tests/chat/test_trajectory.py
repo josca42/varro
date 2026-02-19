@@ -15,8 +15,8 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 
-from varro.playground import review as review_module
-from varro.playground.review import REVIEW_FORMAT_VERSION, review_turn, review_turn_summary
+from varro.playground import trajectory as trajectory_module
+from varro.playground.trajectory import TRAJECTORY_FORMAT_VERSION, generate_turn, turn_summary
 
 SYSTEM_PROMPT = """
 <role>
@@ -30,7 +30,7 @@ You are the state statistician.
 """.strip()
 
 
-def _build_review_messages() -> list:
+def _build_trajectory_messages() -> list:
     image = BinaryContent(data=b"img", media_type="image/png")
     return [
         ModelRequest(
@@ -100,9 +100,9 @@ def _build_review_messages() -> list:
     ]
 
 
-def test_review_turn_renders_chronological_trajectory(tmp_path) -> None:
+def test_generate_turn_renders_chronological_trajectory(tmp_path) -> None:
     turn_dir = tmp_path / "0"
-    review_turn(_build_review_messages(), turn_dir, 0)
+    generate_turn(_build_trajectory_messages(), turn_dir, 0)
 
     md = (turn_dir / "turn.md").read_text()
 
@@ -120,9 +120,9 @@ def test_review_turn_renders_chronological_trajectory(tmp_path) -> None:
     assert "### Usage" in md
 
 
-def test_review_turn_links_sql_and_jupyter_artifacts(tmp_path) -> None:
+def test_generate_turn_links_sql_and_jupyter_artifacts(tmp_path) -> None:
     turn_dir = tmp_path / "1"
-    review_turn(_build_review_messages(), turn_dir, 1)
+    generate_turn(_build_trajectory_messages(), turn_dir, 1)
 
     md = (turn_dir / "turn.md").read_text()
 
@@ -134,9 +134,9 @@ def test_review_turn_links_sql_and_jupyter_artifacts(tmp_path) -> None:
     assert (turn_dir / "tool_calls" / "03_jupyter.py").exists()
 
 
-def test_review_turn_attaches_tool_images_to_observations_not_user(tmp_path) -> None:
+def test_generate_turn_attaches_tool_images_to_observations_not_user(tmp_path) -> None:
     turn_dir = tmp_path / "2"
-    review_turn(_build_review_messages(), turn_dir, 2)
+    generate_turn(_build_trajectory_messages(), turn_dir, 2)
 
     md = (turn_dir / "turn.md").read_text()
 
@@ -147,16 +147,16 @@ def test_review_turn_attaches_tool_images_to_observations_not_user(tmp_path) -> 
     assert (turn_dir / "images").exists()
 
 
-def test_review_turn_writes_review_version(tmp_path) -> None:
+def test_generate_turn_writes_trajectory_version(tmp_path) -> None:
     turn_dir = tmp_path / "3"
-    review_turn(_build_review_messages(), turn_dir, 3)
+    generate_turn(_build_trajectory_messages(), turn_dir, 3)
 
-    assert (turn_dir / ".review_version").read_text() == REVIEW_FORMAT_VERSION
+    assert (turn_dir / ".trajectory_version").read_text() == TRAJECTORY_FORMAT_VERSION
 
 
-def test_review_turn_summary_includes_final_excerpt() -> None:
-    summary = review_turn_summary(
-        _build_review_messages(),
+def test_turn_summary_includes_final_excerpt() -> None:
+    summary = turn_summary(
+        _build_trajectory_messages(),
         0,
         created_at=datetime(2026, 2, 12),
     )
@@ -167,7 +167,7 @@ def test_review_turn_summary_includes_final_excerpt() -> None:
     assert "Final: Final answer." in summary
 
 
-def test_review_turn_summary_truncates_final_excerpt() -> None:
+def test_turn_summary_truncates_final_excerpt() -> None:
     msgs = [
         ModelRequest(parts=[UserPromptPart(content="User prompt")]),
         ModelResponse(
@@ -177,20 +177,20 @@ def test_review_turn_summary_truncates_final_excerpt() -> None:
         ),
     ]
 
-    summary = review_turn_summary(msgs, 0)
+    summary = turn_summary(msgs, 0)
     final_line = [line for line in summary.splitlines() if line.startswith("Final:")][0]
 
     assert final_line.endswith("...")
     assert len(final_line) == len("Final: ") + 123
 
 
-def test_review_chat_does_not_generate_summary_md(tmp_path, monkeypatch) -> None:
-    review_dir = tmp_path / "chat_reviews"
-    monkeypatch.setattr(review_module, "REVIEWS_DIR", review_dir)
-    monkeypatch.setattr(review_module, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(review_module, "load_turn_messages", lambda fp: _build_review_messages())
+def test_generate_chat_trajectory_does_not_generate_summary_md(tmp_path, monkeypatch) -> None:
+    traj_dir = tmp_path / "trajectory"
+    monkeypatch.setattr(trajectory_module, "TRAJECTORIES_DIR", traj_dir)
+    monkeypatch.setattr(trajectory_module, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(trajectory_module, "load_turn_messages", lambda fp: _build_trajectory_messages())
     monkeypatch.setattr(
-        review_module,
+        trajectory_module,
         "_load_tool_instructions",
         lambda: "\n".join(
             [
@@ -215,16 +215,16 @@ def test_review_chat_does_not_generate_summary_md(tmp_path, monkeypatch) -> None
     )
     fake_chat = SimpleNamespace(turns=[fake_turn])
     monkeypatch.setattr(
-        review_module.chat_crud,
+        trajectory_module.chat_crud,
         "for_user",
         lambda user_id: SimpleNamespace(
             get=lambda chat_id, with_turns=True: fake_chat,
         ),
     )
 
-    out = review_module.review_chat(1, 62)
+    out = trajectory_module.generate_chat_trajectory(1, 62)
 
-    assert out == review_dir / "1" / "62"
+    assert out == traj_dir / "1" / "62"
     assert (out / "0" / "turn.md").exists()
     assert not (out / "0" / "summary.md").exists()
     assert (out / "system_instructions.md").exists()

@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from varro.db.crud.base import CrudBase
-from varro.db.db import engine
+from varro.db.db import user_engine
 from varro.db.models.chat import Chat, Turn
 
 
@@ -47,5 +47,5 @@ class CrudTurn(CrudBase[Turn]):
     pass
 
 
-chat = CrudChat(Chat, engine)
-turn = CrudTurn(Turn, engine)
+chat = CrudChat(Chat, user_engine)
+turn = CrudTurn(Turn, user_engine)

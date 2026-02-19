@@ -39,7 +39,7 @@ Use commands during exploration:
 
 - `:status`
 - `:url <path>`
-- `:review [turn_idx]`
+- `:trajectory [turn_idx]`
 - `:snapshot [url]`
 
 Avoid non-CLI trajectory generation unless blocked.
@@ -87,7 +87,7 @@ Out of scope:
 
 Always write (or update):
 
-`mnt/chat_reviews/{user_id}/{chat_id}/findings.md`
+`mnt/trajectory/{user_id}/{chat_id}/findings.md`
 
 Each finding must include:
 
@@ -133,5 +133,5 @@ Stop when one of the following is true:
 
 ## Relationship to other skill
 
-Use `$chat-review` for retrospective audit of completed chats.
+Use `$analyse-trajectory` for retrospective audit of completed chats.
 Use `$playground-explorer` for interactive probing and improvement discovery.

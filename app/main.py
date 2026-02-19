@@ -14,7 +14,7 @@ from varro.chat.shell_pool import shell_pool
 from varro.config import DATA_DIR
 from varro.dashboard.routes import mount_dashboard_routes
 from varro.db import crud
-from varro.db.db import engine
+from varro.db.db import dst_read_engine
 
 STATIC_SKIP = [
     r"/favicon\.ico",
@@ -40,7 +40,7 @@ beforeware = Beforeware(before, skip=[*STATIC_SKIP, *AUTH_SKIP, r"/"])
 
 app, rt = daisy_app(before=beforeware, live=True)
 
-mount_dashboard_routes(app, DATA_DIR, engine)
+mount_dashboard_routes(app, DATA_DIR, dst_read_engine)
 chat_routes.to_app(app)
 command_routes.to_app(app)
 content_routes.to_app(app)

@@ -5,10 +5,10 @@ from sqlalchemy import inspect
 from varro.config import DATA_DIR
 from varro.data.disk_to_db.create_db_table import emit_and_apply_fact
 from varro.data.disk_to_db.process_tables import process_fact_table
-from varro.db.db import engine
+from varro.db.db import dst_owner_engine
 
 FACTS_DIR = DATA_DIR / "statbank_tables"
-insp = inspect(engine)
+insp = inspect(dst_owner_engine)
 
 
 def create_fact_table(table_id: str, fp: Path):

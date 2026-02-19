@@ -11,10 +11,10 @@ from varro.chat.agent_run import run_agent
 from varro.chat.shell_pool import shell_pool
 from varro.chat.trace import extract_trace
 from varro.chat.turn_store import load_turn_messages
-from varro.config import DATA_DIR, REVIEWS_DIR
+from varro.config import DATA_DIR, TRAJECTORIES_DIR
 from varro.db import crud
 from varro.db.models.chat import Chat
-from varro.playground.review import review_chat
+from varro.playground.trajectory import generate_chat_trajectory
 
 
 @dataclass
@@ -22,7 +22,7 @@ class PlaygroundSession:
     user_id: int
     chat_id: int
     current_url: str
-    review_dir: Path
+    trajectory_dir: Path
 
 
 def parse_update_url_payload(text: str) -> dict[str, object] | None:
@@ -70,7 +70,7 @@ def _print_help() -> None:
     print(":help                 Show this help")
     print(":status               Show session status")
     print(":url <path>           Set current URL (must start with /)")
-    print(":review [turn_idx]    Refresh review and print artifact path")
+    print(":trajectory [turn_idx]    Refresh trajectory and print artifact path")
     print(":snapshot [url]       Snapshot dashboard URL")
     print(":quit | :exit         Exit")
     print("")
@@ -84,7 +84,7 @@ def _print_status(session: PlaygroundSession) -> None:
     print(f"chat_id: {session.chat_id}")
     print(f"turns: {turns}")
     print(f"current_url: {session.current_url}")
-    print(f"review_dir: {session.review_dir}")
+    print(f"trajectory_dir: {session.trajectory_dir}")
     print(f"chat_turn_dir: {DATA_DIR / 'chats' / str(session.user_id) / str(session.chat_id)}")
 
 
@@ -119,15 +119,15 @@ async def _ask(session: PlaygroundSession, message: str) -> None:
     msgs = load_turn_messages(DATA_DIR / turn.obj_fp)
     final_response, next_url = _collect_turn_outcome(msgs, session.current_url)
     session.current_url = next_url
-    session.review_dir = review_chat(session.user_id, session.chat_id)
+    session.trajectory_dir = generate_chat_trajectory(session.user_id, session.chat_id)
 
     print("")
     print("Final response:")
     print(final_response)
     print("")
-    print(f"review_dir: {session.review_dir}")
-    print(f"chat_review: {session.review_dir / 'chat.md'}")
-    print(f"turn_review: {session.review_dir / str(turn.idx) / 'turn.md'}")
+    print(f"trajectory_dir: {session.trajectory_dir}")
+    print(f"chat_trajectory: {session.trajectory_dir / 'chat.md'}")
+    print(f"turn_trajectory: {session.trajectory_dir / str(turn.idx) / 'turn.md'}")
     print(f"turn_file: {_turn_artifact_path(session.user_id, session.chat_id, turn.idx)}")
     print(f"current_url: {session.current_url}")
 
@@ -149,17 +149,17 @@ async def _snapshot(session: PlaygroundSession, raw_url: str | None) -> None:
     print(f"snapshot_folder: {result.folder}")
 
 
-def _refresh_review_path(session: PlaygroundSession, raw_turn_idx: str | None) -> None:
-    session.review_dir = review_chat(session.user_id, session.chat_id)
+def _refresh_trajectory_path(session: PlaygroundSession, raw_turn_idx: str | None) -> None:
+    session.trajectory_dir = generate_chat_trajectory(session.user_id, session.chat_id)
     if raw_turn_idx is None:
-        print(f"chat_review: {session.review_dir / 'chat.md'}")
+        print(f"chat_trajectory: {session.trajectory_dir / 'chat.md'}")
         return
     try:
         turn_idx = int(raw_turn_idx)
     except ValueError:
         print("Error: turn_idx must be an integer.")
         return
-    print(f"turn_review: {session.review_dir / str(turn_idx) / 'turn.md'}")
+    print(f"turn_trajectory: {session.trajectory_dir / str(turn_idx) / 'turn.md'}")
 
 
 def _create_or_resume_chat(user_id: int, chat_id: int | None) -> int:
@@ -181,7 +181,7 @@ async def _run(args) -> int:
         user_id=args.user_id,
         chat_id=chat_id,
         current_url=args.current_url,
-        review_dir=REVIEWS_DIR / str(args.user_id) / str(chat_id),
+        trajectory_dir=TRAJECTORIES_DIR / str(args.user_id) / str(chat_id),
     )
 
     print("Interactive playground started.")
@@ -220,9 +220,9 @@ async def _run(args) -> int:
             session.current_url = new_url
             print(f"current_url: {session.current_url}")
             continue
-        if text.startswith(":review"):
-            raw_turn = text[7:].strip() or None
-            _refresh_review_path(session, raw_turn)
+        if text.startswith(":trajectory"):
+            raw_turn = text[12:].strip() or None
+            _refresh_trajectory_path(session, raw_turn)
             continue
         if text.startswith(":snapshot"):
             raw_url = text[9:].strip() or None

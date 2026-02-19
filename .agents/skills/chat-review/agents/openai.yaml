@@ -1,4 +1,0 @@
-interface:
-  display_name: "Chat Review"
-  short_description: "Retrospective audit of completed chats"
-  default_prompt: "Use $chat-review for post-hoc audit of a completed chat and produce actionable findings on instruction, tool, and trajectory improvements."

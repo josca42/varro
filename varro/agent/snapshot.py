@@ -19,7 +19,7 @@ from varro.agent.workspace import user_workspace_root
 from varro.dashboard.executor import clear_query_cache, execute_output
 from varro.dashboard.loader import Dashboard, load_dashboard
 from varro.dashboard.models import Metric
-from varro.db.db import engine as default_engine
+from varro.db.db import dst_read_engine as default_engine
 
 DEFAULT_APP_BASE_URL = os.getenv("VARRO_APP_BASE_URL", "http://127.0.0.1:5001")
 DASHBOARD_READY_SELECTOR = "[data-slot='dashboard-shell']"

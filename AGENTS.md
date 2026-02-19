@@ -34,16 +34,16 @@ Elegant minimalism. Every line should earn its place.
 
 **Explicit transitions.** The AI agent is the transition function: `(prior_turns, user_message) → new_turn_value`. Tool calls within a turn are the steps of the transition. Keep this boundary clean — the agent reads values, calls tools, produces a new value.
 
-**Filesystem reflects the app.** Dashboards are markdown + SQL + Python files. Chat turns are ordered files in a directory. Reviews are derived markdown in a parallel tree. If you can understand the app by reading files on disk, then an AI agent can too — and crucially, an AI review agent can evaluate how well the system performed.
+**Filesystem reflects the app.** Dashboards are markdown + SQL + Python files. Chat turns are ordered files in a directory. Trajectories are derived markdown in a parallel tree. If you can understand the app by reading files on disk, then an AI agent can too — and crucially, an AI trajectory analysis agent can evaluate how well the system performed.
 
 **Don't complect.** Keep independent concerns separate:
-- Source vs derived: `chats/` (immutable .mpk) vs `chat_reviews/` (regenerable .md)
+- Source vs derived: `chat/` (immutable .mpk) vs `trajectory/` (regenerable .md)
 - Identity vs state: a chat ID is an identity; its state is the sequence of turn values
 - Layout vs data vs transforms: `dashboard.md` vs `queries/` vs `outputs.py`
 
-**Built for AI review.** The review system (`varro/playground/review.py`) generates readable markdown and extracted tool calls from binary turn data. The primary consumer is an AI review agent that evaluates system performance — inspecting real user conversations, investigating bugs, and identifying where the statistician agent struggled or could be helped by better tool outputs. Optimizing for AI reviewability means: text over binary, extracted code over inline blobs, clear structure over compact encoding.
+**Built for trajectory analysis.** The trajectory system (`varro/playground/trajectory.py`) generates readable markdown and extracted tool calls from binary turn data. The primary consumer is an AI trajectory analysis agent that evaluates system performance — inspecting real user conversations, investigating bugs, and identifying where the statistician agent struggled or could be helped by better tool outputs. Optimizing for AI reviewability means: text over binary, extracted code over inline blobs, clear structure over compact encoding.
 
-When adding new features, ask: can the result be represented as an immutable value on disk? Can an AI review agent inspect it by reading files? Is the transition function explicit? If yes, the feature will compose well with the rest of the system.
+When adding new features, ask: can the result be represented as an immutable value on disk? Can an AI analysis agent inspect it by reading files? Is the transition function explicit? If yes, the feature will compose well with the rest of the system.
 
 More details are in `docs/Design thoughts.md`
 

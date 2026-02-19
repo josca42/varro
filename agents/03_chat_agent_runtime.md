@@ -108,11 +108,11 @@ Runtime state:
   - shell pool owns shell lifecycle and persistence
   - routes own HTTP contract and chat CRUD wiring
 
-## Chat review / observability
+## Trajectory generation / observability
 
-`varro/playground/review.py` generates markdown reports from persisted `.mpk` turn files.
+`varro/playground/trajectory.py` generates markdown reports from persisted `.mpk` turn files.
 
-Output directory: `chat_reviews/{user_id}/{chat_id}/` (configured as `REVIEWS_DIR` in `varro/config.py`) — separate from source data in `chat/`.
+Output directory: `trajectory/{user_id}/{chat_id}/` (configured as `TRAJECTORIES_DIR` in `varro/config.py`) — separate from source data in `chat/`.
 
 Structure per chat:
 
@@ -122,11 +122,11 @@ Structure per chat:
 - `{turn_idx}/turn.md` — trajectory-first turn report: `User`, `Trajectory` (`Step N` with `Thinking`, `Actions`, `Observations`), `Final response`, `Usage`
 - `{turn_idx}/tool_calls/` — extracted SQL queries, Jupyter code, large tool results
 - `{turn_idx}/images/` — extracted binary images from review events
-- `{turn_idx}/.review_version` — renderer format marker for invalidating old derived output
+- `{turn_idx}/.trajectory_version` — renderer format marker for invalidating old derived output
 
 Trace extraction:
 
-- `varro/chat/trace.py` is the canonical message-to-event projection for review.
+- `varro/chat/trace.py` is the canonical message-to-event projection for trajectory generation.
 - Event kinds: `user`, `thinking`, `assistant_text`, `tool_call`, `tool_return`, `tool_retry`.
 - Tool return supplemental content pairing is shared via `varro/chat/tool_results.py`.
 - `UserPromptPart` entries in tool-return requests are treated as tool supplemental content, not user input.
@@ -134,18 +134,18 @@ Trace extraction:
 Idempotent processing:
 
 - `.mpk` files are immutable after write.
-- A turn is skipped only when `turn.md` exists and `.review_version` matches the current renderer version.
+- A turn is skipped only when `turn.md` exists and `.trajectory_version` matches the current renderer version.
 - `chat.md` is rebuilt directly from `.mpk` turns (user/tool summary + final response excerpt + details link).
 
 Strict separation from source data:
 
-- Review dir is NOT deleted when a chat is deleted. Reviews are independently managed.
-- Can be deleted with `shutil.rmtree(REVIEWS_DIR / user_id / chat_id)` when desired.
+- Trajectory dir is NOT deleted when a chat is deleted. Trajectories are independently managed.
+- Can be deleted with `shutil.rmtree(TRAJECTORIES_DIR / user_id / chat_id)` when desired.
 - Can be regenerated from source `.mpk` files at any time.
 
 ## Playground CLI
 
-Interactive review CLI entrypoint:
+Interactive trajectory CLI entrypoint:
 
 - `uv run python -m varro.playground.cli`
 
@@ -153,14 +153,14 @@ Behavior:
 
 - starts a new chat by default (or resumes with `--chat-id`),
 - sends plain input lines as user turns through `run_agent(...)`,
-- regenerates review artifacts after each turn via `varro.playground.review.review_chat(...)`,
-- supports review commands (`:help`, `:status`, `:url`, `:review`, `:snapshot`, `:quit`),
-- keeps all artifacts in existing stores (`chat/` and `chat_reviews/`).
+- regenerates trajectory artifacts after each turn via `varro.playground.trajectory.generate_chat_trajectory(...)`,
+- supports commands (`:help`, `:status`, `:url`, `:trajectory`, `:snapshot`, `:quit`),
+- keeps all artifacts in existing stores (`chat/` and `trajectory/`).
 
 Related skill split:
 
 - `$playground-explorer` for interactive CLI-first probing and trajectory improvement discovery.
-- `$chat-review` for retrospective audit of completed chats.
+- `$analyse-trajectory` for retrospective audit of completed chats.
 
 Snapshot contract:
 
@@ -169,5 +169,5 @@ Snapshot contract:
 
 ## Design patterns
 
-- **Source vs. derived separation**: keep generated/derived artifacts in a parallel directory tree, not mixed into the source data folder. Lifecycle is independent — deleting source doesn't cascade to derived, and derived can be regenerated from source at any time. Applied here: `chat/` (source `.mpk`) vs `chat_reviews/` (derived `.md` reports).
+- **Source vs. derived separation**: keep generated/derived artifacts in a parallel directory tree, not mixed into the source data folder. Lifecycle is independent — deleting source doesn't cascade to derived, and derived can be regenerated from source at any time. Applied here: `chat/` (source `.mpk`) vs `trajectory/` (derived `.md` reports).
 - **Idempotent processing via immutable source**: when source files are write-once (like `.mpk` turns), check for output existence to skip reprocessing. Keeps repeated calls cheap.

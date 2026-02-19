@@ -5,7 +5,7 @@ from varro.data.utils import (
     HEADER_VARS,
     normalize_column_name,
 )
-from varro.db.db import engine
+from varro.db.db import dst_owner_engine
 
 TABLES_INFO_DIR = DATA_DIR / "dst" / "metadata" / "tables_info_raw_da"
 SKIP_VALUE_MAP_COLUMNS = {"tid", "alder"}
@@ -17,7 +17,7 @@ def get_distinct_values(table: str, columns: list[str]) -> dict[str, set]:
         return {}
 
     values = {}
-    with engine.connect() as conn:
+    with dst_owner_engine.connect() as conn:
         for col in columns:
             res = conn.exec_driver_sql(f"SELECT DISTINCT {col} FROM fact.{table}")
             values[col] = {v for v in res.scalars().all() if v is not None}
@@ -31,7 +31,7 @@ def get_niveau_levels(table: str, column: str, dim_table: str) -> list[int]:
     JOIN dim.{dim_table} n ON f.{column}::text = n.kode::text
     """
 
-    with engine.connect() as conn:
+    with dst_owner_engine.connect() as conn:
         levels = sorted(conn.exec_driver_sql(query).scalars())
     return levels
 
@@ -51,7 +51,7 @@ def get_tid_range(table: str) -> tuple:
         FROM fact.{table}
         """
 
-    with engine.connect() as conn:
+    with dst_owner_engine.connect() as conn:
         min_tid, max_tid = conn.exec_driver_sql(query).one()
     return min_tid, max_tid
 
@@ -65,7 +65,7 @@ def get_column_dtypes(table: str, schema: str = "fact"):
     ORDER BY ordinal_position
     """
 
-    with engine.connect() as conn:
+    with dst_owner_engine.connect() as conn:
         rows = conn.exec_driver_sql(query).all()
     return {row.column_name: row.data_type for row in rows}
 

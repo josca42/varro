@@ -19,7 +19,7 @@ Last updated: 2026-02-17.
 ## Skills
 
 - `$playground-explorer` — Interactive CLI-first trajectory exploration and playground improvement discovery.
-- `$chat-review` — Retrospective audit of completed chats.
+- `$analyse-trajectory` — Retrospective audit of completed chats.
 
 ## Suggested reading order
 

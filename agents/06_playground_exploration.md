@@ -12,7 +12,7 @@ Snapshot date: 2026-02-17.
 
 ## Skill split (important)
 
-- `chat-review` is retrospective:
+- `analyse-trajectory` is retrospective:
   - post-hoc audit of completed chat
   - summarize root causes and improvements
 - `playground-explorer` is interactive:
@@ -32,7 +32,7 @@ Key commands:
 
 - `:status`
 - `:url <path>`
-- `:review [turn_idx]`
+- `:trajectory [turn_idx]`
 - `:snapshot [url]`
 
 Default behavior:
@@ -45,9 +45,9 @@ Default behavior:
 ## Artifact model
 
 - source turns: `mnt/chat/{user_id}/{chat_id}/{idx}.mpk`
-- derived reviews: `mnt/chat_reviews/{user_id}/{chat_id}/`
-- exploration output stays in existing review tree:
-  - `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`
+- derived trajectories: `mnt/trajectory/{user_id}/{chat_id}/`
+- exploration output stays in existing trajectory tree:
+  - `mnt/trajectory/{user_id}/{chat_id}/findings.md`
 
 ## Findings format for exploration
 
@@ -79,8 +79,8 @@ This keeps improvements tied to observed trajectory mechanics, not generic model
 ## Relevant files
 
 - `varro/playground/cli.py`
-- `varro/playground/review.py`
+- `varro/playground/trajectory.py`
 - `.agents/skills/playground-explorer/SKILL.md`
-- `.agents/skills/chat-review/SKILL.md`
+- `.agents/skills/analyse-trajectory/SKILL.md`
 - `tests/playground/test_cli.py`
 - `tests/agent/test_snapshot.py`

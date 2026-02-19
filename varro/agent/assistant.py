@@ -20,7 +20,7 @@ from varro.context.utils import fuzzy_match
 from varro.agent.utils import show_element
 from varro.agent.utils import get_dim_tables
 from varro.agent.filesystem import read_file, write_file, edit_file
-from varro.db.db import engine
+from varro.db.db import dst_read_engine
 from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
 from varro.context.tools import generate_hierarchy
@@ -133,7 +133,7 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
         df_name: The name of the dataframe containing the data from the query.
     """
     try:
-        with engine.connect() as conn:
+        with dst_read_engine.connect() as conn:
             df = pd.read_sql(text(query), conn)
     except Exception as e:
         raise ModelRetry(str(e))

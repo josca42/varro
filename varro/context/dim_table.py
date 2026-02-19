@@ -1,6 +1,6 @@
 import shutil
 import pandas as pd
-from varro.db.db import engine
+from varro.db.db import dst_owner_engine
 from varro.config import COLUMN_VALUES_DIR, DIMS_DIR, DIM_TABLE_DESCR_DIR
 
 
@@ -60,7 +60,7 @@ def dump_dim_table_values_to_parquet(table_name: str):
     ORDER BY niveau, kode
     """
 
-    with engine.connect() as conn:
+    with dst_owner_engine.connect() as conn:
         df = pd.read_sql_query(query, conn)
 
     output_file = COLUMN_VALUES_DIR / f"{table_name}.parquet"

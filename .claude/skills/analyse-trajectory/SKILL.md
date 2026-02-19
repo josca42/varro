@@ -1,5 +1,5 @@
 ---
-name: chat-review
+name: analyse-trajectory
 description: >
   Review and evaluate agent conversations to find improvements for tooling,
   instructions, and documentation. The goal is NOT to judge answer correctness
@@ -9,19 +9,19 @@ description: >
   given a chat ID to review.
 ---
 
-# Chat Review
+# Analyse Trajectory
 
-## Generate review files
+## Generate trajectory files
 
 ```bash
-uv run python -c "from varro.chat.review import review_chat; print(review_chat(user_id=USER_ID, chat_id=CHAT_ID))"
+uv run python -c "from varro.playground.trajectory import generate_chat_trajectory; print(generate_chat_trajectory(user_id=USER_ID, chat_id=CHAT_ID))"
 ```
 
-Idempotent: turns regenerate only when `turn.md` is missing or `.review_version` is outdated.
+Idempotent: turns regenerate only when `turn.md` is missing or `.trajectory_version` is outdated.
 
-## Review file structure
+## Trajectory file structure
 
-Output at `mnt/chat_reviews/{user_id}/{chat_id}/`:
+Output at `mnt/trajectory/{user_id}/{chat_id}/`:
 
 ```
 chat.md                    # one-line summary per turn: user input, tools, final excerpt
@@ -39,7 +39,7 @@ tool_instructions.md       # all tools with descriptions and parameter schemas
 2. Read `system_instructions.md` and `tool_instructions.md` once to understand what the agent was given
 3. For each turn, read `turn.md` and inspect extracted artifacts in `tool_calls/`
 4. Evaluate each turn against the framework below
-5. Write findings to `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`
+5. Write findings to `mnt/trajectory/{user_id}/{chat_id}/findings.md`
 
 ## Evaluation framework
 
@@ -82,7 +82,7 @@ Is the user question within scope for the state statistician?
 
 ## Output format
 
-Write findings to `mnt/chat_reviews/{user_id}/{chat_id}/findings.md`:
+Write findings to `mnt/trajectory/{user_id}/{chat_id}/findings.md`:
 
 ```markdown
 # Review: Chat {chat_id}

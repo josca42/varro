@@ -10,12 +10,12 @@ from varro.context.fact_table import (
 from varro.context.dim_table import get_short_dim_descrs_md
 import pandas as pd
 from typing import Callable
-from varro.db.db import engine
+from varro.db.db import dst_owner_engine
 from sqlalchemy import inspect
 from varro.config import COLUMN_VALUES_DIR, FACTS_DIR, SUBJECTS_DIR
 
 G = nx.read_gml(DATA_DIR / "metadata" / "subjects_graph_da.gml")
-insp = inspect(engine)
+insp = inspect(dst_owner_engine)
 
 
 def create_subjects_data():

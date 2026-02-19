@@ -2,12 +2,12 @@ from pathlib import Path
 import pandas as pd
 from varro.data.disk_to_db.create_db_table import emit_and_apply_dimension
 from varro.data.disk_to_db.process_tables import process_dim_table
-from varro.db.db import engine
+from varro.db.db import dst_owner_engine
 from sqlalchemy import inspect
 from varro.config import DATA_DIR
 
 DIMENSIONS_DIR = DATA_DIR / "mapping_tables"
-insp = inspect(engine)
+insp = inspect(dst_owner_engine)
 
 for folder in DIMENSIONS_DIR.iterdir():
     print(folder.stem)
