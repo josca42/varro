@@ -21,7 +21,7 @@ Idempotent: turns regenerate only when `turn.md` is missing or `.trajectory_vers
 
 ## Trajectory file structure
 
-Output at `mnt/trajectory/{user_id}/{chat_id}/`:
+Output at `data/trajectory/{user_id}/{chat_id}/`:
 
 ```
 chat.md                    # one-line summary per turn: user input, tools, final excerpt
@@ -39,7 +39,7 @@ tool_instructions.md       # all tools with descriptions and parameter schemas
 2. Read `system_instructions.md` and `tool_instructions.md` once to understand what the agent was given
 3. For each turn, read `turn.md` and inspect extracted artifacts in `tool_calls/`
 4. Evaluate each turn against the framework below
-5. Write findings to `mnt/trajectory/{user_id}/{chat_id}/findings.md`
+5. Write findings to `data/trajectory/{user_id}/{chat_id}/findings.md`
 
 ## Evaluation framework
 
@@ -82,7 +82,7 @@ Is the user question within scope for the state statistician?
 
 ## Output format
 
-Write findings to `mnt/trajectory/{user_id}/{chat_id}/findings.md`:
+Write findings to `data/trajectory/{user_id}/{chat_id}/findings.md`:
 
 ```markdown
 # Review: Chat {chat_id}

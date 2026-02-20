@@ -1,7 +1,7 @@
 import os
 from pathlib import Path, PurePosixPath
 import shutil
-from varro.config import DATA_DIR, DOCS_DIR, USER_WORKSPACE_INIT_DIR
+from varro.config import DATA_DIR, CONTEXT_DIR, USER_WORKSPACE_INIT_DIR
 
 
 READONLY_DOCS_DIRS = {"subjects", "fact", "dim", "geo"}
@@ -25,7 +25,7 @@ def ensure_user_workspace(user_id: int) -> Path:
     root = user_workspace_root(user_id)
     root.mkdir(parents=True, exist_ok=True)
 
-    for source in DOCS_DIR.iterdir():
+    for source in CONTEXT_DIR.iterdir():
         target = root / source.name
         rel_source = Path(os.path.relpath(source, start=target.parent))
         target.symlink_to(rel_source, target_is_directory=True)

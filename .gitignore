@@ -10,9 +10,8 @@ wheels/
 # Virtual environments
 .venv
 /data
+/context
 /notebooks
 /docs/llm_docs/alpine_js/*
 /node_modules/
-/mnt/
-/mnt_1/
 /docs/tasks/
