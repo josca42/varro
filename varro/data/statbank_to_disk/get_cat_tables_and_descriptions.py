@@ -5,8 +5,9 @@ import httpx
 import pandas as pd
 from pathlib import Path
 from typing import Literal
+from varro.config import DST_MAPPING_TABLES_DIR
 
-data_dir = Path("/mnt/HC_Volume_103849439/mapping_tables")
+data_dir = DST_MAPPING_TABLES_DIR
 
 
 def get_cat_table_data(url_descr: str, url_csv: str):
@@ -100,7 +101,7 @@ def _cli():
         "--data-dir",
         dest="data_dir",
         default=None,
-        help="Override output data directory (defaults to /mnt/HC_Volume_103849439/mapping_tables)",
+        help="Override output data directory (defaults to data/dst/mapping_tables)",
     )
 
     args = parser.parse_args()

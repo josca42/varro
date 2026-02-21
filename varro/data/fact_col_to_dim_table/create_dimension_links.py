@@ -1,13 +1,12 @@
 import json
 import subprocess
 from time import sleep
-from pathlib import Path
 from varro.db import crud
-from varro.config import DATA_DIR
+from varro.config import DST_DIMENSION_LINKS_DIR, PROJECT_ROOT
 
 
-DIM_LINKS_DIR = DATA_DIR / "dimension_links"
-with open("/root/varro/agents/notes/subject_tables_dict.json", "r") as f:
+DIM_LINKS_DIR = DST_DIMENSION_LINKS_DIR
+with open(PROJECT_ROOT / "agents" / "notes" / "subject_tables_dict.json", "r") as f:
     subject_tables_dict = json.load(f)
 
 dim_links_created = set(fp.stem for fp in DIM_LINKS_DIR.glob("*.json"))

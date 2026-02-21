@@ -1,7 +1,11 @@
 from varro.data.utils import df_preview, df_dtypes
 import pandas as pd
 import typer
-from varro.config import DATA_DIR
+from varro.config import (
+    DST_DIMENSION_LINKS_DIR,
+    DST_MAPPING_TABLES_DIR,
+    DST_STATBANK_TABLES_DIR,
+)
 import json
 from typing import Literal
 from varro.data.disk_to_db.process_tables import (
@@ -9,9 +13,9 @@ from varro.data.disk_to_db.process_tables import (
     process_dim_table,
 )
 
-FACTS_DIR = DATA_DIR / "statbank_tables"
-DIMENSIONS_DIR = DATA_DIR / "mapping_tables"
-DIMENSION_LINKS_DIR = DATA_DIR / "dimension_links"
+FACTS_DIR = DST_STATBANK_TABLES_DIR
+DIMENSIONS_DIR = DST_MAPPING_TABLES_DIR
+DIMENSION_LINKS_DIR = DST_DIMENSION_LINKS_DIR
 DIM_COLS = ["KODE", "NIVEAU", "TITEL"]
 
 

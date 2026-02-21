@@ -136,7 +136,7 @@ Quick reference guide for Danmarks Statistik mapping tables. Use this to find th
 
 ## Technical Notes
 
-- All dimension tables are stored in `/mnt/HC_Volume_103849439/mapping_tables/{table_id}/`
+- All dimension tables are stored in `data/dst/mapping_tables/{table_id}/`
 - Standard columns: SEKVENS, KODE, NIVEAU, TITEL, GENERELLE_NOTER, INKLUDERER, INKLUDERER_OGSÅ, EKSKLUDERER, PARAGRAF, MÅLEENHED
 - Use the `tables` skill to preview, describe, or inspect any mapping table
 - Most classifications have multiple hierarchical levels accessible via the NIVEAU column

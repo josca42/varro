@@ -5,12 +5,11 @@ from io import StringIO
 from create_table_info_dict import get_all_table_ids
 import pickle
 from tqdm import tqdm
-from pathlib import Path
 from time import sleep
-from varro.config import DATA_DIR
+from varro.config import DST_METADATA_DIR, DST_STATBANK_TABLES_DIR
 
-TABLES_INFO_DIR = DATA_DIR / "metadata" / "tables_info_raw_da"
-DATA_DIR = DATA_DIR / "statbank_tables"
+TABLES_INFO_DIR = DST_METADATA_DIR / "tables_info_raw_da"
+FACT_TABLES_DIR = DST_STATBANK_TABLES_DIR
 MAX_TOTAL_ROWS = 100_000_000
 MAX_ROWS_PER_CALL = 50_000_000
 
@@ -69,7 +68,7 @@ def copy_table(table_id, variables):
 
 
 def copy_tables():
-    already_cloned_table_ids = set(fp.stem for fp in DATA_DIR.glob("*.parquet"))
+    already_cloned_table_ids = set(fp.stem for fp in FACT_TABLES_DIR.glob("*.parquet"))
     for table_id in tqdm(get_all_table_ids()):
         if table_id in already_cloned_table_ids:
             continue
@@ -88,9 +87,9 @@ def copy_tables():
             if partitions is None:
                 variables = build_variables_payload(table_info, time_values=None)
                 df = copy_table(table_id, variables)
-                df.to_parquet(DATA_DIR / f"{table_id}.parquet")
+                df.to_parquet(FACT_TABLES_DIR / f"{table_id}.parquet")
             else:
-                df_folder = DATA_DIR / f"{table_id}"
+                df_folder = FACT_TABLES_DIR / f"{table_id}"
                 df_folder.mkdir(parents=True, exist_ok=True)
                 for i, time_values in enumerate(partitions):
                     df_fp = df_folder / f"partition_{i}.parquet"
@@ -114,10 +113,10 @@ def copy_tables():
 
 
 def combine_partitions_to_parquet_file():
-    for folder in DATA_DIR.iterdir():
+    for folder in FACT_TABLES_DIR.iterdir():
         if folder.is_dir():
             print(folder.stem)
-            output_fp = DATA_DIR / f"{folder.stem}.parquet"
+            output_fp = FACT_TABLES_DIR / f"{folder.stem}.parquet"
             if output_fp.exists():
                 print(f"Output file already exists for {folder.stem}")
                 continue
@@ -139,7 +138,7 @@ def combine_partitions_to_parquet_file():
                 continue
 
             dfs = pd.concat(dfs)
-            dfs.to_parquet(DATA_DIR / f"{folder.stem}.parquet")
+            dfs.to_parquet(FACT_TABLES_DIR / f"{folder.stem}.parquet")
 
 
 if __name__ == "__main__":

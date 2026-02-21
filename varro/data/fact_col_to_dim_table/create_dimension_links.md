@@ -43,7 +43,7 @@ python varro/data/fact_col_to_dim_table/dimension_links_cli.py save-links FOLK1A
   --dimension-links "$(cat links.json)"
 ```
 
-Files are written to `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`. Each link object must include:
+Files are written to `data/dst/dimension_links/{TABLE_ID}.json`. Each link object must include:
 
 - `column`: fact column name (pre-processing)
 - `dimension`: dimension folder name (`nuts`, `db`, …)
@@ -60,13 +60,13 @@ python varro/data/fact_col_to_dim_table/dimension_links_cli.py check-links FOLK1
   --fact-col OMRÅDE
 ```
 
-Success prints a confirmation message; otherwise you get the missing codes (a lone `0` is treated as a placeholder and ignored). If real differences show up, save the link anyway but set `"match_type": "approx"`. The checker loads `/statbank_tables/{FACT}.parquet` and `/mapping_tables/{DIM}/table_da.parquet`, so make sure those files exist before running it.
+Success prints a confirmation message; otherwise you get the missing codes (a lone `0` is treated as a placeholder and ignored). If real differences show up, save the link anyway but set `"match_type": "approx"`. The checker loads `data/dst/statbank_tables/{FACT}.parquet` and `data/dst/mapping_tables/{DIM}/table_da.parquet`, so make sure those files exist before running it.
 
 ### Paths & conventions
 
-- Facts: `/mnt/HC_Volume_103849439/statbank_tables/{TABLE_ID}.parquet`
-- Dimensions: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_da.parquet`
-- Dimension metadata: `/mnt/HC_Volume_103849439/mapping_tables/{DIM_ID}/table_info_da.md`
-- Dimension links JSON: `/mnt/HC_Volume_103849439/dimension_links/{TABLE_ID}.json`
+- Facts: `data/dst/statbank_tables/{TABLE_ID}.parquet`
+- Dimensions: `data/dst/mapping_tables/{DIM_ID}/table_da.parquet`
+- Dimension metadata: `data/dst/mapping_tables/{DIM_ID}/table_info_da.md`
+- Dimension links JSON: `data/dst/dimension_links/{TABLE_ID}.json`
 
 Dimension previews only show `KODE | NIVEAU | TITEL`, and `KODE` is always the join key you should validate against.

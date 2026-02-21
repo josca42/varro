@@ -342,4 +342,4 @@ When linking a fact table column to a dimension table:
 
 **Related Documentation:**
 - [Dimension Tables Overview](../../notes/dimension_tables_overview.md)
-- Tables Skill: `/root/varro/.claude/skills/tables/`
+- Tables Skill: `.claude/skills/tables/`

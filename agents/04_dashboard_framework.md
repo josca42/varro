@@ -80,11 +80,11 @@ Output execution:
 - `GET /dashboard/{name}/_/metric/{output}`
 
 Dashboards are cached by file mtimes (`dashboard.md`, `outputs.py`, all query files).
-Dashboards are discovered per-user from `DATA_DIR/user/{user_id}/dashboard/{slug}`.
+Dashboards are discovered per-user from `data/user/{user_id}/dashboard/{slug}`.
 
 ## Example dashboard
 
-- path: `mnt/user/1/dashboard/sales/`
+- path: `data/user/1/dashboard/sales/`
 - includes filters + metrics + tabs + figure/table outputs.
 
 ## Test coverage

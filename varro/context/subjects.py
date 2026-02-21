@@ -1,5 +1,4 @@
 import networkx as nx
-from varro.config import DATA_DIR
 from pathlib import Path
 from varro.context.fact_table import (
     get_fact_table_info,
@@ -12,9 +11,9 @@ import pandas as pd
 from typing import Callable
 from varro.db.db import dst_owner_engine
 from sqlalchemy import inspect
-from varro.config import COLUMN_VALUES_DIR, FACTS_DIR, SUBJECTS_DIR, DATA_DIR
+from varro.config import COLUMN_VALUES_DIR, FACTS_DIR, SUBJECTS_DIR, DST_METADATA_DIR
 
-G = nx.read_gml(DATA_DIR / "dst" / "metadata" / "subjects_graph_da.gml")
+G = nx.read_gml(DST_METADATA_DIR / "subjects_graph_da.gml")
 insp = inspect(dst_owner_engine)
 
 

@@ -4,9 +4,9 @@ from varro.data.disk_to_db.create_db_table import emit_and_apply_dimension
 from varro.data.disk_to_db.process_tables import process_dim_table
 from varro.db.db import dst_owner_engine
 from sqlalchemy import inspect
-from varro.config import DATA_DIR
+from varro.config import DST_MAPPING_TABLES_DIR
 
-DIMENSIONS_DIR = DATA_DIR / "mapping_tables"
+DIMENSIONS_DIR = DST_MAPPING_TABLES_DIR
 insp = inspect(dst_owner_engine)
 
 for folder in DIMENSIONS_DIR.iterdir():

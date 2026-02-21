@@ -1,6 +1,6 @@
 # Varro Notes Index
 
-Last updated: 2026-02-17.
+Last updated: 2026-02-21.
 
 ## Core notes
 
@@ -20,6 +20,8 @@ Last updated: 2026-02-17.
 
 - `$playground-explorer` — Interactive CLI-first trajectory exploration and playground improvement discovery.
 - `$analyse-trajectory` — Retrospective audit of completed chats.
+- `$findings-to-plan` — Convert playground findings into concrete file-level implementation plans.
+- `$implement-findings` — Reads findings from the above skills, maps to code, implements changes, updates findings with status.
 
 ## Suggested reading order
 

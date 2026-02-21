@@ -5,6 +5,7 @@ from time import sleep
 from tqdm import tqdm
 from pathlib import Path
 import random
+from varro.config import DST_METADATA_DIR
 
 HEADER_VARS = ["id", "text", "description", "unit"]
 
@@ -43,5 +44,5 @@ def get_table_info(table_id):
 
 
 if __name__ == "__main__":
-    data_dir = Path("/root/varro/data")
+    data_dir = DST_METADATA_DIR
     get_table_info_and_save(data_dir)

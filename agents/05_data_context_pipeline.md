@@ -57,9 +57,9 @@
 At runtime, chat agent behavior expects:
 
 - populated Postgres schemas (`fact`, `dim`),
-- docs under `DATA_DIR/docs_template/...` (subjects, fact, dim, dashboard, skills),
-- column value parquet files under `DATA_DIR/column_values`,
-- dimension links under `DATA_DIR/dimension_links`.
+- docs under `context/subjects/...`, `context/fact/...`, `context/dim/...`, and `context/geo/...`,
+- column value parquet files under `context/column_values/...`,
+- dimension links under `data/dst/dimension_links/...`.
 
 Without these artifacts, many analysis tools/prompts lose grounding.
 
@@ -68,6 +68,27 @@ Without these artifacts, many analysis tools/prompts lose grounding.
 `varro/config.py` centralizes key paths from `.env`:
 
 - `DATA_DIR`
+- `CONTEXT_DIR`
 - docs paths (`SUBJECTS_DIR`, `FACTS_DIR`, `DIMS_DIR`)
 - `COLUMN_VALUES_DIR`
 - `DIM_TABLE_DESCR_DIR`
+- `DST_METADATA_DIR`
+- `DST_MAPPING_TABLES_DIR`
+- `DST_STATBANK_TABLES_DIR`
+- `DST_DIMENSION_LINKS_DIR`
+
+## Path learnings (2026-02-21)
+
+- Canonical `.env` values are relative to project root:
+  - `DATA_DIR=data`
+  - `CONTEXT_DIR=context`
+- `varro/config.py` resolves relative `.env` paths via `PROJECT_ROOT`.
+- DST artifacts should be treated as a single subtree under `data/dst/`:
+  - `metadata/`
+  - `mapping_tables/`
+  - `statbank_tables/`
+  - `dimension_links/`
+  - `dim_table_descr/`
+- Agent/runtime docs live under `context/` and should not be mixed with DST raw data paths.
+- `varro/playground/cli.py` status output path uses `data/chat/...` (singular `chat`, not `chats`).
+- Current targeted test caveat: `tests/agent/test_filesystem_sandbox.py` expects `varro.agent.workspace.DOCS_DIR`, which is not present in current workspace module.

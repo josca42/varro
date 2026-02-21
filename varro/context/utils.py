@@ -1,11 +1,10 @@
 import json
-from varro.config import DATA_DIR
+from varro.config import DST_DIMENSION_LINKS_DIR
 from varro.data.utils import df_preview
 from rapidfuzz import process
 import pandas as pd
-from pathlib import Path
 
-DIM_LINKS_DIR = DATA_DIR / "dimension_links"
+DIM_LINKS_DIR = DST_DIMENSION_LINKS_DIR
 
 
 def load_dimension_links(table_id: str) -> dict[str, str] | None:

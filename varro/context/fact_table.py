@@ -1,15 +1,15 @@
 import pickle
 import json
-from varro.config import DATA_DIR
+from varro.config import DST_DIMENSION_LINKS_DIR, DST_METADATA_DIR
 from varro.data.utils import (
     HEADER_VARS,
     normalize_column_name,
 )
 from varro.db.db import dst_owner_engine
 
-TABLES_INFO_DIR = DATA_DIR / "dst" / "metadata" / "tables_info_raw_da"
+TABLES_INFO_DIR = DST_METADATA_DIR / "tables_info_raw_da"
 SKIP_VALUE_MAP_COLUMNS = {"tid", "alder"}
-DIM_LINKS_DIR = DATA_DIR / "dst" / "dimension_links"
+DIM_LINKS_DIR = DST_DIMENSION_LINKS_DIR
 
 
 def get_distinct_values(table: str, columns: list[str]) -> dict[str, set]:

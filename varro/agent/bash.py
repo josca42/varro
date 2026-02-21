@@ -11,12 +11,13 @@ from uuid import uuid4
 
 from safecmd.bashxtract import extract_commands
 
+from varro.config import DATA_DIR
 from varro.agent.workspace import user_workspace_root
 
 BASH_TIMEOUT_SECONDS = 30
 BashMode = Literal["DEV", "BWRAP"]
 USE_BWRAP: BashMode = "DEV"
-DEV_ROOT = Path("/Users/josca/dev/varro/mnt/user/1")
+DEV_ROOT = DATA_DIR / "user" / "1"
 BASH_ALLOWED_COMMANDS = {
     "awk",
     "basename",

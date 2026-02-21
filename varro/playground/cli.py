@@ -85,7 +85,7 @@ def _print_status(session: PlaygroundSession) -> None:
     print(f"turns: {turns}")
     print(f"current_url: {session.current_url}")
     print(f"trajectory_dir: {session.trajectory_dir}")
-    print(f"chat_turn_dir: {DATA_DIR / 'chats' / str(session.user_id) / str(session.chat_id)}")
+    print(f"chat_turn_dir: {DATA_DIR / 'chat' / str(session.user_id) / str(session.chat_id)}")
 
 
 def _normalize_url(value: str) -> str | None:

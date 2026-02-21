@@ -31,7 +31,7 @@ Should produce good figures and test the `show` parameter.
 
 ## Category 4: Dashboard Creation (core feature)
 
-11. **"Lav et dashboard over befolkningsudviklingen i Danmark med filtre for region og tidsperiode"** — The canonical test. Should create `queries/*.sql`, `outputs.py`, `dashboard.md` with filters, metrics, and figures. Agent should read `/skills/dashboard/SKILL.md` first.
+11. **"Lav et dashboard over befolkningsudviklingen i Danmark med filtre for region og tidsperiode"** — The canonical test. Should create `queries/*.sql`, `outputs.py`, `dashboard.md` with filters, metrics, and figures. Agent should read `user_workspace/skills/dashboard/SKILL.md` first.
 
 12. **"Lav et dashboard der sammenligner uddannelsesniveauet på tværs af regioner med fokus på kønsforskelle"** — Complex dashboard with multiple queries, cross-dimensional analysis. Good test of filter implementation.
 

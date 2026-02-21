@@ -58,7 +58,7 @@ Content panel behavior:
 
 ## Markdown-first editing
 
-- Welcome source remains file-backed at `DATA_DIR/user/{user_id}/welcome.md`.
+- Welcome source remains file-backed at `data/user/{user_id}/welcome.md`.
 - `{{dashboard_list}}` is replaced at render time with dashboard links.
 - Intro page and editor use URL-first HTMX routing at:
   - `/app` for rendered content,

@@ -1,8 +1,8 @@
 import httpx
 import networkx as nx
-from varro.config import DATA_DIR
+from varro.config import DST_METADATA_DIR
 
-METADATA_DIR = DATA_DIR / "metadata"
+METADATA_DIR = DST_METADATA_DIR
 
 
 def create_subjects_graph():

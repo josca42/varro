@@ -2,12 +2,12 @@ from pathlib import Path
 import pandas as pd
 from sqlalchemy import inspect
 
-from varro.config import DATA_DIR
+from varro.config import DST_STATBANK_TABLES_DIR
 from varro.data.disk_to_db.create_db_table import emit_and_apply_fact
 from varro.data.disk_to_db.process_tables import process_fact_table
 from varro.db.db import dst_owner_engine
 
-FACTS_DIR = DATA_DIR / "statbank_tables"
+FACTS_DIR = DST_STATBANK_TABLES_DIR
 insp = inspect(dst_owner_engine)
 
 
