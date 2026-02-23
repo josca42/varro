@@ -97,6 +97,10 @@ Without these artifacts, many analysis tools/prompts lose grounding.
 
 - Raw mapping tables in `data/dst/mapping_tables/*/table_da.parquet` include `SEKVENS`, `KODE`, `NIVEAU`, `TITEL`.
 - `SEKVENS` is a hierarchy-friendly traversal order; parent-child links can be derived with a simple level stack.
-- Current dim ingest drops everything except `kode,niveau,titel`, so hierarchy edges are lost before DB load.
-- All current `dim.*` tables in Postgres expose only `kode,niveau,titel`; no explicit parent relation is available to the agent.
-- For dimensions with duplicate `kode` across levels (for example `db`, `nr_branche`), `parent_kode` alone is ambiguous; include `parent_niveau` when generalizing beyond `nuts`.
+- Dim ingest now derives `parent_kode` for all dimensions in `process_dim_table()` before DB load.
+- Dimension DDL now creates `kode,niveau,titel,parent_kode` and indexes both `niveau` and `parent_kode`.
+- Dimension DDL no longer emits table/column `COMMENT` SQL statements.
+- `varro/context/dim_table.py` now exports `(kode, niveau, titel, parent_kode)` to `context/column_values/{dim}.parquet`.
+- Existing DBs can be backfilled by dropping `dim.*` tables and rerunning `varro/data/disk_to_db/dim_tables_to_db.py`.
+- `dim_tables_to_db.py` still drops `db` niveau 1 rows; that leaves niveau 2 rows in `dim.db` with `parent_kode = NULL` by design.
+- For dimensions with duplicate `kode` across levels (for example `db`, `nr_branche`), `parent_kode` alone can be ambiguous; add `parent_niveau` if strict unambiguous self-joins are needed.

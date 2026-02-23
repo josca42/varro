@@ -91,10 +91,6 @@ def idx_name(schema: str | None, table: str, col: str, prefix: str) -> str:
     return base[:63]
 
 
-def sql_literal(s: str) -> str:
-    return "'" + s.replace("'", "''") + "'"
-
-
 # -------------------------- core builders --------------------------
 
 
@@ -150,7 +146,7 @@ def create_indexes_stmts(
 
 class DDLPlan(NamedTuple):
     create_sql: str  # CREATE TABLE ...
-    post_sql: str  # indexes + comments (joined)
+    post_sql: str  # post statements (joined)
     post_statements: list[str]
 
 
@@ -167,11 +163,12 @@ def make_fact_plan(
 
 
 def make_dimension_plan(df: pd.DataFrame, table_name: str) -> DDLPlan:
-    assert {"kode", "niveau", "titel"}.issubset(df.columns)
+    assert {"kode", "niveau", "titel", "parent_kode"}.issubset(df.columns)
     kt = infer_pg_type("kode", df["kode"])
     nt = infer_pg_type("niveau", df["niveau"])
     tt = infer_pg_type("titel", df["titel"])
-    col_types = {"kode": kt, "niveau": nt, "titel": tt}
+    pt = kt
+    col_types = {"kode": kt, "niveau": nt, "titel": tt, "parent_kode": pt}
     schema, if_not_exists = "dim", True
 
     is_kode_unique = df["kode"].value_counts().max() == 1
@@ -182,15 +179,11 @@ def make_dimension_plan(df: pd.DataFrame, table_name: str) -> DDLPlan:
     )
     idxs = [
         f"CREATE INDEX IF NOT EXISTS {idx_name(schema, table_name, 'niveau', 'idx')} "
-        f"ON {fq_name(schema, table_name)} ({quote_ident('niveau')});"
+        f"ON {fq_name(schema, table_name)} ({quote_ident('niveau')});",
+        f"CREATE INDEX IF NOT EXISTS {idx_name(schema, table_name, 'parent_kode', 'idx')} "
+        f"ON {fq_name(schema, table_name)} ({quote_ident('parent_kode')});",
     ]
-    comments = [
-        f"COMMENT ON TABLE {fq_name(schema, table_name)} IS "
-        f"{sql_literal('Static dimension: kode (key), niveau (hierarchy level), titel (label).')};",
-        f"COMMENT ON COLUMN {fq_name(schema, table_name)}.{quote_ident('niveau')} IS "
-        f"{sql_literal('1 = broadest; higher numbers = deeper levels.')};",
-    ]
-    post_statements = idxs + comments
+    post_statements = idxs
     post_sql = "\n".join(post_statements)
     return DDLPlan(create_sql, post_sql, post_statements)
 
@@ -228,7 +221,7 @@ def create_insert_then_post(
     """
     1) CREATE TABLE
     2) COPY df
-    3) run post statements (indexes, comments)
+    3) run post statements
     """
     with psycopg.connect(POSTGRES_DST) as conn:
         with conn.cursor() as cur:

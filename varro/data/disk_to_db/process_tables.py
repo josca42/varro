@@ -3,7 +3,7 @@ import numpy as np
 
 
 STANDARD_COLS = ["indhold", "tid", "alder", "kon"]
-DIM_COLS = ["kode", "niveau", "titel"]
+DIM_COLS = ["kode", "niveau", "titel", "parent_kode"]
 
 
 def process_fact_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -19,6 +19,7 @@ def process_fact_table(df: pd.DataFrame) -> pd.DataFrame:
 def process_dim_table(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_column_names(df)
     df = process_kode_col(df)
+    df = add_parent_kode_col(df)
     df = df[DIM_COLS].copy()
     return df
 
@@ -37,7 +38,7 @@ def process_dim_table(df: pd.DataFrame) -> pd.DataFrame:
 def process_kode_col(df: pd.DataFrame) -> pd.DataFrame:
     if df["kode"].dtype == "object":
         try:
-            df["kode_int"] = df["kode"].str.replace(".", "").astype(int)
+            df["kode_int"] = df["kode"].str.replace(".", "", regex=False).astype(int)
             for group, df_group in df.groupby("niveau"):
                 if df_group["kode"].nunique() != df_group["kode_int"].nunique():
                     raise ValueError(f"Kode column is not unique for level {group}")
@@ -46,7 +47,30 @@ def process_kode_col(df: pd.DataFrame) -> pd.DataFrame:
         except ValueError as e:
             print(f"Kode not converted to int: {e}")
             pass
-    return df[["kode", "niveau", "titel"]]
+    return df
+
+
+def add_parent_kode_col(df: pd.DataFrame) -> pd.DataFrame:
+    if "sekvens" in df.columns:
+        df = df.sort_values("sekvens", kind="stable").copy()
+    else:
+        df = df.copy()
+
+    stack = {}
+    parent_values = []
+    for niveau, kode in df[["niveau", "kode"]].itertuples(index=False):
+        niveau = int(niveau)
+        parent_values.append(stack.get(niveau - 1) if niveau > 1 else None)
+        stack[niveau] = kode
+        for level in tuple(stack):
+            if level > niveau:
+                del stack[level]
+
+    if pd.api.types.is_integer_dtype(df["kode"]):
+        df["parent_kode"] = pd.Series(parent_values, index=df.index, dtype="Int64")
+    else:
+        df["parent_kode"] = pd.Series(parent_values, index=df.index)
+    return df
 
 
 def process_tid_col(df: pd.DataFrame) -> pd.DataFrame:
