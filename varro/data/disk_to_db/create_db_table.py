@@ -6,7 +6,7 @@ from typing import NamedTuple
 import numpy as np
 import pandas as pd
 import psycopg
-from varro.db.db import POSTGRES_DSN
+from varro.db.db import POSTGRES_DST
 
 # -------------------------- inference helpers --------------------------
 
@@ -230,7 +230,7 @@ def create_insert_then_post(
     2) COPY df
     3) run post statements (indexes, comments)
     """
-    with psycopg.connect(POSTGRES_DSN) as conn:
+    with psycopg.connect(POSTGRES_DST) as conn:
         with conn.cursor() as cur:
             cur.execute(plan.create_sql)
         copy_df_via_copy(conn, df, table_name, schema)

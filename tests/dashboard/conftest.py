@@ -12,7 +12,7 @@ from starlette.testclient import TestClient
 
 from ui.core import daisy_app
 from varro.dashboard.routes import mount_dashboard_routes
-from varro.db.db import POSTGRES_SQLALCHEMY_URI
+from varro.db.db import POSTGRES_USER_SQLALCHEMY
 
 
 @dataclass
@@ -170,7 +170,7 @@ def _write_dashboard(dashboard_path: Path, table_name: str) -> None:
 
 @pytest.fixture
 def dashboard_env(tmp_path: Path) -> DashboardTestEnv:
-    engine = create_engine(POSTGRES_SQLALCHEMY_URI)
+    engine = create_engine(POSTGRES_USER_SQLALCHEMY)
     table_name = f"dashboard_test_population_{uuid4().hex[:10]}"
     _seed_db(engine, table_name)
 

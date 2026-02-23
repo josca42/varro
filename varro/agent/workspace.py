@@ -36,7 +36,6 @@ def ensure_user_workspace(user_id: int) -> Path:
 
     return root
 
-
 def resolve_user_path(
     user_id: int,
     file_path: str,

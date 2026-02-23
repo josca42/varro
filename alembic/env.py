@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 from sqlmodel import SQLModel
 from varro.db.models import *
-from varro.db.db import POSTGRES_SQLALCHEMY_URI
+from varro.db.db import POSTGRES_USER_SQLALCHEMY
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -14,7 +14,7 @@ config = context.config
 
 
 # Set the SQLAlchemy URL
-config.set_main_option("sqlalchemy.url", POSTGRES_SQLALCHEMY_URI)
+config.set_main_option("sqlalchemy.url", POSTGRES_USER_SQLALCHEMY)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
