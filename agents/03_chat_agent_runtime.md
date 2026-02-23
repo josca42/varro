@@ -171,3 +171,7 @@ Snapshot contract:
 
 - **Source vs. derived separation**: keep generated/derived artifacts in a parallel directory tree, not mixed into the source data folder. Lifecycle is independent — deleting source doesn't cascade to derived, and derived can be regenerated from source at any time. Applied here: `chat/` (source `.mpk`) vs `trajectory/` (derived `.md` reports).
 - **Idempotent processing via immutable source**: when source files are write-once (like `.mpk` turns), check for output existence to skip reprocessing. Keeps repeated calls cheap.
+
+## Recent updates
+
+- `Sql` now normalizes date-like object columns (`date`, `datetime`, `Timestamp`) with `pd.to_datetime` before storing to Jupyter namespace when `df_name` is provided. This keeps stored frames ready for time-series operations and aligns displayed `dtypes` with stored values.

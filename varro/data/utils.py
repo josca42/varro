@@ -22,15 +22,20 @@ def df_preview(df: pd.DataFrame, max_rows: int = 10, name: str = "df") -> str:
     return f"{name}.head({n_rows})\n" + csv_string
 
 
-def df_dtypes(df: pd.DataFrame) -> str:
-    parts = []
+def df_dtype_map(df: pd.DataFrame) -> dict[str, str]:
+    dtype_map = {}
     for col, dtype in df.dtypes.items():
         if dtype == object and len(df) > 0:
             sample = df[col].dropna().iloc[0] if df[col].notna().any() else None
             type_name = type(sample).__name__ if sample is not None else "object"
         else:
             type_name = str(dtype)
-        parts.append(f"{col}={type_name}")
+        dtype_map[col] = type_name
+    return dtype_map
+
+
+def df_dtypes(df: pd.DataFrame) -> str:
+    parts = [f"{col}={type_name}" for col, type_name in df_dtype_map(df).items()]
     return "dtypes: " + ", ".join(parts)
 
 

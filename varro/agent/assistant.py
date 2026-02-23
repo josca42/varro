@@ -15,7 +15,7 @@ from pydantic_ai import (
 )
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
-from varro.data.utils import df_preview, df_dtypes
+from varro.data.utils import df_preview, df_dtypes, df_dtype_map
 from varro.context.utils import fuzzy_match
 from varro.agent.utils import show_element
 from varro.agent.utils import get_dim_tables
@@ -137,6 +137,7 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
             df = pd.read_sql(text(query), conn)
     except Exception as e:
         raise ModelRetry(str(e))
+
     row_count = len(df)
     result_parts = [f"row_count: {row_count}"]
     if row_count == 0:
@@ -145,6 +146,10 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
             "Warning: query returned 0 rows. Check filter codes with ColumnValues(table, column).",
         )
     if df_name:
+        dtype_map = df_dtype_map(df)
+        for col, type_name in dtype_map.items():
+            if type_name in {"date", "datetime", "Timestamp"}:
+                df[col] = pd.to_datetime(df[col])
         ctx.deps.shell.user_ns[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
         result_parts.insert(0, f"Stored as {df_name}")

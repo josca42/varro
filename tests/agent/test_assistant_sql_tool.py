@@ -61,7 +61,26 @@ def test_sql_dtypes_resolve_date_columns(assistant_module, monkeypatch):
     ctx = SimpleNamespace(deps=SimpleNamespace(shell=SimpleNamespace(user_ns={})))
     result = assistant_module.Sql(ctx, query="select 1", df_name="df")
 
-    assert "dtypes: tid=date, val=float64" in result.return_value
+    assert "dtypes: tid=datetime64[ns], val=float64" in result.return_value
+    assert pd.api.types.is_datetime64_any_dtype(ctx.deps.shell.user_ns["df"]["tid"])
+
+
+def test_sql_skips_datetime_conversion_without_df_name(assistant_module, monkeypatch):
+    import datetime
+
+    df = pd.DataFrame({"tid": [datetime.date(2024, 1, 1)], "val": [1.5]})
+    monkeypatch.setattr(assistant_module, "dst_read_engine", _DummyEngine())
+    monkeypatch.setattr(assistant_module.pd, "read_sql", lambda query, conn: df)
+
+    def fail_to_datetime(_):
+        raise AssertionError("pd.to_datetime should not be called without df_name")
+
+    monkeypatch.setattr(assistant_module.pd, "to_datetime", fail_to_datetime)
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(shell=SimpleNamespace(user_ns={})))
+    result = assistant_module.Sql(ctx, query="select 1")
+
+    assert "dtypes:" not in result.return_value
 
 
 def test_sql_warns_when_query_returns_no_rows(assistant_module, monkeypatch):
