@@ -14,20 +14,19 @@ def get_long_dim_descr_md(dim_tables: set[str]):
 
 
 def get_short_dim_descrs_md(dim_tables: set[str]):
-    import re
+    return "\n".join(_format_short_dim(dt) for dt in dim_tables)
 
-    blocks = []
-    for dim_table in dim_tables:
-        text = open(DIM_TABLE_DESCR_DIR / f"{dim_table}_short.md").read()
-        m = re.match(r"# dim\.(\S+)\n(.+)", text, re.DOTALL)
-        if m:
-            dim_id, description = m.group(1), m.group(2).strip()
-            blocks.append(
-                f"<table>\nid: {dim_id}\ndescription: {description}\n</table>"
-            )
-        else:
-            blocks.append(text.strip())
-    return "\n".join(blocks)
+
+def _format_short_dim(dim_table: str) -> str:
+    lines = open(DIM_TABLE_DESCR_DIR / f"{dim_table}_short.md").read().strip().splitlines()
+    # skip header line and blank line, first body line is description, rest is niveaux
+    body = [l for l in lines[1:] if l.strip()]
+    description = body[0] if body else ""
+    niveaux = "\n".join(body[1:])
+    parts = [f"id: {dim_table}", f"description: {description}"]
+    if niveaux:
+        parts.append(niveaux)
+    return f"<table>\n{chr(10).join(parts)}\n</table>"
 
 
 def copy_dim_table_docs():
