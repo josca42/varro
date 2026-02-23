@@ -19,15 +19,19 @@ def df_preview(df: pd.DataFrame, max_rows: int = 10, name: str = "df") -> str:
         float_format="%.3f",
         na_rep="N/A",
     )
-    if n_rows == len(df):
-        return csv_string
-    else:
-        return f"{name}.head({n_rows})\n" + csv_string
+    return f"{name}.head({n_rows})\n" + csv_string
 
 
 def df_dtypes(df: pd.DataFrame) -> str:
-    """Generate a string of the DataFrame's dtypes."""
-    return "\n".join([f"{col}|{dtype}" for col, dtype in df.dtypes.items()])
+    parts = []
+    for col, dtype in df.dtypes.items():
+        if dtype == object and len(df) > 0:
+            sample = df[col].dropna().iloc[0] if df[col].notna().any() else None
+            type_name = type(sample).__name__ if sample is not None else "object"
+        else:
+            type_name = str(dtype)
+        parts.append(f"{col}={type_name}")
+    return "dtypes: " + ", ".join(parts)
 
 
 def create_table_info_dict(table_info, normalize_col_names: bool = False):

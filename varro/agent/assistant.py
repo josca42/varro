@@ -15,7 +15,7 @@ from pydantic_ai import (
 )
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
-from varro.data.utils import df_preview
+from varro.data.utils import df_preview, df_dtypes
 from varro.context.utils import fuzzy_match
 from varro.agent.utils import show_element
 from varro.agent.utils import get_dim_tables
@@ -148,6 +148,7 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
         ctx.deps.shell.user_ns[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
         result_parts.insert(0, f"Stored as {df_name}")
+        result_parts.append(df_dtypes(df))
         result_parts.append(df_preview(df, max_rows=max_rows))
     else:
         result_parts.append(df_preview(df, max_rows=30))

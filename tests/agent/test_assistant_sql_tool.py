@@ -36,7 +36,7 @@ def assistant_module(monkeypatch):
     return importlib.reload(assistant)
 
 
-def test_sql_includes_row_count_and_stores_dataframe(assistant_module, monkeypatch):
+def test_sql_includes_row_count_dtypes_and_stores_dataframe(assistant_module, monkeypatch):
     df = pd.DataFrame({"x": [1, 2]})
     monkeypatch.setattr(assistant_module, "dst_read_engine", _DummyEngine())
     monkeypatch.setattr(assistant_module.pd, "read_sql", lambda query, conn: df)
@@ -45,9 +45,23 @@ def test_sql_includes_row_count_and_stores_dataframe(assistant_module, monkeypat
     result = assistant_module.Sql(ctx, query="select 1 as x", df_name="df_x")
 
     assert result.return_value.startswith("Stored as df_x\nrow_count: 2\n")
+    assert "dtypes: x=int64" in result.return_value
     assert "x\n1\n2\n" in result.return_value
     assert ctx.deps.shell.user_ns["df_x"].equals(df)
     assert result.metadata == {"ui": {"has_tool_content": False}}
+
+
+def test_sql_dtypes_resolve_date_columns(assistant_module, monkeypatch):
+    import datetime
+
+    df = pd.DataFrame({"tid": [datetime.date(2024, 1, 1)], "val": [1.5]})
+    monkeypatch.setattr(assistant_module, "dst_read_engine", _DummyEngine())
+    monkeypatch.setattr(assistant_module.pd, "read_sql", lambda query, conn: df)
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(shell=SimpleNamespace(user_ns={})))
+    result = assistant_module.Sql(ctx, query="select 1", df_name="df")
+
+    assert "dtypes: tid=date, val=float64" in result.return_value
 
 
 def test_sql_warns_when_query_returns_no_rows(assistant_module, monkeypatch):
