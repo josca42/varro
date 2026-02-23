@@ -47,7 +47,7 @@ def generate_hierarchy() -> str:
 
 
 def get_dim_tables() -> tuple[str, ...]:
-    with engine.connect() as conn:
+    with dst_read_engine.connect() as conn:
         return tuple(
             row[0]
             for row in conn.execute(

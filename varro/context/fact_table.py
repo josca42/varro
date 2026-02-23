@@ -8,7 +8,7 @@ from varro.data.utils import (
 from varro.db.db import dst_owner_engine
 
 TABLES_INFO_DIR = DST_METADATA_DIR / "tables_info_raw_da"
-SKIP_VALUE_MAP_COLUMNS = {"tid", "alder"}
+SKIP_VALUE_MAP_COLUMNS = {"tid"}
 DIM_LINKS_DIR = DST_DIMENSION_LINKS_DIR
 
 

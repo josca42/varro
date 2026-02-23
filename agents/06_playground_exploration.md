@@ -78,8 +78,18 @@ This keeps improvements tied to observed trajectory mechanics, not generic model
 
 ## Common trajectory friction
 
-- Inline categorical totals are not always `TOT` (e.g. `fact.folk1a.alder` uses `IALT`); missing value docs can lead to empty queries and extra tool calls.
-- `Sql` observations do not currently surface row counts; empty results are easy to miss until a Jupyter print.
+- Inline categorical totals are not always `TOT` (e.g. `fact.folk1a.alder` uses `IALT`), so docs must expose sentinel codes clearly.
+- Prompt guidance already tells the agent to check `ColumnValues` for filters; prompt tweaks are lower priority than improving tool/context signals.
+
+## Chat-66 fixes landed (2026-02-23)
+
+- `Sql` now returns `row_count: <n>` and warns explicitly on `row_count: 0` with a `ColumnValues` hint (`varro/agent/assistant.py`).
+- Fact-doc generation no longer skips `alder` in value mappings (`SKIP_VALUE_MAP_COLUMNS` now only skips `tid` in `varro/context/fact_table.py`).
+- Regenerated `context/fact/borgere/befolkning/befolkningstal/folk1a.md` now includes `alder` values with `IALT=Alder i alt`.
+- `get_dim_tables()` now uses `dst_read_engine` (not undefined `engine`) in `varro/agent/utils.py`.
+- Regression tests added:
+  - `tests/agent/test_assistant_sql_tool.py`
+  - `tests/context/test_fact_table.py`
 
 ## Three-skill pipeline
 

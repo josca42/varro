@@ -19,11 +19,11 @@ from varro.data.utils import df_preview
 from varro.context.utils import fuzzy_match
 from varro.agent.utils import show_element
 from varro.agent.utils import get_dim_tables
+from varro.agent.utils import generate_hierarchy
 from varro.agent.filesystem import read_file, write_file, edit_file
 from varro.db.db import dst_read_engine
 from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
-from varro.context.tools import generate_hierarchy
 from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
@@ -137,12 +137,21 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
             df = pd.read_sql(text(query), conn)
     except Exception as e:
         raise ModelRetry(str(e))
+    row_count = len(df)
+    result_parts = [f"row_count: {row_count}"]
+    if row_count == 0:
+        result_parts.insert(
+            0,
+            "Warning: query returned 0 rows. Check filter codes with ColumnValues(table, column).",
+        )
     if df_name:
         ctx.deps.shell.user_ns[df_name] = df
         max_rows = 20 if len(df) < 21 else 5
-        result = f"Stored as {df_name}\n{df_preview(df, max_rows=max_rows)}"
+        result_parts.insert(0, f"Stored as {df_name}")
+        result_parts.append(df_preview(df, max_rows=max_rows))
     else:
-        result = df_preview(df, max_rows=30)
+        result_parts.append(df_preview(df, max_rows=30))
+    result = "\n".join(result_parts)
     return ToolReturn(
         return_value=result,
         metadata={"ui": {"has_tool_content": False}},
