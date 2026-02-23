@@ -92,3 +92,11 @@ Without these artifacts, many analysis tools/prompts lose grounding.
 - Agent/runtime docs live under `context/` and should not be mixed with DST raw data paths.
 - `varro/playground/cli.py` status output path uses `data/chat/...` (singular `chat`, not `chats`).
 - Current targeted test caveat: `tests/agent/test_filesystem_sandbox.py` expects `varro.agent.workspace.DOCS_DIR`, which is not present in current workspace module.
+
+## Dim hierarchy learnings (2026-02-23)
+
+- Raw mapping tables in `data/dst/mapping_tables/*/table_da.parquet` include `SEKVENS`, `KODE`, `NIVEAU`, `TITEL`.
+- `SEKVENS` is a hierarchy-friendly traversal order; parent-child links can be derived with a simple level stack.
+- Current dim ingest drops everything except `kode,niveau,titel`, so hierarchy edges are lost before DB load.
+- All current `dim.*` tables in Postgres expose only `kode,niveau,titel`; no explicit parent relation is available to the agent.
+- For dimensions with duplicate `kode` across levels (for example `db`, `nr_branche`), `parent_kode` alone is ambiguous; include `parent_niveau` when generalizing beyond `nuts`.

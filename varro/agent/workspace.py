@@ -21,7 +21,7 @@ def user_workspace_root(user_id: int) -> Path:
     return DATA_DIR / "user" / str(user_id)
 
 
-def ensure_user_workspace(user_id: int) -> Path:
+def create_user_workspace(user_id: int) -> Path:
     root = user_workspace_root(user_id)
     root.mkdir(parents=True, exist_ok=True)
 

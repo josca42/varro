@@ -170,7 +170,7 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     Stateful Jupyter notebook environment. Each call executes as a new cell.
     All printed output in the notebook cell will be included in the response.
 
-    To see figures and dataframes in the response then add the name of the figure or dataframe to the show list.
+    To see figures and dataframes in the response then add the name of the figure or dataframe to the show list. Do not call fig.show() or plt.show() — figures are displayed via the show parameter only.
 
     The notebook has access to all dataframes added to it's name space by the sql_query tool. You can reference the dataframes by their name, df_name.
 

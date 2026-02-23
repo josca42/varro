@@ -5,7 +5,7 @@ from typing import Optional
 from varro.db.db import user_engine
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from varro.agent.workspace import ensure_user_workspace
+from varro.agent.workspace import create_user_workspace
 
 hasher = PasswordHasher()
 
@@ -14,7 +14,7 @@ class CrudUser(CrudBase[User]):
     def create(self, obj: User) -> User:
         created = super().create(obj)
         if created.id is not None:
-            ensure_user_workspace(created.id)
+            create_user_workspace(created.id)
         return created
 
     def get_by_email(self, email: str) -> Optional[User]:

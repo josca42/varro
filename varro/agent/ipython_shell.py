@@ -14,6 +14,13 @@ import matplotlib.pyplot as plt
 import plotly.io as pio
 pio.renderers.default = None
 pio.templates.default = "plotly_white"
+pio.templates["plotly_white"].layout.legend = dict(
+    orientation="h",
+    yanchor="top",
+    y=-0.15,
+    xanchor="center",
+    x=0.5,
+)
 """
 
 

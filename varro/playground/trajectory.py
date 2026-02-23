@@ -32,7 +32,8 @@ def _format_tool_args(tool_name: str, args: dict[str, Any]) -> str:
             parts.append(f"df_name=`{args['df_name']}`")
         return " | ".join(parts)
     if tool_name == "Jupyter":
-        return ""
+        show = args.get("show", [])
+        return f"show=`{show}`" if show else ""
     if tool_name == "Read":
         fp = args.get("file_path", "")
         extra = []
@@ -149,6 +150,8 @@ def _render_actions(
             tc_dir.mkdir(parents=True, exist_ok=True)
             (tc_dir / f"{nn}_jupyter.py").write_text(args["code"])
             line = f"**{i}. {tool}** [code](tool_calls/{nn}_jupyter.py)"
+            if args_str:
+                line += f" | {args_str}"
         else:
             line = f"**{i}. {tool}**"
             if args_str:
