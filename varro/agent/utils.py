@@ -11,6 +11,7 @@ from varro.agent.images import (
 )
 from varro.data.utils import df_preview
 import pandas as pd
+from pandas.io.formats.style import Styler
 import matplotlib.pyplot as plt
 import io
 from typing import Any
@@ -63,6 +64,8 @@ async def show_element(element) -> Any | None:
     """Convert a cell output to a format suitable for ToolReturn content."""
     if isinstance(element, pd.DataFrame):
         return df_preview(element, max_rows=30)
+    if isinstance(element, Styler):
+        return df_preview(element.data, max_rows=30)
     if isinstance(element, go.Figure):
         png_bytes = await plotly_figure_to_png(
             element, max_pixels=JUPYTER_SHOW_MAX_PIXELS

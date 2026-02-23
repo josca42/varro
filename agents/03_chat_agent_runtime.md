@@ -175,3 +175,4 @@ Snapshot contract:
 ## Recent updates
 
 - `Sql` now normalizes date-like object columns (`date`, `datetime`, `Timestamp`) with `pd.to_datetime` before storing to Jupyter namespace when `df_name` is provided. This keeps stored frames ready for time-series operations and aligns displayed `dtypes` with stored values.
+- `Jupyter(show=[...])` render path now accepts pandas `Styler` in addition to `pd.DataFrame`, `plotly.graph_objects.Figure`, and `matplotlib.figure.Figure`. Styler objects render as table previews in tool output, while `<df name="..."/>` can render styled HTML tables in final chat responses.

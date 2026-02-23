@@ -201,7 +201,12 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     elements_rendered = []
     for name in show:
         element = ctx.deps.shell.user_ns.get(name)
-        rendered = await show_element(element)
+        try:
+            rendered = await show_element(element)
+        except ValueError as e:
+            raise ModelRetry(
+                f"{e}. show must reference a pandas DataFrame/Styler, plotly Figure, or matplotlib Figure."
+            )
         elements_rendered.append(rendered)
 
     return ToolReturn(

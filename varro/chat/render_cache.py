@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
+from pandas.io.formats.style import Styler
 from fasthtml.common import to_xml
 from plotly.basedatatypes import BaseFigure
 from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart
@@ -46,5 +47,7 @@ def save_turn_render_cache(msgs: list[ModelMessage], fp: Path, shell) -> None:
                     if not isinstance(df.index, pd.RangeIndex):
                         df = df.reset_index()
                     cache[key] = to_xml(DataTable(df, cls="my-2"))
+                elif node.type == "df" and isinstance(obj, Styler):
+                    cache[key] = obj.to_html()
     if cache:
         fp.with_suffix(".cache.json").write_text(json.dumps(cache, ensure_ascii=False))

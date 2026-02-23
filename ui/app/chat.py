@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import mistletoe
 import pandas as pd
+from pandas.io.formats.style import Styler
 from fasthtml.common import (
     A,
     Button,
@@ -424,11 +425,14 @@ def _render_placeholder(
 
     obj = shell.user_ns.get(name)
     if obj is not None:
-        if kind == "df" and isinstance(obj, pd.DataFrame):
-            df = obj
-            if not isinstance(df.index, pd.RangeIndex):
-                df = df.reset_index()
-            return DataTable(df, cls="my-2")
+        if kind == "df":
+            if isinstance(obj, pd.DataFrame):
+                df = obj
+                if not isinstance(df.index, pd.RangeIndex):
+                    df = df.reset_index()
+                return DataTable(df, cls="my-2")
+            if isinstance(obj, Styler):
+                return Div(NotStr(obj.to_html()), cls="my-2 overflow-x-auto")
         if kind == "fig" and isinstance(obj, BaseFigure):
             return Div(Figure(obj), cls="my-2")
 
