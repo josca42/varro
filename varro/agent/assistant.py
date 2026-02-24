@@ -126,7 +126,8 @@ def get_fact_value_files(table: str) -> list[Path]:
         raise ModelRetry(f"No fact column values found for table '{table}'.")
     return files
 
-
+# TODO: If no overlap then create an appropriate string representation with the report generated
+# and then let the Agent decide the best action going forward.
 def infer_fact_column_for_dim(df: pd.DataFrame, dim_table: str, for_table: str) -> str:
     value_files = get_fact_value_files(for_table)
     columns = [file.stem for file in value_files]
@@ -162,7 +163,7 @@ def infer_fact_column_for_dim(df: pd.DataFrame, dim_table: str, for_table: str) 
         f"Could not infer a fact column in '{for_table}' for dim table '{dim_table}'."
     )
 
-
+# TODO: Again implement good messages to the agent here about, what is happening. It is important that the knows a filter has been applied and what the filter is. Primarily, due to error cases where case mismatch like "001" vs "1" etc.. And hence filter should not be applied blindly.
 def filter_dimension_values_for_table(
     df: pd.DataFrame, dim_table: str, for_table: str
 ) -> pd.DataFrame:

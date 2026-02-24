@@ -58,6 +58,8 @@ Contain statistical measurements with these column patterns:
   - Linked to dim table: `branche` → `JOIN dim.branche ON branche=kode`
   - Inline categorical: `køn` with values `['M', 'K']` (no join needed)
 
+**Overcounting risk** — Most dimensions includes rows for both totals (e.g. `TOT`) and subcategories (e.g. `Mænd`, `Kvinder`). Always filter every dimension to either its total or its individual values — never sum across both.
+
 ### Join Pattern
 ```sql
 SELECT f.indhold, d.titel
@@ -81,6 +83,7 @@ ColumnValues("overtraedtype", "titel", for_table="straf10")
 ```
 Jupyter("fig = px.line(df, x='tid', y='indhold')", show=["fig"])
 ```
+Plotly legends are placed underneath plots by default (via template). Don't override this unless the user requests it.
 
 ### File Tools
 
