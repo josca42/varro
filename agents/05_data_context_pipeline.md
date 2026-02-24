@@ -111,3 +111,27 @@ Without these artifacts, many analysis tools/prompts lose grounding.
 - Fact docs now include observed level-1 coverage per dim-linked column (`level-1 values [...]`) in both detailed fact readmes and subject table summaries.
 - Level-1 coverage extraction now walks dim parent links when available, so lower-level fact codes still resolve to top-level categories.
 - `varro/context/subjects.py` now adds a `<coverage notes>` block when leaf-subject table coverage differs, or when all tables share a subset that is smaller than the dimension's full level-1 universe.
+
+## StatBank incremental sync + Prefect (2026-02-24)
+
+- `varro/data/statbank_to_disk/copy_tables_statbank.py` was rewritten from one-shot full copy to incremental sync.
+- Canonical fact storage is now partitioned parquet files per table and period:
+  - `data/dst/statbank_tables/{TABLE_ID}/{urlquoted_tid}.parquet`
+- Sync control files are under `data/dst/statbank_tables/_sync/`:
+  - `state.json` tracks table-level sync state (`last_seen_updated`, `last_sync_at`, `frequency`, `bootstrap_complete`, `last_status`, `last_error`, `last_run_id`) and global poll state.
+  - `runs/{run_id}.json` stores run manifests with catalog snapshot, per-table outcomes, changed tids, and summary counts.
+  - `frequency_overrides.json` optionally overrides inferred per-table frequency.
+- Incremental eligibility:
+  - global catalog poll uses `/v1/tables?lang=da` with a weekly gate,
+  - changed tables are detected by `updated`,
+  - table metadata is refreshed via `/v1/tableinfo` and cached back to `tables_info_raw_da/{table}.pkl`.
+- Frequency is inferred from `Tid` codes (yearly/quarterly/monthly/weekly/daily/half-yearly/other) and drives rolling refresh windows for revision handling.
+- `periods_to_fetch = new_periods ∪ trailing_refresh_periods`; source-deleted periods are ignored.
+- Full historical bootstrap is used for unseen tables.
+- New DB delta loader: `varro/data/disk_to_db/fact_tables_incremental_to_db.py`.
+  - Reads changed tids from a run manifest.
+  - For existing `fact.{table}` tables: loads changed partitions, processes with `process_fact_table`, deletes target rows by `tid`, inserts refreshed rows.
+  - Writes `db_apply` results back into the same run manifest.
+- Prefect orchestration:
+  - `varro/data/statbank_to_disk/prefect_flows.py` defines `weekly_statbank_sync_flow`.
+  - `varro/data/statbank_to_disk/deploy_prefect.py` registers deployment `weekly-statbank-sync` on cron `0 22 * * 0` in `UTC` using a process work pool (default `process`, override via `PREFECT_WORK_POOL`).
