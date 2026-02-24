@@ -42,7 +42,7 @@ def fuzzy_match(
     for choice, similarity, index in search_results:
         matches.append(
             {
-                id_col: df.iloc[index][id_col],
+                id_col: df.loc[index, id_col],
                 label_name: choice,
             }
         )
