@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 import pandas as pd
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -108,7 +109,7 @@ def normalize_table_name(table: str) -> str:
 def load_dimension_links(table: str) -> dict[str, str]:
     path = DIMENSION_LINKS_DIR / f"{table.upper()}.json"
     if not path.exists():
-        raise ModelRetry(f"No dimension link file found for fact table '{table}'.")
+        return {}
     entries = json.loads(path.read_text())
     links = {}
     for entry in entries:
@@ -116,17 +117,62 @@ def load_dimension_links(table: str) -> dict[str, str]:
     return links
 
 
+def get_fact_value_files(table: str) -> list[Path]:
+    table_dir = COLUMN_VALUES_DIR / table
+    if not table_dir.exists():
+        raise ModelRetry(f"No column values directory found for fact table '{table}'.")
+    files = sorted(table_dir.glob("*.parquet"))
+    if not files:
+        raise ModelRetry(f"No fact column values found for table '{table}'.")
+    return files
+
+
+def infer_fact_column_for_dim(df: pd.DataFrame, dim_table: str, for_table: str) -> str:
+    value_files = get_fact_value_files(for_table)
+    columns = [file.stem for file in value_files]
+
+    prefix_matches = sorted(col for col in columns if dim_table.startswith(col))
+    if len(prefix_matches) == 1:
+        return prefix_matches[0]
+
+    ranked_names = sorted(
+        ((col, SequenceMatcher(None, col, dim_table).ratio()) for col in columns),
+        key=lambda item: item[1],
+        reverse=True,
+    )
+    if ranked_names and ranked_names[0][1] >= 0.7:
+        return ranked_names[0][0]
+
+    codes = {str(code) for code in df["kode"].dropna()}
+    ranked_overlaps = []
+    for file in value_files:
+        values = pd.read_parquet(file)
+        if "id" not in values:
+            continue
+        value_ids = {str(value) for value in values["id"].dropna()}
+        overlap = len(value_ids & codes)
+        overlap_ratio = overlap / len(value_ids) if value_ids else 0.0
+        ranked_overlaps.append((file.stem, overlap, overlap_ratio))
+
+    ranked_overlaps.sort(key=lambda item: (item[1], item[2]), reverse=True)
+    if ranked_overlaps and ranked_overlaps[0][1] > 0:
+        return ranked_overlaps[0][0]
+
+    raise ModelRetry(
+        f"Could not infer a fact column in '{for_table}' for dim table '{dim_table}'."
+    )
+
+
 def filter_dimension_values_for_table(
     df: pd.DataFrame, dim_table: str, for_table: str
 ) -> pd.DataFrame:
     links = load_dimension_links(for_table)
     fact_columns = sorted(col for col, dim in links.items() if dim == dim_table)
-    if not fact_columns:
-        raise ModelRetry(
-            f"Fact table '{for_table}' has no link to dimension table '{dim_table}'."
-        )
-
-    fact_column = fact_columns[0]
+    fact_column = (
+        fact_columns[0]
+        if fact_columns
+        else infer_fact_column_for_dim(df, dim_table, for_table)
+    )
     fact_values_path = COLUMN_VALUES_DIR / for_table / f"{fact_column}.parquet"
     if not fact_values_path.exists():
         raise ModelRetry(
