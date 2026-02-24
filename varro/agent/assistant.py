@@ -15,14 +15,19 @@ from pydantic_ai import (
 )
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
-from varro.data.utils import df_preview, df_dtypes, df_dtype_map
+from varro.data.utils import (
+    df_preview,
+    df_dtypes,
+    df_dtype_map,
+    normalize_column_name,
+)
 from varro.context.utils import fuzzy_match
 from varro.agent.utils import show_element
 from varro.agent.utils import get_dim_tables
 from varro.agent.utils import generate_hierarchy
 from varro.agent.filesystem import read_file, write_file, edit_file
 from varro.db.db import dst_read_engine
-from varro.config import COLUMN_VALUES_DIR
+from varro.config import COLUMN_VALUES_DIR, DST_DIMENSION_LINKS_DIR
 from varro.db import crud
 from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
@@ -35,6 +40,7 @@ logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
+DIMENSION_LINKS_DIR = DST_DIMENSION_LINKS_DIR
 
 sonnet_model = AnthropicModel("claude-opus-4-6")
 sonnet_settings = AnthropicModelSettings(
@@ -95,9 +101,54 @@ def get_static_prompts() -> dict[str, str]:
     return _STATIC_PROMPTS
 
 
+def normalize_table_name(table: str) -> str:
+    return table.strip().lower().replace("fact.", "").replace("dim.", "")
+
+
+def load_dimension_links(table: str) -> dict[str, str]:
+    path = DIMENSION_LINKS_DIR / f"{table.upper()}.json"
+    if not path.exists():
+        raise ModelRetry(f"No dimension link file found for fact table '{table}'.")
+    entries = json.loads(path.read_text())
+    links = {}
+    for entry in entries:
+        links[normalize_column_name(entry["column"])] = entry["dimension"].strip().lower()
+    return links
+
+
+def filter_dimension_values_for_table(
+    df: pd.DataFrame, dim_table: str, for_table: str
+) -> pd.DataFrame:
+    links = load_dimension_links(for_table)
+    fact_columns = sorted(col for col, dim in links.items() if dim == dim_table)
+    if not fact_columns:
+        raise ModelRetry(
+            f"Fact table '{for_table}' has no link to dimension table '{dim_table}'."
+        )
+
+    fact_column = fact_columns[0]
+    fact_values_path = COLUMN_VALUES_DIR / for_table / f"{fact_column}.parquet"
+    if not fact_values_path.exists():
+        raise ModelRetry(
+            f"Missing column values for '{for_table}.{fact_column}' at '{fact_values_path}'."
+        )
+
+    fact_values = pd.read_parquet(fact_values_path)
+    if "id" not in fact_values:
+        raise ModelRetry(
+            f"Column values file for '{for_table}.{fact_column}' must include an 'id' column."
+        )
+    codes = {str(code) for code in fact_values["id"].dropna()}
+    return df[df["kode"].astype(str).isin(codes)]
+
+
 @agent.tool_plain(docstring_format="google")
 def ColumnValues(
-    table: str, column: str, fuzzy_match_str: str | None = None, n: int | None = 5
+    table: str,
+    column: str,
+    fuzzy_match_str: str | None = None,
+    n: int | None = 5,
+    for_table: str | None = None,
 ):
     """
     View the unique values for a column in a dimension or fact table. If fuzzy_match_str is provided then the unique values are fuzzy matched against the fuzzy_match_str and the n best matches are returned. If no fuzzy_match_str is provided then the first n unique values are returned.
@@ -107,10 +158,14 @@ def ColumnValues(
         column: The name of the column.
         fuzzy_match_str: A string to fuzzy match against the unique values.
         n: The maximum number of unique values to return.
+        for_table: Optional fact table for filtering dimension values to rows present in that fact table.
     """
-    table = table.strip().lower().replace("fact.", "").replace("dim.", "")
+    table = normalize_table_name(table)
+    for_table = normalize_table_name(for_table) if for_table else None
     if table in DIM_TABLES:
         df = pd.read_parquet(COLUMN_VALUES_DIR / f"{table}.parquet")
+        if for_table:
+            df = filter_dimension_values_for_table(df, table, for_table)
         name = f"df_{table}_titel"
         schema = "dim"
     else:

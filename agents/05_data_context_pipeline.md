@@ -104,3 +104,10 @@ Without these artifacts, many analysis tools/prompts lose grounding.
 - Existing DBs can be backfilled by dropping `dim.*` tables and rerunning `varro/data/disk_to_db/dim_tables_to_db.py`.
 - `dim_tables_to_db.py` still drops `db` niveau 1 rows; that leaves niveau 2 rows in `dim.db` with `parent_kode = NULL` by design.
 - For dimensions with duplicate `kode` across levels (for example `db`, `nr_branche`), `parent_kode` alone can be ambiguous; add `parent_niveau` if strict unambiguous self-joins are needed.
+
+## Chat-15 context updates (2026-02-24)
+
+- `varro/context/fact_table.py` now derives join expressions from actual fact/dim key dtypes and renders them in fact docs (for example `overtraed=kode::text`).
+- Fact docs now include observed level-1 coverage per dim-linked column (`level-1 values [...]`) in both detailed fact readmes and subject table summaries.
+- Level-1 coverage extraction now walks dim parent links when available, so lower-level fact codes still resolve to top-level categories.
+- `varro/context/subjects.py` now adds a `<coverage notes>` block when leaf-subject table coverage differs, or when all tables share a subset that is smaller than the dimension's full level-1 universe.

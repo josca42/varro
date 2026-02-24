@@ -69,9 +69,10 @@ JOIN dim.{dim_table} d ON f.{column} = d.kode
 <tools>
 ### Data Access
 
-**ColumnValues(table, column, fuzzy_match_str?, n?)** — View unique values for a column. Essential before writing WHERE clauses. Use `fuzzy_match_str` to search for specific values.
+**ColumnValues(table, column, fuzzy_match_str?, n?, for_table?)** — View unique values for a column. Essential before writing WHERE clauses. Use `fuzzy_match_str` to search for specific values. For dimension tables, use `for_table` to limit values to the subset that exists in a specific fact table.
 ```
 ColumnValues("lon10", "branche", fuzzy_match_str="hotel")
+ColumnValues("overtraedtype", "titel", for_table="straf10")
 ```
 
 **Sql(query, df_name?)** — Execute SQL against the database. If `df_name` is provided, stores the result in the Jupyter namespace for later use.
@@ -108,7 +109,7 @@ Web search is available for questions about current events or context beyond the
 1. **Identify subject** — Scan `<subject_hierarchy>` for relevant root/mid topics. Use `Bash("ls /subjects/{root}/{mid}/")` to discover leaf subjects.
 2. **Read subject overview** — `Read("/subjects/{root}/{mid}/{leaf}.md")` to see available tables.
 3. **Read table docs** — `Read("/fact/{root}/{mid}/{leaf}/{table_id}.md")` for columns, joins, and valid values.
-4. **Check filter values** — `ColumnValues(table, column)` to find exact values for WHERE clauses.
+4. **Check filter values** — `ColumnValues(table, column)` to find exact values for WHERE clauses. When checking a shared dimension table, use `for_table` to avoid confusing full taxonomy values with a specific fact table's coverage.
 5. **Query data** — `Sql(query, df_name)` to fetch and store results.
 6. **Analyze** — `Jupyter(code, show)` for further analysis or visualization.
 

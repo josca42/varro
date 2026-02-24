@@ -81,6 +81,24 @@ This keeps improvements tied to observed trajectory mechanics, not generic model
 - Inline categorical totals are not always `TOT` (e.g. `fact.folk1a.alder` uses `IALT`), so docs must expose sentinel codes clearly.
 - Prompt guidance already tells the agent to check `ColumnValues` for filters; prompt tweaks are lower priority than improving tool/context signals.
 
+## Chat-15 pattern (2026-02-24)
+
+- Hierarchy depth metadata (`levels [1,2,3]`) is insufficient without observed top-level coverage per fact table.
+- Fact doc join guidance should reflect actual join expression/casts when fact and dim key types differ.
+- `ColumnValues` on dim tables needs optional fact-table scoping (`for_table`) to avoid conflating taxonomy universe with table coverage.
+- Subject readmes should surface table coverage mismatches early to reduce expensive pivot/debug loops.
+
+## Chat-15 fixes landed (2026-02-24)
+
+- `varro/context/fact_table.py` now emits dtype-aware join expressions in fact docs and includes level-1 coverage lists for dim-linked columns.
+- `varro/context/subjects.py` now emits a `<coverage notes>` block when leaf-subject coverage differs across tables or is uniformly a subset of the full dimension level-1 set.
+- `varro/agent/assistant.py` `ColumnValues` now supports `for_table` for dim-table calls and filters dimension values to the fact-table subset.
+- `varro/prompts/agent/rigsstatistiker.j2` now documents `for_table` usage explicitly for shared dimensions.
+- Regression tests added:
+  - `tests/agent/test_assistant_column_values_tool.py`
+  - `tests/context/test_subjects.py`
+  - expanded `tests/context/test_fact_table.py`
+
 ## Chat-66 fixes landed (2026-02-23)
 
 - `Sql` now returns `row_count: <n>` and warns explicitly on `row_count: 0` with a `ColumnValues` hint (`varro/agent/assistant.py`).

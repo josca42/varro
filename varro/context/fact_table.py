@@ -10,6 +10,8 @@ from varro.db.db import dst_owner_engine
 TABLES_INFO_DIR = DST_METADATA_DIR / "tables_info_raw_da"
 SKIP_VALUE_MAP_COLUMNS = {"tid"}
 DIM_LINKS_DIR = DST_DIMENSION_LINKS_DIR
+NUMERIC_DTYPES = {"integer", "smallint", "bigint", "double precision", "numeric", "real"}
+TEXT_DTYPE_TOKENS = ("character", "text")
 
 
 def get_distinct_values(table: str, columns: list[str]) -> dict[str, set]:
@@ -24,16 +26,85 @@ def get_distinct_values(table: str, columns: list[str]) -> dict[str, set]:
     return values
 
 
-def get_niveau_levels(table: str, column: str, dim_table: str) -> list[int]:
+def get_dtype_family(dtype: str | None) -> str:
+    dtype = (dtype or "").lower()
+    if any(token in dtype for token in TEXT_DTYPE_TOKENS):
+        return "text"
+    if dtype in NUMERIC_DTYPES:
+        return "numeric"
+    return "other"
+
+
+def get_join_expression(
+    column: str,
+    fact_dtype: str | None,
+    dim_dtype: str | None,
+    fact_alias: str | None = None,
+    dim_alias: str | None = None,
+) -> str:
+    fact_column = f"{fact_alias}.{column}" if fact_alias else column
+    dim_column = f"{dim_alias}.kode" if dim_alias else "kode"
+    fact_family = get_dtype_family(fact_dtype)
+    dim_family = get_dtype_family(dim_dtype)
+
+    if fact_family == dim_family:
+        return f"{fact_column}={dim_column}"
+    if fact_family == "text":
+        return f"{fact_column}={dim_column}::text"
+    if dim_family == "text":
+        return f"{fact_column}::text={dim_column}"
+    return f"{fact_column}::text={dim_column}::text"
+
+
+def get_niveau_levels(
+    table: str, column: str, dim_table: str, join_expression: str
+) -> list[int]:
     query = f"""
     SELECT DISTINCT n.niveau
     FROM fact.{table} f
-    JOIN dim.{dim_table} n ON f.{column}::text = n.kode::text
+    JOIN dim.{dim_table} n ON {join_expression}
     """
 
     with dst_owner_engine.connect() as conn:
         levels = sorted(conn.exec_driver_sql(query).scalars())
     return levels
+
+
+def get_level_1_values(
+    table: str,
+    dim_table: str,
+    join_expression: str,
+    has_parent_kode: bool,
+) -> list[str]:
+    if has_parent_kode:
+        query = f"""
+        WITH RECURSIVE hierarchy AS (
+            SELECT DISTINCT n.kode, n.niveau, n.titel, n.parent_kode
+            FROM fact.{table} f
+            JOIN dim.{dim_table} n ON {join_expression}
+            UNION
+            SELECT p.kode, p.niveau, p.titel, p.parent_kode
+            FROM dim.{dim_table} p
+            JOIN hierarchy h ON p.kode::text = h.parent_kode::text
+            WHERE h.parent_kode IS NOT NULL
+        )
+        SELECT DISTINCT titel
+        FROM hierarchy
+        WHERE niveau = 1
+        ORDER BY titel
+        """
+    else:
+        query = f"""
+        SELECT DISTINCT n.titel
+        FROM fact.{table} f
+        JOIN dim.{dim_table} n ON {join_expression}
+        WHERE n.niveau = 1
+        ORDER BY n.titel
+        """
+
+    with dst_owner_engine.connect() as conn:
+        values = [value for value in conn.exec_driver_sql(query).scalars() if value]
+    return values
 
 
 def get_tid_range(table: str) -> tuple:
@@ -92,15 +163,38 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
     info["columns"] = list(variables.keys())
     info["dimensions"] = {}
 
+    fact_dtypes = get_column_dtypes(table, schema="fact")
+    dim_dtypes: dict[str, dict[str, str]] = {}
     dim_tables_linked = []
     mappings = get_value_mappings(table=table, dim_links=dim_links, variables=variables)
     for col, values in mappings.items():
         info["dimensions"][col] = {"values": values}
 
     for col, dim_table in dim_links.items():
+        if dim_table not in dim_dtypes:
+            dim_dtypes[dim_table] = get_column_dtypes(dim_table, schema="dim")
+        join_expression = get_join_expression(
+            column=col,
+            fact_dtype=fact_dtypes.get(col),
+            dim_dtype=dim_dtypes[dim_table].get("kode"),
+        )
+        sql_join_expression = get_join_expression(
+            column=col,
+            fact_dtype=fact_dtypes.get(col),
+            dim_dtype=dim_dtypes[dim_table].get("kode"),
+            fact_alias="f",
+            dim_alias="n",
+        )
         info["dimensions"][col] = {
             "dimension_table": dim_table,
-            "levels": get_niveau_levels(table, col, dim_table),
+            "join": join_expression,
+            "levels": get_niveau_levels(table, col, dim_table, sql_join_expression),
+            "level_1_values": get_level_1_values(
+                table=table,
+                dim_table=dim_table,
+                join_expression=sql_join_expression,
+                has_parent_kode="parent_kode" in dim_dtypes[dim_table],
+            ),
         }
         dim_tables_linked.append(dim_table)
 
@@ -170,10 +264,15 @@ def format_fact_table_info(table_info: dict) -> str:
         dimension = dimensions.get(column, {})
         dim_table = dimension.get("dimension_table")
         levels = dimension.get("levels")
+        level_1_values = dimension.get("level_1_values")
 
         if dim_table:
-            suffix = f" ({dim_table} lvl {levels})" if levels else f" ({dim_table})"
-            column_details.append(f"{column}{suffix}")
+            suffix_parts = [dim_table]
+            if levels:
+                suffix_parts.append(f"lvl {levels}")
+            if level_1_values:
+                suffix_parts.append(f"level-1 [{', '.join(level_1_values)}]")
+            column_details.append(f"{column} ({'; '.join(suffix_parts)})")
         elif column == "tid":
             column_details.append("tid (time)")
         else:
@@ -218,11 +317,15 @@ def format_fact_table_overview(table_info: dict) -> str:
         dimension = dimensions.get(column, {})
 
         if "dimension_table" in dimension:
+            join_expression = dimension.get("join", f"{column}=kode")
             levels = dimension.get("levels")
-            level_text = f"; levels {levels}" if levels else ""
-            column_lines.append(
-                f"- {column}: join dim.{dimension['dimension_table']} on {column}=kode{level_text}"
-            )
+            level_1_values = dimension.get("level_1_values")
+            details = [f"join dim.{dimension['dimension_table']} on {join_expression}"]
+            if levels:
+                details.append(f"levels {levels}")
+            if level_1_values:
+                details.append(f"level-1 values [{', '.join(level_1_values)}]")
+            column_lines.append(f"- {column}: {'; '.join(details)}")
         elif "values" in dimension:
             if len(dimension["values"]) > 20:
                 pairs = ", ".join(

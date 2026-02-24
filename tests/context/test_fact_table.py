@@ -90,3 +90,77 @@ def test_get_fact_table_info_surfaces_alder_values_in_overview(monkeypatch):
     overview = fact_table.format_fact_table_overview(info)
 
     assert "- alder: values [IALT=Alder i alt, 0=0 years]" in overview
+
+
+def test_get_join_expression_casts_dim_for_text_fact_column():
+    fact_table = importlib.import_module("varro.context.fact_table")
+
+    join_expression = fact_table.get_join_expression(
+        column="overtraed",
+        fact_dtype="character varying",
+        dim_dtype="integer",
+    )
+    sql_join_expression = fact_table.get_join_expression(
+        column="overtraed",
+        fact_dtype="character varying",
+        dim_dtype="integer",
+        fact_alias="f",
+        dim_alias="n",
+    )
+
+    assert join_expression == "overtraed=kode::text"
+    assert sql_join_expression == "f.overtraed=n.kode::text"
+
+
+def test_get_fact_table_info_includes_dim_join_and_level_1_values(monkeypatch):
+    fact_table = importlib.import_module("varro.context.fact_table")
+
+    monkeypatch.setattr(
+        fact_table,
+        "load_table_info",
+        lambda table: {
+            "id": "STRAF10",
+            "text": "straf10",
+            "description": "Anmeldte forbrydelser",
+            "unit": "Antal",
+            "variables": [
+                {
+                    "id": "OVERTRAED",
+                    "values": [],
+                },
+                {
+                    "id": "TID",
+                    "values": [{"id": "2024", "text": "2024"}],
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        fact_table,
+        "load_dim_links",
+        lambda table: {"overtraed": "overtraedtype"},
+    )
+
+    def _get_column_dtypes(table, schema="fact"):
+        if schema == "fact":
+            return {"overtraed": "character varying", "tid": "integer"}
+        return {"kode": "integer", "niveau": "integer", "titel": "text", "parent_kode": "integer"}
+
+    monkeypatch.setattr(fact_table, "get_column_dtypes", _get_column_dtypes)
+    monkeypatch.setattr(fact_table, "get_value_mappings", lambda **kwargs: {})
+    monkeypatch.setattr(fact_table, "get_tid_range", lambda table: ("1995", "2025"))
+    monkeypatch.setattr(fact_table, "get_niveau_levels", lambda *args: [1, 2, 3])
+    monkeypatch.setattr(
+        fact_table,
+        "get_level_1_values",
+        lambda **kwargs: ["Straffelov", "Saerlov"],
+    )
+
+    info, _ = fact_table.get_fact_table_info("straf10")
+    overview = fact_table.format_fact_table_overview(info)
+    summary = fact_table.format_fact_table_info(info)
+
+    assert info["dimensions"]["overtraed"]["join"] == "overtraed=kode::text"
+    assert info["dimensions"]["overtraed"]["level_1_values"] == ["Straffelov", "Saerlov"]
+    assert "join dim.overtraedtype on overtraed=kode::text; levels [1, 2, 3]; level-1 values [Straffelov, Saerlov]" in overview
+    assert "overtraed (overtraedtype; lvl [1, 2, 3]; level-1 [Straffelov, Saerlov])" in summary

@@ -67,8 +67,57 @@ def create_subject_data(path: list[str], tables: list[str]):
         dump_unique_col_vals_and_titles_to_parquet(table_id)
 
 
+def get_coverage_notes(table_infos: list[dict]) -> list[str]:
+    coverage: dict[str, dict[str, tuple[str, ...]]] = {}
+    for table_info in table_infos:
+        table_id = table_info["id"]
+        for dim in table_info.get("dimensions", {}).values():
+            dim_table = dim.get("dimension_table")
+            level_1_values = dim.get("level_1_values")
+            if not dim_table or level_1_values is None:
+                continue
+            coverage.setdefault(dim_table, {})[table_id] = tuple(level_1_values)
+
+    notes = []
+    for dim_table, table_sets in sorted(coverage.items()):
+        if len(table_sets) < 2:
+            continue
+        full_level_1_values = get_dim_level_1_values(dim_table)
+        grouped: dict[tuple[str, ...], list[str]] = {}
+        for table_id, values in table_sets.items():
+            grouped.setdefault(values, []).append(table_id)
+        matches_full_coverage = all(values == full_level_1_values for values in table_sets.values())
+        if len(grouped) < 2 and matches_full_coverage:
+            continue
+
+        parts = []
+        for values in sorted(grouped):
+            tables = ", ".join(sorted(grouped[values]))
+            labels = ", ".join(values) if values else "none"
+            parts.append(f"{tables}=[{labels}]")
+        if full_level_1_values:
+            full_labels = ", ".join(full_level_1_values)
+            notes.append(
+                f"- {dim_table}: full level-1 [{full_labels}]; tables {'; '.join(parts)}"
+            )
+        else:
+            notes.append(f"- {dim_table}: level-1 coverage differs: {'; '.join(parts)}")
+    return notes
+
+
+def get_dim_level_1_values(dim_table: str) -> tuple[str, ...]:
+    query = f"""
+    SELECT DISTINCT titel
+    FROM dim.{dim_table}
+    WHERE niveau = 1
+    ORDER BY titel
+    """
+    with dst_owner_engine.connect() as conn:
+        return tuple(value for value in conn.exec_driver_sql(query).scalars() if value)
+
+
 def create_subject_readme(tables: list[str]):
-    table_infos, dim_tables = [], set()
+    table_infos, table_descriptions, dim_tables = [], [], set()
     for table in tables:
         table_id = table.lower()
         if not insp.has_table(table_id, schema="fact"):
@@ -76,17 +125,29 @@ def create_subject_readme(tables: list[str]):
             continue
 
         table_info, dim_tables_linked = get_fact_table_info(table_id)
-        table_infos.append(format_fact_table_info(table_info))
+        table_infos.append(table_info)
+        table_descriptions.append(format_fact_table_info(table_info))
         dim_tables.update(dim_tables_linked)
 
     dim_tables_descr = get_short_dim_descrs_md(dim_tables)
-    fact_tables_descr = "\n".join(table_infos)
-    return f"""<dim tables>
+    fact_tables_descr = "\n".join(table_descriptions)
+    coverage_notes = get_coverage_notes(table_infos)
+
+    sections = [
+        f"""<dim tables>
 {dim_tables_descr}
 </dim tables>
 <fact tables>
 {fact_tables_descr}
 </fact tables>"""
+    ]
+    if coverage_notes:
+        sections.append(
+            "<coverage notes>\n"
+            + "\n".join(coverage_notes)
+            + "\n</coverage notes>"
+        )
+    return "\n".join(sections)
 
 
 def create_table_readme(table: str):
