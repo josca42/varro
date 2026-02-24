@@ -133,6 +133,21 @@ def test_column_values_for_table_requires_dimension_link(assistant_module, tmp_p
         )
 
 
+def test_column_values_fuzzy_match_with_for_table_filtered_index(assistant_module, tmp_path):
+    setup_column_values_files(tmp_path, assistant_module)
+
+    result = assistant_module.ColumnValues(
+        table="overtraedtype",
+        column="titel",
+        fuzzy_match_str="straf",
+        for_table="straf10",
+        n=5,
+    )
+
+    assert "Straffelov" in result
+    assert "Faerdselslov" not in result
+
+
 def test_column_values_infers_fact_column_when_links_are_empty(assistant_module, tmp_path):
     setup_empty_links_files(tmp_path, assistant_module)
 

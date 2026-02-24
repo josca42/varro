@@ -110,6 +110,17 @@ This keeps improvements tied to observed trajectory mechanics, not generic model
   - `tests/agent/test_assistant_sql_tool.py`
   - `tests/context/test_fact_table.py`
 
+## Chat-16 pattern (2026-02-24)
+
+- `fuzzy_match` in `context/utils.py` used `df.iloc[index]` but rapidfuzz returns pandas label indices, not positional. Crashes when `for_table` filters produce non-contiguous DataFrame index.
+- CLI playground loses kernel state between invocations because `ShellPool._release()` doesn't save snapshots (only `evict_idle` does).
+- `folk1a` population queries are a recurring trap: 5 dimensions (omrade, køn, alder, civilstand, tid) require all to be filtered to totals (`kon='TOT'`, `alder='IALT'`, `civilstand='TOT'`), otherwise SUM inflates by cross-product factor.
+
+## Chat-16 fixes landed (2026-02-24)
+
+- `varro/context/utils.py` `fuzzy_match`: `df.iloc[index]` → `df.loc[index, id_col]`. Fixes crash on filtered dimension DataFrames.
+- Regression test added: `tests/agent/test_assistant_column_values_tool.py::test_column_values_fuzzy_match_with_for_table_filtered_index`
+
 ## Three-skill pipeline
 
 ```
