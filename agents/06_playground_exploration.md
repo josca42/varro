@@ -93,6 +93,7 @@ This keeps improvements tied to observed trajectory mechanics, not generic model
 - `varro/context/fact_table.py` now emits dtype-aware join expressions in fact docs and includes level-1 coverage lists for dim-linked columns.
 - `varro/context/subjects.py` now emits a `<coverage notes>` block when leaf-subject coverage differs across tables or is uniformly a subset of the full dimension level-1 set.
 - `varro/agent/assistant.py` `ColumnValues` now supports `for_table` for dim-table calls and filters dimension values to the fact-table subset.
+- `ColumnValues(..., for_table=...)` now has an interim fallback for empty/missing `dimension_links` metadata: infer fact column from name similarity first, then kode overlap against fact column-value parquets.
 - `varro/prompts/agent/rigsstatistiker.j2` now documents `for_table` usage explicitly for shared dimensions.
 - Regression tests added:
   - `tests/agent/test_assistant_column_values_tool.py`
