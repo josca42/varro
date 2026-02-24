@@ -67,15 +67,53 @@ def dump_dim_table_values_to_parquet(table_name: str):
     print(f"Saved {len(df)} rows to {output_file}")
 
 
-prompt_dim_table_descr = """Go through all the tables in schema dim . Each of the tables have a kode, niveau, titel, parent_kode column. Each table in the dim schema is a dimension table used in a star schema with fact tables and dimension tables. Each dimension table specify a hierachical grouping hierarchy, where niveau is the level of hierarchy. level 1 is the highest categories and then level 2 are sub categories to level categories and so on.
-Kode is the id used for joining the dimension table to a fact table. Niveau is the level of the hierarchy and titel is the descriptive label. parent_kode links each row to its direct parent in the hierarchy and is null at the root level.
-For each dimension table then you can find a markdown file with a short highlevel description of the table in data/dst/mapping_tables/{table_id}/table_info_da.md
+prompt_dim_table_descr = """Go through all the tables in schema dim. Each table has columns: kode, niveau, titel, parent_kode. These are dimension tables in a star schema. Each dimension table defines a hierarchical grouping where niveau is the hierarchy level (1 = most aggregated, higher = finer detail). parent_kode links each row to its direct parent and is NULL at the root level (niveau 1).
 
-Can you go through each of the tables in dim schema and for each table read the corresponding table description and then create a short/concise table description markdown that an new analyst unfamiliar with the dimension table can read to quickly get an overview of how to use the dim table. Put the markdown doc in data/dst/dim_table_descr/{table_id}.md also create a super short version that just tells what the table is and what different level signify and dump that to data/dst/dim_table_descr/{table_id}_short.md
+For each dimension table you can find a source description in data/dst/mapping_tables/{table_id}/table_info_da.md
 
-Use the psql skill to get dim schema tables. If you start reaching the limit of your context window then create an md file noting which tables you have created description md's for and then stop.
+For each table, create two markdown files:
 
-All the markdown docs describing the dimension tables should be in danish."""
+### Full doc: data/dst/dim_table_descr/{table_id}.md
+
+Structure (follow this template exactly):
+
+1. **Title line**: `# {Descriptive name} ({table_id})`
+2. **Description**: 1-2 sentences about what the classification covers and its context (standard, origin).
+3. **Struktur table**: Niveau | Beskrivelse | Antal kategorier
+4. **Niveau 1 table**: All codes and titles at the top level. For tables with few niveau 2 categories (<15), also show niveau 2.
+5. **Hierarki-eksempel** (for tables with >1 niveau): Show 3-4 example rows as a table with columns: kode | niveau | titel | parent_kode. Pick one branch that shows a path from root to leaf so the reader can see how parent_kode chains work. Query the actual data to get real examples.
+6. **Brug section**: Two SQL examples:
+   - Basic join: `SELECT f.indhold, d.titel FROM fact.<tabel> f JOIN dim.{table_id} d ON f.{col} = d.kode WHERE d.niveau = 1`
+   - **Aggregation via parent_kode** (only for tables with >1 niveau): Show how to go from the finest level to the coarsest by chaining parent_kode joins. For a 3-level table:
+     ```sql
+     SELECT r.titel, SUM(f.indhold)
+     FROM fact.<tabel> f
+     JOIN dim.{table_id} detail ON f.{col} = detail.kode AND detail.niveau = 3
+     JOIN dim.{table_id} mid ON mid.kode = detail.parent_kode AND mid.niveau = 2
+     JOIN dim.{table_id} top ON top.kode = mid.parent_kode AND top.niveau = 1
+     GROUP BY r.titel
+     ```
+     Adjust the number of joins to match the actual number of levels. This is the most important SQL pattern — it's how analysts aggregate fine-grained fact data to higher levels.
+7. **Cross-references**: If related dim tables exist (e.g. ddu_udd vs ddu_audd), note the relationship briefly.
+
+### Short doc: data/dst/dim_table_descr/{table_id}_short.md
+
+Format (keep to ~5-8 lines):
+```
+# {Descriptive name} ({table_id})
+
+{One sentence description}
+
+- **Niveau 1:** {Label} ({count}, fx {2-3 example titles})
+- **Niveau 2:** {Label} ({count})
+...
+- **parent_kode:** peger på direkte forældreniveau (NULL for topniveau). Brug parent_kode-joins til at aggregere fra lavere til højere niveau.
+```
+
+### Important notes
+- Use the psql skill to query dim schema tables and get real data for examples.
+- All docs should be in Danish.
+- If you start reaching context window limits, note which tables are done and stop."""
 
 if __name__ == "__main__":
     copy_dim_table_docs()
