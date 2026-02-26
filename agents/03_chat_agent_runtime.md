@@ -174,6 +174,7 @@ Snapshot contract:
 
 ## Recent updates
 
+- When `agent.iter(...)` raises after tool retry exhaustion, `run.result` can be `None` while `run.ctx.state.message_history` still contains accumulated messages. This allows partial turn persistence by storing only the new suffix (`message_history[len(previous_history):]`) before re-raising.
 - `Sql` now normalizes date-like object columns (`date`, `datetime`, `Timestamp`) with `pd.to_datetime` before storing to Jupyter namespace when `df_name` is provided. This keeps stored frames ready for time-series operations and aligns displayed `dtypes` with stored values.
 - `Jupyter(show=[...])` render path now accepts pandas `Styler` in addition to `pd.DataFrame`, `plotly.graph_objects.Figure`, and `matplotlib.figure.Figure`. Styler objects render as table previews in tool output, while `<df name="..."/>` can render styled HTML tables in final chat responses.
 - `ColumnValues` now supports `for_table` when querying dimension tables (`ColumnValues(table="overtraedtype", column="titel", for_table="straf10")`) and filters dim values to those present in the chosen fact table using `data/dst/dimension_links` plus fact-column parquet values.

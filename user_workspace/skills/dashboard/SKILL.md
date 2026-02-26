@@ -159,8 +159,19 @@ Prisindeks for forskellige ejendomstyper (2015=100).
 3. **Write outputs.py** — one `@output` function per visual element. Match function names to the tags you'll use in the markdown
 4. **Write dashboard.md** — arrange components with containers. Add markdown commentary to explain the data
 5. **Navigate to the dashboard** — use `UpdateUrl(path="/dashboard/{name}")` to open it in the app
-6. **Snapshot and inspect** — use `Snapshot()` (no arguments needed when already viewing the dashboard) to materialize outputs to disk
-7. **Iterate** — read snapshot files to check results, fix issues, re-snapshot
+6. **Validate** — after each `Write`/`Edit` to `dashboard.md`, `outputs.py`, or `queries/*.sql`, validation runs automatically. You can also call `ValidateDashboard(url?)` explicitly
+7. **Snapshot and inspect** — use `Snapshot()` (no arguments needed when already viewing the dashboard) to materialize outputs to disk
+8. **Iterate** — read validation and snapshot files, fix issues, re-validate, then re-snapshot
+
+## Validation
+
+Use `ValidateDashboard` to execute all SQL queries and output functions before snapshotting:
+
+```
+ValidateDashboard(url="/dashboard/boligmarked")
+```
+
+If validation fails, fix the listed query/output errors first. If validation passes with warnings (for example empty results for filtered views), decide whether to continue to snapshot.
 
 ## Snapshot
 

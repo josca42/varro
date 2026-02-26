@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 from dataclasses import dataclass
 from difflib import SequenceMatcher
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import pandas as pd
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from typing import Callable
@@ -33,6 +33,12 @@ from varro.db import crud
 from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
+from varro.agent.dashboard_validation import (
+    format_validation_error,
+    format_validation_result,
+    format_validation_summary,
+    validate_dashboard_url,
+)
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.agent.workspace import user_workspace_root
 import logfire
@@ -100,6 +106,48 @@ def get_static_prompts() -> dict[str, str]:
     if _STATIC_PROMPTS is None:
         _STATIC_PROMPTS = {"SUBJECT_HIERARCHY": generate_hierarchy()}
     return _STATIC_PROMPTS
+
+
+def dashboard_validation_url_for_path(file_path: str) -> str | None:
+    path = PurePosixPath(file_path)
+    if not path.is_absolute():
+        return None
+    parts = [part for part in path.parts if part != "/"]
+    if len(parts) < 3 or parts[0] != "dashboard":
+        return None
+    slug = parts[1].strip()
+    if not slug:
+        return None
+    tail = parts[2:]
+    if tail in (["dashboard.md"], ["outputs.py"]):
+        return f"/dashboard/{slug}"
+    if len(tail) == 2 and tail[0] == "queries" and tail[1].endswith(".sql"):
+        return f"/dashboard/{slug}"
+    return None
+
+
+def run_dashboard_validation_after_write(
+    ctx: RunContext[AssistantRunDeps], file_path: str
+) -> str | None:
+    validation_url = dashboard_validation_url_for_path(file_path)
+    if not validation_url:
+        return None
+    try:
+        result = validate_dashboard_url(
+            ctx.deps.user_id,
+            validation_url,
+            strict_structure=False,
+        )
+    except Exception as exc:
+        raise ModelRetry(str(exc))
+    if result.pending:
+        return format_validation_summary(result)
+    if result.has_errors:
+        raise ModelRetry(format_validation_error(result))
+    return (
+        f"{format_validation_summary(result)}\n"
+        f"{format_validation_result(result)}"
+    )
 
 
 def normalize_table_name(table: str) -> str:
@@ -365,7 +413,13 @@ def Write(ctx: RunContext[AssistantRunDeps], file_path: str, content: str) -> st
         file_path: The absolute path to the file to write (must be absolute, not relative)
         content: The content to write to the file
     """
-    return write_file(file_path, content, user_id=ctx.deps.user_id)
+    result = write_file(file_path, content, user_id=ctx.deps.user_id)
+    if result.startswith("Error:"):
+        return result
+    validation = run_dashboard_validation_after_write(ctx, file_path)
+    if not validation:
+        return result
+    return f"{result}\n{validation}"
 
 
 @agent.tool(docstring_format="google")
@@ -394,13 +448,19 @@ def Edit(
         new_string: The text to replace it with (must be different from old_string)
         replace_all: Replace all occurences of old_string (default false)
     """
-    return edit_file(
+    result = edit_file(
         file_path,
         old_string=old_string,
         new_string=new_string,
         replace_all=replace_all,
         user_id=ctx.deps.user_id,
     )
+    if result.startswith("Error:"):
+        return result
+    validation = run_dashboard_validation_after_write(ctx, file_path)
+    if not validation:
+        return result
+    return f"{result}\n{validation}"
 
 
 @agent.tool(docstring_format="google")
@@ -449,6 +509,32 @@ def Bash(
     output, new_cwd = run_bash_command(ctx.deps.user_id, cwd_rel, command)
     save_bash_cwd(ctx.deps.user_id, ctx.deps.chat_id, new_cwd)
     return output
+
+
+@agent.tool(docstring_format="google")
+def ValidateDashboard(
+    ctx: RunContext[AssistantRunDeps],
+    url: str | None = None,
+) -> str:
+    """Validate dashboard SQL and output functions.
+
+    Args:
+        url: Optional dashboard URL path. If omitted, uses current content URL.
+    """
+    target_url = (url or ctx.deps.request_current_url() or "").strip()
+    if not target_url:
+        raise ModelRetry("No URL available. Provide url or open a dashboard first.")
+    try:
+        result = validate_dashboard_url(
+            ctx.deps.user_id,
+            target_url,
+            strict_structure=True,
+        )
+    except Exception as exc:
+        raise ModelRetry(str(exc))
+    if result.has_errors:
+        raise ModelRetry(format_validation_error(result))
+    return format_validation_result(result)
 
 
 @agent.tool(docstring_format="google")
