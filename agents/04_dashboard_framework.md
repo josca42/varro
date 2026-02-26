@@ -123,3 +123,21 @@ Dashboards are discovered per-user from `data/user/{user_id}/dashboard/{slug}`.
 - Save safeguards:
   - file hash mismatch returns editor with conflict notice and latest file content,
   - successful save clears dashboard cache entry for `(user_id, dashboard_name)`.
+
+## Dashboard validation flow (2026-02-26)
+
+- Validation core is implemented in `varro/agent/dashboard_validation.py`.
+- `validate_dashboard_url(...)` executes all `queries/*.sql` and all `@output` functions for a dashboard URL and returns a structured result (`queries`, `outputs`, `warnings`, blocking errors).
+- Empty-result severity rule:
+  - unfiltered/default filters: empty query/output is blocking,
+  - filtered URLs: empty query/output is warning-only.
+- `ValidateDashboard(url?)` tool is available in `varro/agent/assistant.py` and returns `VALIDATION_RESULT {json}` on pass/warnings, `ModelRetry` on blocking failures.
+- `Write`/`Edit` in `varro/agent/assistant.py` now auto-run dashboard validation after successful edits to:
+  - `/dashboard/{slug}/dashboard.md`
+  - `/dashboard/{slug}/outputs.py`
+  - `/dashboard/{slug}/queries/*.sql`
+- Auto-validation behavior:
+  - blocking issues -> `ModelRetry`,
+  - incomplete dashboard structure during incremental creation -> non-blocking `Validation pending: ...`,
+  - pass/warnings -> tool output includes validation summary + `VALIDATION_RESULT`.
+- Snapshot remains separate (`Snapshot` does not auto-validate).

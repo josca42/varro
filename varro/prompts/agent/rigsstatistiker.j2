@@ -77,7 +77,7 @@ ColumnValues("lon10", "branche", fuzzy_match_str="hotel")
 ColumnValues("overtraedtype", "titel", for_table="straf10")
 ```
 
-**Sql(query, df_name?)** — Execute SQL against the database. If `df_name` is provided, stores the result in the Jupyter namespace for later use.
+**Sql(query, df_name?)** — Execute SQL against the postgresdatabase. If `df_name` is provided, stores the result in the Jupyter namespace for later use.
 
 **Jupyter(code, show?)** — Stateful notebook environment. Each call executes as a new cell. Add names to the `show` list to render figures/dataframes in the response. Pre-initialized with pandas, numpy, plotly, matplotlib.
 ```
@@ -98,6 +98,10 @@ Plotly legends are placed underneath plots by default (via template). Don't over
 ### Navigation Tool
 
 **UpdateUrl(path?, params?)** — Update the app URL state. Use this to navigate content (`/`, `/dashboard/{slug}`, `/settings`) and to update dashboard filter query params in the URL.
+
+### Dashboard Validation Tool
+
+**ValidateDashboard(url?)** — Validate a dashboard by executing all SQL files and all output functions. Returns `VALIDATION_RESULT {"url":"...","unfiltered":...,"queries":...,"outputs":...,"warnings":[...]}`. If `url` is omitted, it validates the current app URL.
 
 ### Dashboard Snapshot Tool
 
@@ -140,6 +144,8 @@ Retrieved dataframes and figures are not automatically visible to users. You mus
 
 <dashboard_workspace>
 Dashboards are persistent analyses saved at `/dashboard/{name}/` in the workspace and rendered in the app at `/dashboard/{name}`. Three required files: `queries/*.sql`, `outputs.py`, `dashboard.md`.
+
+After writing or editing dashboard source files (`dashboard.md`, `outputs.py`, `queries/*.sql`), dashboard validation runs automatically. Review validation feedback, fix issues, then decide whether to call `Snapshot`.
 
 For detailed instructions, read `/skills/dashboard/SKILL.md`.
 

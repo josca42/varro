@@ -113,6 +113,35 @@ def test_snapshot_tool_uses_explicit_url_over_current_url(
     assert calls == [(7, "/dashboard/sales?region=South")]
 
 
+def test_snapshot_tool_does_not_run_dashboard_validation(
+    assistant_module, monkeypatch
+) -> None:
+    snapshot_model = importlib.import_module("varro.agent.snapshot")
+
+    async def fake_snapshot_dashboard_url(user_id: int, url: str):
+        return snapshot_model.SnapshotResult(url=url, folder=Path("/tmp/snapshots"))
+
+    def fail_validation(*args, **kwargs):
+        raise AssertionError("validation should not run during Snapshot")
+
+    monkeypatch.setattr(
+        assistant_module,
+        "snapshot_dashboard_url",
+        fake_snapshot_dashboard_url,
+    )
+    monkeypatch.setattr(assistant_module, "validate_dashboard_url", fail_validation)
+
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: "/dashboard/sales?region=North",
+        )
+    )
+
+    result = asyncio.run(assistant_module.Snapshot(ctx))
+    assert result.startswith("SNAPSHOT_RESULT ")
+
+
 @pytest.mark.parametrize(
     ("folder", "expected"),
     [
