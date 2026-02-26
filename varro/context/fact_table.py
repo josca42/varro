@@ -70,42 +70,6 @@ def get_niveau_levels(
     return levels
 
 
-def get_level_1_values(
-    table: str,
-    dim_table: str,
-    join_expression: str,
-    has_parent_kode: bool,
-) -> list[str]:
-    if has_parent_kode:
-        query = f"""
-        WITH RECURSIVE hierarchy AS (
-            SELECT DISTINCT n.kode, n.niveau, n.titel, n.parent_kode
-            FROM fact.{table} f
-            JOIN dim.{dim_table} n ON {join_expression}
-            UNION
-            SELECT p.kode, p.niveau, p.titel, p.parent_kode
-            FROM dim.{dim_table} p
-            JOIN hierarchy h ON p.kode::text = h.parent_kode::text
-            WHERE h.parent_kode IS NOT NULL
-        )
-        SELECT DISTINCT titel
-        FROM hierarchy
-        WHERE niveau = 1
-        ORDER BY titel
-        """
-    else:
-        query = f"""
-        SELECT DISTINCT n.titel
-        FROM fact.{table} f
-        JOIN dim.{dim_table} n ON {join_expression}
-        WHERE n.niveau = 1
-        ORDER BY n.titel
-        """
-
-    with dst_owner_engine.connect() as conn:
-        values = [value for value in conn.exec_driver_sql(query).scalars() if value]
-    return values
-
 
 def get_tid_range(table: str) -> tuple:
     column_dtypes = get_column_dtypes(table)
@@ -145,7 +109,7 @@ def get_raw_value_mappings(table: str):
     table_info = load_table_info(table)
     variables = table_info_variables_by_column(table_info)
     mappings = get_value_mappings(
-        table=table, dim_links=[], variables=variables, skip_columns=set()
+        table=table, dim_columns=set(), variables=variables, skip_columns=set()
     )
     return mappings
 
@@ -166,11 +130,13 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
     fact_dtypes = get_column_dtypes(table, schema="fact")
     dim_dtypes: dict[str, dict[str, str]] = {}
     dim_tables_linked = []
-    mappings = get_value_mappings(table=table, dim_links=dim_links, variables=variables)
+    dim_columns = set(dim_links.keys())
+    mappings = get_value_mappings(table=table, dim_columns=dim_columns, variables=variables)
     for col, values in mappings.items():
         info["dimensions"][col] = {"values": values}
 
-    for col, dim_table in dim_links.items():
+    for col, link_info in dim_links.items():
+        dim_table = link_info["dimension"]
         if dim_table not in dim_dtypes:
             dim_dtypes[dim_table] = get_column_dtypes(dim_table, schema="dim")
         join_expression = get_join_expression(
@@ -188,13 +154,10 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
         info["dimensions"][col] = {
             "dimension_table": dim_table,
             "join": join_expression,
+            "join_override": link_info.get("join_override"),
+            "match_type": link_info["match_type"],
+            "note": link_info.get("note"),
             "levels": get_niveau_levels(table, col, dim_table, sql_join_expression),
-            "level_1_values": get_level_1_values(
-                table=table,
-                dim_table=dim_table,
-                join_expression=sql_join_expression,
-                has_parent_kode="parent_kode" in dim_dtypes[dim_table],
-            ),
         }
         dim_tables_linked.append(dim_table)
 
@@ -209,12 +172,12 @@ def get_fact_table_info(table: str, raw: bool = False) -> dict:
 
 def get_value_mappings(
     table: str,
-    dim_links: dict[str, str],
+    dim_columns: set[str],
     variables: dict[str, dict],
     skip_columns: set[str] = SKIP_VALUE_MAP_COLUMNS,
 ) -> dict[str, list[dict[str, str]]]:
     if skip_columns:
-        skip_columns = skip_columns | set(dim_links)
+        skip_columns = skip_columns | dim_columns
     columns = [col for col in variables if col not in skip_columns]
     column_dtypes = get_column_dtypes(table)
     mappings = {}
@@ -243,11 +206,17 @@ def load_table_info(table: str) -> dict:
         return pickle.load(f)
 
 
-def load_dim_links(table: str, exact: bool = False) -> dict[str, str]:
+def load_dim_links(table: str) -> dict[str, dict]:
     with open(DIM_LINKS_DIR / f"{table.upper()}.json", "r") as f:
         dim_links = json.load(f)
     return {
-        normalize_column_name(link["column"]): link["dimension"] for link in dim_links
+        normalize_column_name(link["column"]): {
+            "dimension": link["dimension"],
+            "match_type": link.get("match_type", "exact"),
+            "note": link.get("note"),
+            "join_override": link.get("join_override"),
+        }
+        for link in dim_links
     }
 
 
@@ -261,19 +230,7 @@ def format_fact_table_info(table_info: dict) -> str:
     column_details = []
 
     for column in table_columns:
-        dimension = dimensions.get(column, {})
-        dim_table = dimension.get("dimension_table")
-        levels = dimension.get("levels")
-        level_1_values = dimension.get("level_1_values")
-
-        if dim_table:
-            suffix_parts = [dim_table]
-            if levels:
-                suffix_parts.append(f"lvl {levels}")
-            if level_1_values:
-                suffix_parts.append(f"level-1 [{', '.join(level_1_values)}]")
-            column_details.append(f"{column} ({'; '.join(suffix_parts)})")
-        elif column == "tid":
+        if column == "tid":
             column_details.append("tid (time)")
         else:
             column_details.append(column)
@@ -317,14 +274,19 @@ def format_fact_table_overview(table_info: dict) -> str:
         dimension = dimensions.get(column, {})
 
         if "dimension_table" in dimension:
-            join_expression = dimension.get("join", f"{column}=kode")
+            join_expr = dimension.get("join_override") or dimension.get("join", f"{column}=kode")
+            join_str = f"join dim.{dimension['dimension_table']} on {join_expr}"
+            match_type = dimension.get("match_type", "exact")
+            note = dimension.get("note")
+            if match_type == "approx":
+                if note:
+                    join_str += f" [approx: {note}]"
+                else:
+                    join_str += " [approx]"
             levels = dimension.get("levels")
-            level_1_values = dimension.get("level_1_values")
-            details = [f"join dim.{dimension['dimension_table']} on {join_expression}"]
+            details = [join_str]
             if levels:
                 details.append(f"levels {levels}")
-            if level_1_values:
-                details.append(f"level-1 values [{', '.join(level_1_values)}]")
             column_lines.append(f"- {column}: {'; '.join(details)}")
         elif "values" in dimension:
             if len(dimension["values"]) > 20:
@@ -357,6 +319,14 @@ def format_fact_table_overview(table_info: dict) -> str:
         lines.append("columns:")
         lines.extend(column_lines)
 
+    dim_tables_in_doc = sorted({
+        dim.get("dimension_table")
+        for dim in dimensions.values()
+        if dim.get("dimension_table")
+    })
+    if dim_tables_in_doc:
+        lines.append(f"dim docs: {', '.join(f'/dim/{dt}.md' for dt in dim_tables_in_doc)}")
+
     return "\n".join(lines)
 
 
@@ -364,4 +334,4 @@ def create_fact_tables_str_repr(tables: list[str] | str, overview: bool = False)
     if isinstance(tables, str):
         tables = [tables]
     func = format_fact_table_overview if overview else format_fact_table_info
-    return "\n".join([func(get_fact_table_info(table)) for table in tables])
+    return "\n".join([func(get_fact_table_info(table)[0]) for table in tables])

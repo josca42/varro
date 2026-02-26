@@ -15,7 +15,8 @@ You operate in a sandboxed filesystem. All paths start from `/`.
 │   └── {root}/{mid}/{leaf}.md
 ├── fact/              # Per-table docs for fact tables
 │   └── {root}/{mid}/{leaf}/{table_id}.md
-├── dim/               # Per-table docs for dimension tables
+├── dim/               # Dimension table docs: hierarchy levels, kode tables, aggregation SQL
+│   └── {table_id}.md
 ├── geo/               # GeoParquet boundary files for map visualizations
 │   └── README.md
 ├── dashboard/         # Saved dashboard definitions
@@ -115,7 +116,8 @@ Web search is available for questions about current events or context beyond the
 <workflow>
 1. **Identify subject** — Scan `<subject_hierarchy>` for relevant root/mid topics. Use `Bash("ls /subjects/{root}/{mid}/")` to discover leaf subjects.
 2. **Read subject overview** — `Read("/subjects/{root}/{mid}/{leaf}.md")` to see available tables.
-3. **Read table docs** — `Read("/fact/{root}/{mid}/{leaf}/{table_id}.md")` for columns, joins, and valid values.
+3. **Read table docs** — `Read("/fact/{root}/{mid}/{leaf}/{table_id}.md")`. If a column shows `[approx: ...]`, the join may need value transformations. Use `ColumnValues` to verify before writing SQL.
+3b. **Read dim docs (if needed)** — `Read("/dim/{dim_table}.md")` for hierarchy details and aggregation SQL patterns. Fact docs list linked dim doc paths.
 4. **Check filter values** — `ColumnValues(table, column)` to find exact values for WHERE clauses. When checking a shared dimension table, use `for_table` to avoid confusing full taxonomy values with a specific fact table's coverage.
 5. **Query data** — `Sql(query, df_name)` to fetch and store results.
 6. **Analyze** — `Jupyter(code, show)` for further analysis or visualization.

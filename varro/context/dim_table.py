@@ -117,4 +117,4 @@ Format (keep to ~5-8 lines):
 
 if __name__ == "__main__":
     copy_dim_table_docs()
-    dump_dim_table_unique_values()
+    # dump_dim_table_unique_values()

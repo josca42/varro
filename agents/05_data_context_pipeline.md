@@ -105,6 +105,13 @@ Without these artifacts, many analysis tools/prompts lose grounding.
 - `dim_tables_to_db.py` still drops `db` niveau 1 rows; that leaves niveau 2 rows in `dim.db` with `parent_kode = NULL` by design.
 - For dimensions with duplicate `kode` across levels (for example `db`, `nr_branche`), `parent_kode` alone can be ambiguous; add `parent_niveau` if strict unambiguous self-joins are needed.
 
+## Dimension join audit tooling (2026-02-26)
+
+- `scripts/audit_dim_joins.py`: Typer CLI to audit fact↔dim joins. Commands: `audit-table`, `audit-subject`, `update-link`, `regen-docs`.
+- `.claude/skills/audit-dim-joins/SKILL.md`: Skill for AI analyst to review fact tables by subject, investigate joins with psql, and append free-form `notes:` to fact docs with query guidance, ColumnValues tips, and join gotchas.
+- `scripts/gen_dim_docs.py` now looks up the actual fact column name from dimension_links JSON (via `get_fact_column_for_dim`) instead of using the dim table name as the fact column in SQL examples.
+- `varro/context/subjects.py`: Fact doc regeneration now preserves any existing `notes:` section appended by the audit analyst. The `extract_notes()` function reads back everything from `notes:` onward before overwriting.
+
 ## Chat-15 context updates (2026-02-24)
 
 - `varro/context/fact_table.py` now derives join expressions from actual fact/dim key dtypes and renders them in fact docs (for example `overtraed=kode::text`).

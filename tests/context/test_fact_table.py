@@ -22,7 +22,7 @@ def test_get_value_mappings_keeps_alder_by_default(monkeypatch):
 
     mappings = fact_table.get_value_mappings(
         table="folk1a",
-        dim_links={},
+        dim_columns=set(),
         variables=variables,
     )
 
@@ -112,7 +112,7 @@ def test_get_join_expression_casts_dim_for_text_fact_column():
     assert sql_join_expression == "f.overtraed=n.kode::text"
 
 
-def test_get_fact_table_info_includes_dim_join_and_level_1_values(monkeypatch):
+def test_get_fact_table_info_includes_dim_join_and_match_quality(monkeypatch):
     fact_table = importlib.import_module("varro.context.fact_table")
 
     monkeypatch.setattr(
@@ -138,7 +138,14 @@ def test_get_fact_table_info_includes_dim_join_and_level_1_values(monkeypatch):
     monkeypatch.setattr(
         fact_table,
         "load_dim_links",
-        lambda table: {"overtraed": "overtraedtype"},
+        lambda table: {
+            "overtraed": {
+                "dimension": "overtraedtype",
+                "match_type": "approx",
+                "note": "Fact col is string, dim KODE is int64.",
+                "join_override": None,
+            }
+        },
     )
 
     def _get_column_dtypes(table, schema="fact"):
@@ -150,17 +157,14 @@ def test_get_fact_table_info_includes_dim_join_and_level_1_values(monkeypatch):
     monkeypatch.setattr(fact_table, "get_value_mappings", lambda **kwargs: {})
     monkeypatch.setattr(fact_table, "get_tid_range", lambda table: ("1995", "2025"))
     monkeypatch.setattr(fact_table, "get_niveau_levels", lambda *args: [1, 2, 3])
-    monkeypatch.setattr(
-        fact_table,
-        "get_level_1_values",
-        lambda **kwargs: ["Straffelov", "Saerlov"],
-    )
 
     info, _ = fact_table.get_fact_table_info("straf10")
     overview = fact_table.format_fact_table_overview(info)
     summary = fact_table.format_fact_table_info(info)
 
     assert info["dimensions"]["overtraed"]["join"] == "overtraed=kode::text"
-    assert info["dimensions"]["overtraed"]["level_1_values"] == ["Straffelov", "Saerlov"]
-    assert "join dim.overtraedtype on overtraed=kode::text; levels [1, 2, 3]; level-1 values [Straffelov, Saerlov]" in overview
-    assert "overtraed (overtraedtype; lvl [1, 2, 3]; level-1 [Straffelov, Saerlov])" in summary
+    assert info["dimensions"]["overtraed"]["match_type"] == "approx"
+    assert "[approx: Fact col is string, dim KODE is int64.]" in overview
+    assert "levels [1, 2, 3]" in overview
+    assert "level-1" not in overview
+    assert "overtraedtype" not in summary
