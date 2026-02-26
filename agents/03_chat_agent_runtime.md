@@ -174,6 +174,8 @@ Snapshot contract:
 
 ## Recent updates
 
+- `run_agent(...)` now keeps URL in mutable per-turn state and passes both getter/setter in deps. `UpdateUrl` can mutate this state so same-turn `Snapshot()`/`ValidateDashboard()` calls see the updated URL.
+- `UpdateUrl` now adds optional warning metadata for dashboard select filters when URL param values are not in the filter options query result set (helps catch value/label mismatches like `Region Hovedstaden` vs `84`).
 - When `agent.iter(...)` raises after tool retry exhaustion, `run.result` can be `None` while `run.ctx.state.message_history` still contains accumulated messages. This allows partial turn persistence by storing only the new suffix (`message_history[len(previous_history):]`) before re-raising.
 - `Sql` now normalizes date-like object columns (`date`, `datetime`, `Timestamp`) with `pd.to_datetime` before storing to Jupyter namespace when `df_name` is provided. This keeps stored frames ready for time-series operations and aligns displayed `dtypes` with stored values.
 - `Jupyter(show=[...])` render path now accepts pandas `Styler` in addition to `pd.DataFrame`, `plotly.graph_objects.Figure`, and `matplotlib.figure.Figure`. Styler objects render as table previews in tool output, while `<df name="..."/>` can render styled HTML tables in final chat responses.

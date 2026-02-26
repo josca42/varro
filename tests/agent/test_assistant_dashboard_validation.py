@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -23,71 +24,217 @@ def assistant_module(monkeypatch):
     return importlib.reload(assistant)
 
 
-def test_write_dashboard_file_triggers_validation(assistant_module, monkeypatch):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
-        url="/dashboard/sales",
-        unfiltered=True,
-        queries={"q1": 3},
-        outputs={"summary": "metric"},
-    )
+# --- Write: per-file validation ---
+
+
+def test_write_sql_file_validates_single_query(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales" / "queries"
+    slug_dir.mkdir(parents=True)
+    sql_file = slug_dir / "q1.sql"
+    sql_file.write_text("SELECT 1")
+
     monkeypatch.setattr(
         assistant_module,
         "write_file",
-        lambda file_path, content, user_id: "Wrote 4 bytes to /dashboard/sales/outputs.py.",
+        lambda file_path, content, user_id: "Wrote 8 bytes to /dashboard/sales/queries/q1.sql.",
     )
     monkeypatch.setattr(
         assistant_module,
-        "validate_dashboard_url",
-        lambda user_id, url, strict_structure=False: result,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_single_query",
+        lambda sql, **kw: None,
     )
 
     ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    tool_result = assistant_module.Write(ctx, "/dashboard/sales/outputs.py", "pass")
+    result = assistant_module.Write(ctx, "/dashboard/sales/queries/q1.sql", "SELECT 1")
 
-    assert tool_result.startswith("Wrote 4 bytes")
-    assert "Validation passed" in tool_result
-    assert tool_result.count("VALIDATION_RESULT ") == 1
+    assert "SQL validation passed" in result
 
 
-def test_write_any_file_inside_dashboard_folder_triggers_validation(
-    assistant_module, monkeypatch
+def test_write_sql_file_returns_error_as_string(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales" / "queries"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "q1.sql").write_text("BAD SQL")
+
+    monkeypatch.setattr(
+        assistant_module,
+        "write_file",
+        lambda file_path, content, user_id: "Wrote 7 bytes to /dashboard/sales/queries/q1.sql.",
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_single_query",
+        lambda sql, **kw: "syntax error at position 0",
+    )
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
+    result = assistant_module.Write(ctx, "/dashboard/sales/queries/q1.sql", "BAD SQL")
+
+    assert "SQL validation error" in result
+    assert "syntax error" in result
+
+
+def test_write_outputs_validates_syntax(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "outputs.py").write_text("x = 1")
+
+    monkeypatch.setattr(
+        assistant_module,
+        "write_file",
+        lambda file_path, content, user_id: "Wrote 5 bytes to /dashboard/sales/outputs.py.",
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
+    result = assistant_module.Write(ctx, "/dashboard/sales/outputs.py", "x = 1")
+
+    assert "syntax OK" in result
+
+
+def test_write_outputs_returns_syntax_error(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "outputs.py").write_text("def f(\n")
+
+    monkeypatch.setattr(
+        assistant_module,
+        "write_file",
+        lambda file_path, content, user_id: "Wrote 7 bytes to /dashboard/sales/outputs.py.",
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
+    result = assistant_module.Write(ctx, "/dashboard/sales/outputs.py", "def f(\n")
+
+    assert "outputs.py validation error" in result
+    assert "SyntaxError" in result
+
+
+def test_write_dashboard_md_validates_structure(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "dashboard.md").write_text("# Test\n<fig name=\"chart\" />\n")
+
+    monkeypatch.setattr(
+        assistant_module,
+        "write_file",
+        lambda file_path, content, user_id: "Wrote 10 bytes to /dashboard/sales/dashboard.md.",
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_dashboard_structure",
+        lambda d: [],
+    )
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
+    result = assistant_module.Write(ctx, "/dashboard/sales/dashboard.md", "# Test")
+
+    assert "structure OK" in result
+
+
+def test_write_dashboard_md_returns_structure_warnings(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "dashboard.md").write_text("# Test")
+
+    monkeypatch.setattr(
+        assistant_module,
+        "write_file",
+        lambda file_path, content, user_id: "Wrote 10 bytes to /dashboard/sales/dashboard.md.",
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_dashboard_structure",
+        lambda d: ["dashboard.md references <chart> but no @output function found"],
+    )
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
+    result = assistant_module.Write(ctx, "/dashboard/sales/dashboard.md", "# Test")
+
+    assert "structure warnings" in result
+    assert "chart" in result
+
+
+def test_write_non_dashboard_file_skips_validation(assistant_module, monkeypatch):
+    monkeypatch.setattr(
+        assistant_module,
+        "write_file",
+        lambda file_path, content, user_id: "Wrote 3 bytes to /notes.txt.",
+    )
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
+    result = assistant_module.Write(ctx, "/notes.txt", "abc")
+
+    assert result == "Wrote 3 bytes to /notes.txt."
+
+
+def test_write_never_raises_model_retry_for_validation_errors(
+    assistant_module, monkeypatch, tmp_path
 ):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
-        url="/dashboard/sales",
-        unfiltered=True,
-        queries={"q1": 3},
-        outputs={"summary": "metric"},
-    )
-    calls = []
+    """Write with validation errors should return a string, not raise ModelRetry."""
+    slug_dir = tmp_path / "dashboard" / "sales" / "queries"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "q1.sql").write_text("BAD")
+
     monkeypatch.setattr(
         assistant_module,
         "write_file",
-        lambda file_path, content, user_id: "Wrote 4 bytes to /dashboard/sales/note.txt.",
+        lambda file_path, content, user_id: "Wrote 3 bytes to /dashboard/sales/queries/q1.sql.",
     )
-
-    def _validate(user_id, url, strict_structure=False):
-        calls.append((user_id, url, strict_structure))
-        return result
-
-    monkeypatch.setattr(assistant_module, "validate_dashboard_url", _validate)
+    monkeypatch.setattr(
+        assistant_module,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_single_query",
+        lambda sql, **kw: "column does not exist",
+    )
 
     ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    tool_result = assistant_module.Write(ctx, "/dashboard/sales/note.txt", "pass")
+    # Should NOT raise ModelRetry
+    result = assistant_module.Write(ctx, "/dashboard/sales/queries/q1.sql", "BAD")
+    assert isinstance(result, str)
+    assert "column does not exist" in result
 
-    assert tool_result.startswith("Wrote 4 bytes")
-    assert calls == [(1, "/dashboard/sales", False)]
+
+# --- Edit: per-file validation ---
 
 
-def test_edit_dashboard_query_triggers_validation(assistant_module, monkeypatch):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
-        url="/dashboard/sales",
-        unfiltered=True,
-        queries={"q1": 2},
-        outputs={"summary": "metric"},
-    )
+def test_edit_dashboard_query_validates_single_query(assistant_module, monkeypatch, tmp_path):
+    slug_dir = tmp_path / "dashboard" / "sales" / "queries"
+    slug_dir.mkdir(parents=True)
+    (slug_dir / "q1.sql").write_text("SELECT 1")
+
     monkeypatch.setattr(
         assistant_module,
         "edit_file",
@@ -95,125 +242,22 @@ def test_edit_dashboard_query_triggers_validation(assistant_module, monkeypatch)
     )
     monkeypatch.setattr(
         assistant_module,
-        "validate_dashboard_url",
-        lambda user_id, url, strict_structure=False: result,
+        "user_workspace_root",
+        lambda user_id: tmp_path,
+    )
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_single_query",
+        lambda sql, **kw: None,
     )
 
     ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    tool_result = assistant_module.Edit(
-        ctx,
-        "/dashboard/sales/queries/q1.sql",
-        "old",
-        "new",
-    )
+    result = assistant_module.Edit(ctx, "/dashboard/sales/queries/q1.sql", "old", "new")
 
-    assert tool_result.startswith("Replaced 1 occurrence")
-    assert "VALIDATION_RESULT " in tool_result
+    assert "SQL validation passed" in result
 
 
-def test_write_non_dashboard_file_skips_validation(assistant_module, monkeypatch):
-    calls = {"count": 0}
-    monkeypatch.setattr(
-        assistant_module,
-        "write_file",
-        lambda file_path, content, user_id: "Wrote 3 bytes to /notes.txt.",
-    )
-
-    def _validate(*args, **kwargs):
-        calls["count"] += 1
-        raise AssertionError("should not be called")
-
-    monkeypatch.setattr(assistant_module, "validate_dashboard_url", _validate)
-
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    tool_result = assistant_module.Write(ctx, "/notes.txt", "abc")
-
-    assert tool_result == "Wrote 3 bytes to /notes.txt."
-    assert calls["count"] == 0
-
-
-def test_write_raises_model_retry_for_blocking_validation_errors(
-    assistant_module, monkeypatch
-):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
-        url="/dashboard/sales",
-        unfiltered=True,
-        queries={"q1": 0},
-        outputs={"summary": "metric"},
-        query_errors=["q1: returned 0 rows"],
-    )
-    monkeypatch.setattr(
-        assistant_module,
-        "write_file",
-        lambda file_path, content, user_id: "Wrote 4 bytes to /dashboard/sales/outputs.py.",
-    )
-    monkeypatch.setattr(
-        assistant_module,
-        "validate_dashboard_url",
-        lambda user_id, url, strict_structure=False: result,
-    )
-
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    with pytest.raises(assistant_module.ModelRetry) as exc:
-        assistant_module.Write(ctx, "/dashboard/sales/outputs.py", "pass")
-    assert "Dashboard validation failed" in str(exc.value)
-    assert "Queries:" in str(exc.value)
-
-
-def test_write_returns_warning_summary_without_blocking(assistant_module, monkeypatch):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
-        url="/dashboard/sales?region=North",
-        unfiltered=False,
-        queries={"q1": 0},
-        outputs={"summary": "metric"},
-        warnings=["q1: returned 0 rows"],
-    )
-    monkeypatch.setattr(
-        assistant_module,
-        "write_file",
-        lambda file_path, content, user_id: "Wrote 4 bytes to /dashboard/sales/outputs.py.",
-    )
-    monkeypatch.setattr(
-        assistant_module,
-        "validate_dashboard_url",
-        lambda user_id, url, strict_structure=False: result,
-    )
-
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    tool_result = assistant_module.Write(ctx, "/dashboard/sales/outputs.py", "pass")
-
-    assert "Validation warnings" in tool_result
-    payload = json.loads(tool_result.split("VALIDATION_RESULT ", maxsplit=1)[1])
-    assert payload["warnings"] == ["q1: returned 0 rows"]
-
-
-def test_write_reports_validation_pending_for_incomplete_dashboard(
-    assistant_module, monkeypatch
-):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
-        url="/dashboard/sales",
-        pending_reason="Missing outputs.py in /dashboard/sales",
-    )
-    monkeypatch.setattr(
-        assistant_module,
-        "write_file",
-        lambda file_path, content, user_id: "Wrote 4 bytes to /dashboard/sales/dashboard.md.",
-    )
-    monkeypatch.setattr(
-        assistant_module,
-        "validate_dashboard_url",
-        lambda user_id, url, strict_structure=False: result,
-    )
-
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=1))
-    tool_result = assistant_module.Write(ctx, "/dashboard/sales/dashboard.md", "pass")
-
-    assert tool_result.startswith("Wrote 4 bytes")
-    assert "Validation pending:" in tool_result
-    assert "VALIDATION_RESULT " not in tool_result
+# --- ValidateDashboard tool (unchanged behavior) ---
 
 
 def test_validate_dashboard_tool_returns_payload(assistant_module, monkeypatch):

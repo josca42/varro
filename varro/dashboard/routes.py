@@ -19,6 +19,7 @@ from varro.dashboard.executor import (
     clear_query_cache,
     execute_options_query,
     execute_output,
+    SelectOption,
 )
 from varro.dashboard.components import (
     render_shell,
@@ -259,7 +260,7 @@ def dashboard_shell(name: str, req, sess):
 
     filters = parse_filters_from_request(req, dash.filters)
 
-    options: dict[str, list[str]] = {}
+    options: dict[str, list[SelectOption]] = {}
     for f in dash.filters:
         if isinstance(f, SelectFilter) and f.options_query:
             options[f.name] = execute_options_query(dash, f, _engine)

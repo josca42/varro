@@ -68,12 +68,20 @@ async def run_agent(
     request_url = (current_url or "").strip()
     if not request_url.startswith("/"):
         request_url = "/"
+    current_url_state = {"url": request_url}
+
+    def get_current_url() -> str:
+        return current_url_state["url"]
+
+    def set_current_url(url: str) -> None:
+        current_url_state["url"] = url
 
     deps = AssistantRunDeps(
         user_id=user_id,
         chat_id=chat_id,
         shell=shell,
-        request_current_url=lambda: request_url,
+        request_current_url=get_current_url,
+        request_set_current_url=set_current_url,
     )
     async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
         async for node in run:

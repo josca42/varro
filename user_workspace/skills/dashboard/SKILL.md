@@ -75,10 +75,12 @@ Metric(
     value=1234567,           # float, int, or str
     label="Total Revenue",
     format="number",         # "number" (K/M/B), "currency" (kr.), "percent" (%)
-    change=0.12,             # optional, manually calculated
+    change=0.12,             # optional ratio; renders as +12.0% ((current - prev) / prev)
     change_label="vs last year",
 )
 ```
+
+`change=0.2` renders as `+20.0%`, not `+0.2` units.
 
 ## dashboard.md
 
@@ -114,7 +116,11 @@ Nesting: one level supported (e.g. grid inside tab). `:::` always closes the mos
 <filter-checkbox name="include_pending" label="Include Pending" default=false />
 ```
 
-- `filter-select`: `options="query:{query_name}"` references a single-column query. `default="all"` means no filter (NULL in SQL).
+- `filter-select`: `options="query:{query_name}"` supports:
+  - single-column query: value and display label are the same.
+  - two-column query: first column = value sent in URL/SQL param, second column = display label.
+  `default="all"` means no filter (NULL in SQL).
+  If your options query is `SELECT kode, titel ...`, filter with `d.kode::text = :region`.
 - `filter-date`: produces `{name}_from` and `{name}_to` params. `default="all"` = no date filter. Can set `default_from`/`default_to` independently.
 - `filter-checkbox`: `default=true` or `default=false`. URL format: `?name=true` or `?name=false`.
 

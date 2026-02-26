@@ -178,9 +178,37 @@ New observations:
 - **No final text response after fix**: Turn 0 (fix + ValidateDashboard + Edit + UpdateUrl) produced `Final: _None_`. Agent's thinking contained the explanation but no text was emitted. May be related to thinking budget (3000 tokens) or the agent treating UpdateUrl as a sufficient response.
 - **Iteration flow is excellent**: Turn 1 (navigation): 1 tool call. Turn 2 (snapshot): 3 steps, data-rich response. Turn 3 (edit): 6 steps with auto-validation catching a type error, immediate fix, and proactive follow-up suggestion.
 
-Priority 1 action: Make `run_dashboard_validation_after_write` return errors as strings instead of raising `ModelRetry`. This prevents Write cascade crashes while keeping the feedback loop (agent sees errors in tool result and can fix them next step).
+Priority 1 action (landed): Replaced full-dashboard validation on Write with per-file validation:
+- SQL file → execute that one query with NULL params (catches syntax errors)
+- outputs.py → `compile()` only (catches syntax errors)
+- dashboard.md → structural check (component refs match outputs, filter options refs match queries)
+- Never raises `ModelRetry` — errors returned as strings in tool result
+- `ValidateDashboard` tool unchanged (still raises `ModelRetry` for full integration check)
 
 Findings file: `data/trajectory/1/28/findings.md`
+
+## Chat-29 findings-to-plan (2026-02-26)
+
+Scope intentionally limited to findings 1, 2, and 4 from `data/trajectory/1/29/findings.md`.
+
+Verified root causes:
+- Dashboard executor returns Postgres `DATE` as pandas `object` with Python `date`, so `.dt` access fails unless every output manually converts.
+- Metric `change` is rendered as percent ratio (`:.1%`), but dashboard skill wording was ambiguous enough that agent used absolute delta (`0.2`) and got `+20%`.
+- Same-turn `UpdateUrl` -> `Snapshot()` fails because `request_current_url` is fixed at turn start; `UpdateUrl` emits payload but does not update in-turn runtime URL state.
+
+Planned fix order (`data/trajectory/1/29/implementation_plan.md`):
+1. Auto-normalize date-like object columns in `varro/dashboard/executor.py` and add regression test.
+2. Clarify `Metric.change` ratio semantics in `user_workspace/skills/dashboard/SKILL.md`.
+3. Add mutable per-turn URL setter path so `UpdateUrl` updates URL state used by subsequent `Snapshot`/`ValidateDashboard` calls.
+
+Implemented (2026-02-26):
+- `varro/dashboard/executor.py` now normalizes object columns containing Python `date` values to pandas datetimes before returning query results.
+- `varro/chat/agent_run.py` now passes mutable URL getter/setter deps; `varro/agent/assistant.py` `UpdateUrl` mutates in-turn URL state when setter exists.
+- `user_workspace/skills/dashboard/SKILL.md` Metric docs now define `change` as ratio (`(current - prev) / prev`) with explicit `%` rendering behavior.
+- Regression tests added:
+  - `tests/dashboard/test_executor.py::test_execute_query_normalizes_date_columns`
+  - `tests/agent/test_assistant_bash_tool.py::test_update_url_updates_current_url_when_setter_available`
+  - `tests/agent/test_snapshot.py::test_snapshot_tool_reads_url_updated_by_update_url`
 
 ## Relevant files
 

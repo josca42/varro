@@ -16,6 +16,10 @@ Last updated: 2026-02-26.
 - [Dev Loop](dev/loop.md) — Test → Review → Implement cycle
 - [Test Plan](dev/test_plan.md) — Questions to test the app with
 
+## Notes
+
+- [Dashboard Filter Select Value Label](notes/dashboard_filter_select_value_label.md)
+
 ## Skills
 
 - `$playground-explorer` — Interactive CLI-first trajectory exploration and playground improvement discovery.

@@ -85,6 +85,7 @@ def test_bash_uses_loaded_root_cwd_when_store_returns_root(assistant_module, mon
 def test_update_url_merges_params_using_request_current_url(assistant_module):
     ctx = SimpleNamespace(
         deps=SimpleNamespace(
+            user_id=7,
             request_current_url=lambda: "/dashboard/sales?region=North"
         )
     )
@@ -109,6 +110,7 @@ def test_update_url_merges_params_using_request_current_url(assistant_module):
 def test_update_url_removes_params_with_none(assistant_module):
     ctx = SimpleNamespace(
         deps=SimpleNamespace(
+            user_id=7,
             request_current_url=lambda: "/dashboard/sales?region=North&period_to=2024-12-31"
         )
     )
@@ -121,3 +123,57 @@ def test_update_url_removes_params_with_none(assistant_module):
     payload = json.loads(output.removeprefix("UPDATE_URL ").strip())
     assert payload["url"] == "/dashboard/sales"
     assert payload["replace"] is False
+
+
+def test_update_url_updates_current_url_when_setter_available(assistant_module):
+    state = {"url": "/dashboard/sales?region=North"}
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: state["url"],
+            request_set_current_url=lambda url: state.__setitem__("url", url),
+        )
+    )
+
+    output = assistant_module.UpdateUrl(ctx, params={"region": "South"})
+
+    payload = json.loads(output.removeprefix("UPDATE_URL ").strip())
+    assert payload["url"] == "/dashboard/sales?region=South"
+    assert state["url"] == "/dashboard/sales?region=South"
+
+
+def test_update_url_includes_filter_warnings_when_value_is_invalid(
+    assistant_module, monkeypatch
+):
+    monkeypatch.setattr(
+        assistant_module,
+        "validate_select_filter_values",
+        lambda user_id, url: [
+            {
+                "filter": "region",
+                "value": "Region Hovedstaden",
+                "sample_allowed_values": ["84", "85"],
+            }
+        ],
+    )
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: "/dashboard/befolkning",
+        )
+    )
+
+    output = assistant_module.UpdateUrl(
+        ctx,
+        params={"region": "Region Hovedstaden"},
+    )
+
+    payload = json.loads(output.removeprefix("UPDATE_URL ").strip())
+    assert payload["url"] == "/dashboard/befolkning?region=Region+Hovedstaden"
+    assert payload["warnings"] == [
+        {
+            "filter": "region",
+            "value": "Region Hovedstaden",
+            "sample_allowed_values": ["84", "85"],
+        }
+    ]

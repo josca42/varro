@@ -81,6 +81,39 @@ def test_snapshot_tool_uses_current_url_when_url_is_omitted(
     assert calls == [(7, "/dashboard/sales?region=North")]
 
 
+def test_snapshot_tool_reads_url_updated_by_update_url(assistant_module, monkeypatch) -> None:
+    calls = []
+    snapshot_model = importlib.import_module("varro.agent.snapshot")
+
+    async def fake_snapshot_dashboard_url(user_id: int, url: str):
+        calls.append((user_id, url))
+        return snapshot_model.SnapshotResult(url=url, folder=Path("/tmp/snapshots"))
+
+    monkeypatch.setattr(
+        assistant_module,
+        "snapshot_dashboard_url",
+        fake_snapshot_dashboard_url,
+    )
+    state = {"url": "/dashboard/sales?region=North"}
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: state["url"],
+            request_set_current_url=lambda url: state.__setitem__("url", url),
+        )
+    )
+
+    update = assistant_module.UpdateUrl(ctx, params={"region": "South"})
+    update_payload = json.loads(update.removeprefix("UPDATE_URL ").strip())
+    assert update_payload["url"] == "/dashboard/sales?region=South"
+
+    result = asyncio.run(assistant_module.Snapshot(ctx))
+    payload = json.loads(result.removeprefix("SNAPSHOT_RESULT ").strip())
+
+    assert payload["url"] == "/dashboard/sales?region=South"
+    assert calls == [(7, "/dashboard/sales?region=South")]
+
+
 def test_snapshot_tool_uses_explicit_url_over_current_url(
     assistant_module, monkeypatch
 ) -> None:

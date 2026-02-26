@@ -38,6 +38,10 @@ from varro.agent.dashboard_validation import (
     format_validation_result,
     format_validation_summary,
     validate_dashboard_url,
+    validate_select_filter_values,
+    validate_single_query,
+    validate_outputs_syntax,
+    validate_dashboard_structure,
 )
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.agent.workspace import user_workspace_root
@@ -65,6 +69,7 @@ class AssistantRunDeps:
     chat_id: int
     shell: object
     request_current_url: Callable[[], str]
+    request_set_current_url: Callable[[str], None] | None = None
 
 
 agent = Agent(
@@ -108,7 +113,12 @@ def get_static_prompts() -> dict[str, str]:
     return _STATIC_PROMPTS
 
 
-def dashboard_validation_url_for_path(file_path: str) -> str | None:
+def _parse_dashboard_file_path(file_path: str) -> tuple[str, str] | None:
+    """Parse a sandbox file path into (slug, file_kind).
+
+    file_kind is one of: "sql", "outputs", "dashboard_md", or None if not a
+    recognised dashboard file.
+    """
     path = PurePosixPath(file_path)
     if not path.is_absolute():
         return None
@@ -119,35 +129,50 @@ def dashboard_validation_url_for_path(file_path: str) -> str | None:
     if not slug:
         return None
     tail = parts[2:]
-    if tail in (["dashboard.md"], ["outputs.py"]):
-        return f"/dashboard/{slug}"
+    if tail == ["outputs.py"]:
+        return slug, "outputs"
+    if tail == ["dashboard.md"]:
+        return slug, "dashboard_md"
     if len(tail) == 2 and tail[0] == "queries" and tail[1].endswith(".sql"):
-        return f"/dashboard/{slug}"
+        return slug, "sql"
     return None
 
 
 def run_dashboard_validation_after_write(
     ctx: RunContext[AssistantRunDeps], file_path: str
 ) -> str | None:
-    validation_url = dashboard_validation_url_for_path(file_path)
-    if not validation_url:
+    parsed = _parse_dashboard_file_path(file_path)
+    if not parsed:
         return None
-    try:
-        result = validate_dashboard_url(
-            ctx.deps.user_id,
-            validation_url,
-            strict_structure=False,
-        )
-    except Exception as exc:
-        raise ModelRetry(str(exc))
-    if result.pending:
-        return format_validation_summary(result)
-    if result.has_errors:
-        raise ModelRetry(format_validation_error(result))
-    return (
-        f"{format_validation_summary(result)}\n"
-        f"{format_validation_result(result)}"
-    )
+    slug, kind = parsed
+    workspace = user_workspace_root(ctx.deps.user_id)
+    dashboard_dir = workspace / "dashboard" / slug
+
+    if kind == "sql":
+        sql_path = dashboard_dir / PurePosixPath(file_path).relative_to(f"/dashboard/{slug}")
+        if not sql_path.exists():
+            return None
+        error = validate_single_query(sql_path.read_text())
+        if error:
+            return f"SQL validation error in {sql_path.name}: {error}"
+        return f"SQL validation passed for {sql_path.name}."
+
+    if kind == "outputs":
+        outputs_path = dashboard_dir / "outputs.py"
+        if not outputs_path.exists():
+            return None
+        error = validate_outputs_syntax(outputs_path.read_text())
+        if error:
+            return f"outputs.py validation error: {error}"
+        return "outputs.py syntax OK."
+
+    if kind == "dashboard_md":
+        warnings = validate_dashboard_structure(dashboard_dir)
+        if warnings:
+            return "dashboard.md structure warnings:\n" + "\n".join(f"- {w}" for w in warnings)
+        return "dashboard.md structure OK."
+
+    return None
 
 
 def normalize_table_name(table: str) -> str:
@@ -606,5 +631,13 @@ def UpdateUrl(
 
     merged_query = urlencode(query)
     next_url = urlunsplit(("", "", parsed.path or "/", merged_query, ""))
+    set_current_url = getattr(ctx.deps, "request_set_current_url", None)
+    if set_current_url:
+        set_current_url(next_url)
     payload = {"url": next_url, "replace": replace}
+    user_id = getattr(ctx.deps, "user_id", None)
+    if user_id is not None:
+        warnings = validate_select_filter_values(user_id, next_url)
+        if warnings:
+            payload["warnings"] = warnings
     return f"UPDATE_URL {json.dumps(payload, ensure_ascii=False)}"

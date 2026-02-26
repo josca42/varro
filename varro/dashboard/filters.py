@@ -80,9 +80,8 @@ class DateRangeFilter(Filter):
 
     @model_validator(mode="after")
     def _normalize_defaults(self) -> "DateRangeFilter":
-        if self.default == "all":
-            self.default_from = None
-            self.default_to = None
+        if self.default == "all" and (self.default_from or self.default_to):
+            self.default = "custom"
         return self
 
     def parse_query_params(self, params: Mapping[str, str]) -> dict[str, Any]:

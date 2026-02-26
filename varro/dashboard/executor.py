@@ -5,6 +5,7 @@ Execute SQL queries and call @output functions.
 
 from __future__ import annotations
 
+from datetime import date
 import hashlib
 import inspect
 import json
@@ -19,6 +20,17 @@ from varro.dashboard.models import Metric
 from varro.dashboard.filters import SelectFilter
 
 _query_cache: dict[tuple[str, str], pd.DataFrame] = {}
+SelectOption = tuple[str, str]
+
+
+def _normalize_date_columns(df: pd.DataFrame) -> pd.DataFrame:
+    for col in df.select_dtypes(include=["object"]).columns:
+        non_null = df[col].dropna()
+        if non_null.empty:
+            continue
+        if non_null.map(lambda value: isinstance(value, date)).all():
+            df[col] = pd.to_datetime(df[col])
+    return df
 
 
 def _infer_param_type(name: str, value: Any = None):
@@ -53,7 +65,8 @@ def execute_query(query: str, filters: dict[str, Any], engine: Engine) -> pd.Dat
         stmt = stmt.bindparams(bindparam(param, type_=param_types[param]))
 
     with engine.connect() as conn:
-        return pd.read_sql(stmt, conn, params=bound)
+        df = pd.read_sql(stmt, conn, params=bound)
+    return _normalize_date_columns(df)
 
 
 def execute_query_cached(
@@ -79,18 +92,24 @@ def clear_query_cache() -> None:
 
 def execute_options_query(
     dash: Dashboard, f: SelectFilter, engine: Engine
-) -> list[str]:
+) -> list[SelectOption]:
     """Execute an options query for a select filter.
 
-    Returns a list of option values from the first column.
+    Returns (value, label) pairs.
     """
     if not f.options_query:
         return []
     query = dash.queries[f.options_query]
 
+    options: list[SelectOption] = []
     with engine.connect() as conn:
-        rows = conn.execute(text(query)).scalars().all()  # first column only
-    return [str(x) for x in rows]
+        for row in conn.execute(text(query)):
+            if len(row) < 1:
+                continue
+            value = "" if row[0] is None else str(row[0])
+            label = value if len(row) < 2 or row[1] is None else str(row[1])
+            options.append((value, label))
+    return options
 
 
 def execute_output(

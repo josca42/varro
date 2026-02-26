@@ -49,7 +49,11 @@ Each filter defines:
 - Binds only params present in query.
 - Converts `"all"` and missing to `None`.
 - infers param SQL types (`String`, `Date`, `Boolean`) for safe NULL binding.
+- Normalizes object columns that contain Python `date` values to pandas `datetime64[ns]`.
 - Caches query results in-process by `(query_hash, filters_json)`.
+- Select options queries now support:
+  - 1 column -> `(value, label)` becomes `(col1, col1)`,
+  - 2+ columns -> `(value, label)` becomes `(col1, col2)`.
 
 Output execution:
 
@@ -71,6 +75,7 @@ Output execution:
 - `GET /dashboard/{name}`:
   - HTMX request -> content fragment
   - full request -> wraps in `AppShell`
+  - select filters receive `(value, label)` options; UI renders labels while submitting values.
 - `GET /dashboard/{name}/_/filters`:
   - returns empty body with:
     - `HX-Replace-Url`

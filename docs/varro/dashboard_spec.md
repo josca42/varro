@@ -353,8 +353,11 @@ Component tags use self-closing HTML-style tags (e.g. `<fig name="..." />`).
 
 - `name`: URL parameter name and SQL parameter name
 - `label`: Display label
-- `options`: `query:{query_name}` references a query returning **single column** (same value for display and submission)
+- `options`: `query:{query_name}` references a query returning:
+  - **single column**: same value for display and submission
+  - **two columns**: first column is submitted value, second column is display label
 - `default`: Default value; `"all"` is magic value meaning no filter (NULL in SQL)
+- For two-column region options like `SELECT kode, titel FROM dim.nuts`, compare with `d.kode::text = :region`
 - **Empty options queries render an empty dropdown**
 
 **filter-date**
@@ -753,4 +756,3 @@ The following components are needed from the ui/ library:
 - **Table** (DaisyUI table rendering)
 - **Placeholder card** (with spinner, appropriate heights)
 - **Tabs** (Alpine.js tab component)
-

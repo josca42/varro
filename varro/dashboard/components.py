@@ -37,11 +37,12 @@ from varro.dashboard.filters import (
 )
 from varro.dashboard.parser import ASTNode, ContainerNode, ComponentNode, MarkdownNode
 from varro.dashboard.loader import Dashboard
+from varro.dashboard.executor import SelectOption
 
 
 def render_filter(
     f: Filter,
-    options: dict[str, list[str]],
+    options: dict[str, list[SelectOption]],
     filters: dict[str, Any],
 ) -> Any:
     """Render a single filter based on its type."""
@@ -110,7 +111,7 @@ def render_tabs(
     tab_nodes: list[ContainerNode],
     dash: Dashboard,
     filters: dict[str, Any],
-    options: dict[str, list[str]],
+    options: dict[str, list[SelectOption]],
 ) -> Any:
     """Render tabs with Alpine.js."""
     tab_buttons = []
@@ -147,7 +148,7 @@ def render_ast(
     nodes: list[ASTNode],
     dash: Dashboard,
     filters: dict[str, Any],
-    options: dict[str, list[str]],
+    options: dict[str, list[SelectOption]],
 ) -> list[Any]:
     """Render AST nodes to FastHTML """
     result = []
@@ -210,7 +211,7 @@ def render_ast(
 def render_shell(
     dash: Dashboard,
     filters: dict[str, Any],
-    options: dict[str, list[str]],
+    options: dict[str, list[SelectOption]],
 ) -> Any:
     """Render the full dashboard shell."""
     content = render_ast(dash.ast, dash, filters, options)

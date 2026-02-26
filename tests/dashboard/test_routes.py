@@ -21,6 +21,19 @@ def test_dashboard_shell_fragment_renders_filters_and_placeholders(dashboard_env
     assert "South" in response.text
 
 
+def test_dashboard_shell_select_options_use_value_and_label(dashboard_env) -> None:
+    response = dashboard_env.client.get(
+        dashboard_env.base_url,
+        params={"region": "North"},
+        headers={"HX-Request": "true"},
+    )
+    assert response.status_code == 200
+    assert 'value="North"' in response.text
+    assert "Label North" in response.text
+    assert 'value="South"' in response.text
+    assert "Label South" in response.text
+
+
 def test_filter_sync_sets_replace_url_and_trigger(dashboard_env) -> None:
     response = dashboard_env.client.get(
         f"{dashboard_env.base_url}/_/filters",

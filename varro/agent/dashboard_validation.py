@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import json
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
@@ -10,8 +11,15 @@ import plotly.graph_objects as go
 from sqlalchemy.engine import Engine
 
 from varro.agent.workspace import user_workspace_root
-from varro.dashboard.executor import clear_query_cache, execute_output, execute_query
-from varro.dashboard.loader import Dashboard, load_dashboard
+from varro.dashboard.executor import (
+    clear_query_cache,
+    execute_options_query,
+    execute_output,
+    execute_query,
+)
+from varro.dashboard.loader import Dashboard, load_dashboard, load_outputs
+from varro.dashboard.parser import parse_dashboard_md, extract_filters, ContainerNode, ComponentNode
+from varro.dashboard.filters import SelectFilter
 from varro.dashboard.models import Metric
 from varro.db.db import dst_read_engine as default_engine
 
@@ -82,6 +90,57 @@ def default_dashboard_filters(dash: Dashboard) -> dict[str, Any]:
     for filter_def in dash.filters:
         values.update(filter_def.parse_query_params({}))
     return values
+
+
+def validate_select_filter_values(
+    user_id: int,
+    url: str,
+    *,
+    db_engine: Engine = default_engine,
+) -> list[dict[str, Any]]:
+    target_url = (url or "").strip()
+    if not target_url:
+        return []
+
+    try:
+        slug, query = parse_dashboard_url(target_url)
+    except ValueError:
+        return []
+
+    workspace_root = user_workspace_root(user_id)
+    dashboard_dir = workspace_root / "dashboard" / slug
+    if not dashboard_dir.exists():
+        return []
+
+    try:
+        dash = load_dashboard(dashboard_dir)
+    except Exception:
+        return []
+
+    query_params = dict(parse_qsl(query, keep_blank_values=True))
+    warnings: list[dict[str, Any]] = []
+    for filter_def in dash.filters:
+        if not isinstance(filter_def, SelectFilter):
+            continue
+        if not filter_def.options_query:
+            continue
+        value = query_params.get(filter_def.name)
+        if value is None or value == "" or value == filter_def.default:
+            continue
+        allowed_options = execute_options_query(dash, filter_def, db_engine)
+        allowed_values = {option_value for option_value, _ in allowed_options}
+        if value in allowed_values:
+            continue
+        warnings.append(
+            {
+                "filter": filter_def.name,
+                "value": value,
+                "sample_allowed_values": [
+                    option_value for option_value, _ in allowed_options[:5]
+                ],
+            }
+        )
+    return warnings
 
 
 def _is_structure_error(message: str) -> bool:
@@ -232,3 +291,79 @@ def validate_dashboard_url(
             )
 
     return result
+
+
+def validate_single_query(
+    sql: str, *, db_engine: Engine = default_engine
+) -> str | None:
+    try:
+        execute_query(sql, {}, db_engine)
+    except Exception as exc:
+        return str(exc)
+    return None
+
+
+def validate_outputs_syntax(source_code: str) -> str | None:
+    try:
+        compile(source_code, "outputs.py", "exec")
+    except SyntaxError as exc:
+        return f"SyntaxError: {exc}"
+    return None
+
+
+def validate_dashboard_structure(dashboard_dir: Path) -> list[str]:
+    md_file = dashboard_dir / "dashboard.md"
+    if not md_file.exists():
+        return []
+
+    try:
+        ast = parse_dashboard_md(md_file.read_text())
+    except Exception:
+        return []
+
+    component_names: set[str] = set()
+
+    def walk(nodes):
+        for node in nodes:
+            if isinstance(node, ComponentNode):
+                name = node.attrs.get("name")
+                if name and node.type in ("fig", "df", "metric"):
+                    component_names.add(name)
+            if isinstance(node, ContainerNode):
+                walk(node.children)
+
+    walk(ast)
+
+    outputs_file = dashboard_dir / "outputs.py"
+    output_names: set[str] = set()
+    if outputs_file.exists():
+        try:
+            output_names = set(load_outputs(outputs_file).keys())
+        except Exception:
+            pass
+
+    queries_dir = dashboard_dir / "queries"
+    query_names: set[str] = set()
+    if queries_dir.exists():
+        query_names = {f.stem for f in queries_dir.glob("*.sql")}
+
+    warnings: list[str] = []
+
+    missing = component_names - output_names
+    if missing and output_names:
+        for name in sorted(missing):
+            warnings.append(f"dashboard.md references <{name}> but no @output function found")
+
+    try:
+        filters = extract_filters(ast)
+    except Exception:
+        return warnings
+
+    for f in filters:
+        if isinstance(f, SelectFilter) and f.options_query:
+            if f.options_query not in query_names:
+                warnings.append(
+                    f"filter '{f.name}' references query '{f.options_query}' but no .sql file found"
+                )
+
+    return warnings

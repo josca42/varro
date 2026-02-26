@@ -70,7 +70,7 @@ def _write_dashboard(dashboard_path: Path, table_name: str) -> None:
     (queries_dir / "regions.sql").write_text(
         dedent(
             f"""
-            SELECT DISTINCT region
+            SELECT DISTINCT region, ('Label ' || region) AS label
             FROM {table_name}
             ORDER BY region
             """

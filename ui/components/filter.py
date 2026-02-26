@@ -12,12 +12,14 @@ from fasthtml.common import Div, FT, Label, Option, Span
 from ui.core import cn
 from ui.components import Input, Select, Checkbox
 
+SelectOption = str | tuple[str, str]
+
 
 def SelectFilter(
     name: str,
     *,
     label: Optional[str] = None,
-    options: Sequence[str] = (),
+    options: Sequence[SelectOption] = (),
     value: str = "all",
     include_all: bool = True,
     all_label: str = "All",
@@ -43,7 +45,18 @@ def SelectFilter(
     if include_all:
         opt_elements.append(Option(all_label, value="all", selected=(value == "all")))
     for opt in options:
-        opt_elements.append(Option(opt, value=opt, selected=(value == opt)))
+        if isinstance(opt, tuple):
+            option_value, option_label = opt
+        else:
+            option_value = opt
+            option_label = opt
+        opt_elements.append(
+            Option(
+                option_label,
+                value=option_value,
+                selected=(value == option_value),
+            )
+        )
 
     return Div(
         Label(display_label, cls="text-sm font-medium mb-1 block"),
