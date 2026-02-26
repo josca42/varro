@@ -13,6 +13,16 @@ from typing import Callable
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
+
+pio.templates.default = "plotly_white"
+pio.templates["plotly_white"].layout.legend = dict(
+    orientation="h",
+    yanchor="top",
+    y=-0.15,
+    xanchor="center",
+    x=0.5,
+)
 
 from varro.dashboard.models import Metric, output
 from varro.dashboard.filters import Filter, validate_options_queries
