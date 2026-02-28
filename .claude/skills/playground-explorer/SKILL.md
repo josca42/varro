@@ -44,6 +44,20 @@ Use commands during exploration:
 
 Avoid non-CLI trajectory generation unless blocked.
 
+## Shell state across turns
+
+The Jupyter/Sql namespace (dataframes stored via `df_name`, variables from `Jupyter`
+cells) is held in-memory by `ShellPool`. This means:
+
+- **Interactive mode** (single CLI process, multiple questions): state persists across
+  turns — the agent can reference dataframes from earlier turns.
+- **Piped / separate-process mode** (`echo "..." | uv run ... --chat-id N`): each
+  invocation starts a fresh shell. Previous-turn dataframes are gone and the agent
+  will hit `NameError`. This is expected, not an agent mistake.
+
+For multi-turn exploration, prefer interactive mode. If you must pipe, treat each
+invocation as stateless and expect the agent to re-query data it needs.
+
 ## Workflow
 
 1. Start or resume a CLI session.

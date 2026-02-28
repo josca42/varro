@@ -72,6 +72,7 @@ Did the agent take unnecessary steps because of instruction or tool gaps?
 - Exploratory steps that instructions could have eliminated
 - Repeated queries that differ only in filter values the agent was searching for
 - Trial-and-error discovery of something documentation could have stated
+- `NameError` on a prior-turn dataframe may indicate shell state was lost (CLI restart, idle eviction) rather than agent misuse — don't count it as a tool error
 
 ### Relevance
 
