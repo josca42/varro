@@ -2,6 +2,7 @@ import json
 from datetime import timedelta
 
 import pandas as pd
+import pytest
 
 from varro.data.statbank_to_disk import copy_tables_statbank as sync
 
@@ -112,3 +113,32 @@ def test_sync_table_skips_when_updated_unchanged(monkeypatch, tmp_path):
 
     assert result["status"] == "skipped"
     assert result["reason"] == "unchanged_updated"
+
+
+def test_statbank_request_sleeps_after_success(monkeypatch):
+    sleeps = []
+    response = object()
+    monkeypatch.setattr(sync, "DST_API_SLEEP_SECONDS", 2.0)
+    monkeypatch.setattr(sync, "sleep", sleeps.append)
+    monkeypatch.setattr(sync.httpx, "get", lambda _url, **_kwargs: response)
+
+    result = sync.statbank_request("get", "https://example.com", timeout=1)
+
+    assert result is response
+    assert sleeps == [2.0]
+
+
+def test_statbank_request_sleeps_after_error(monkeypatch):
+    sleeps = []
+    monkeypatch.setattr(sync, "DST_API_SLEEP_SECONDS", 2.0)
+    monkeypatch.setattr(sync, "sleep", sleeps.append)
+
+    def _raise(_url, **_kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(sync.httpx, "post", _raise)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        sync.statbank_request("post", "https://example.com", json={})
+
+    assert sleeps == [2.0]

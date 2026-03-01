@@ -15,12 +15,20 @@ def all_subject_files() -> list[Path]:
     return sorted(SUBJECTS_DIR.rglob("*.md"))
 
 
-def main():
-    subjects = all_subject_files()
-    done = [s for s in subjects if subject_has_notes(s)]
-    remaining = [s for s in subjects if not subject_has_notes(s)]
+FILES = [
+    "borgere/befolkning/befolkningstal.md",
+    "kultur_og_fritid/kulturarv/arkiver.md",
+    "miljø_og_energi/energiforbrug_og_energipriser/energiforbrug.md",
+    "miljø_og_energi/grønt_nationalregnskab_/materiale-_og_affaldsregnskaber.md",
+    "økonomi/offentlig_økonomi/regionernes_regnskaber_og_budgetter.md",
+    "transport/godstransport/godstransport_med_tog.md",
+]
 
-    print(f"Subjects: {len(subjects)} total, {len(done)} done, {len(remaining)} remaining")
+
+def main():
+    remaining = [SUBJECTS_DIR / f for f in FILES if not subject_has_notes(SUBJECTS_DIR / f)]
+
+    print(f"{len(FILES)} files, {len(FILES) - len(remaining)} done, {len(remaining)} remaining")
 
     for i, subject_file in enumerate(remaining):
         rel = subject_file.relative_to(SUBJECTS_DIR)
