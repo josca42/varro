@@ -58,3 +58,14 @@ def test_apply_incremental_run_fails_when_partitions_missing(monkeypatch, tmp_pa
     assert (
         updated["db_apply"]["tables"]["TAB2"]["reason"] == "missing_partition_files"
     )
+
+
+def test_normalize_changed_tids_monthly_codes():
+    assert db_apply.normalize_changed_tids(["2025M03", "2025M04"]) == [
+        "2025-03-01",
+        "2025-04-01",
+    ]
+
+
+def test_normalize_changed_tids_deduplicates():
+    assert db_apply.normalize_changed_tids(["2025M03", "2025M03"]) == ["2025-03-01"]

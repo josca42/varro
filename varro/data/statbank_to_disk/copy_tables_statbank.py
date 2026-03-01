@@ -5,13 +5,14 @@ import re
 from datetime import datetime, timedelta, timezone
 from io import StringIO
 from pathlib import Path
+from time import sleep
 from urllib.parse import quote, unquote
 from uuid import uuid4
 
 import httpx
 import pandas as pd
 
-from varro.config import DST_METADATA_DIR, DST_STATBANK_TABLES_DIR
+from varro.config import DST_METADATA_DIR, DST_STATBANK_TABLES_DIR, settings
 
 TABLES_INFO_DIR = DST_METADATA_DIR / "tables_info_raw_da"
 FACT_TABLES_DIR = DST_STATBANK_TABLES_DIR
@@ -21,6 +22,7 @@ STATE_FP = SYNC_DIR / "state.json"
 FREQUENCY_OVERRIDES_FP = SYNC_DIR / "frequency_overrides.json"
 CATALOG_POLL_INTERVAL = timedelta(days=7)
 MAX_ROWS_PER_CALL = 50_000_000
+DST_API_SLEEP_SECONDS = float(settings.get("DST_API_SLEEP_SECONDS", "120"))
 REFRESH_WINDOWS = {
     "daily": 14,
     "weekly": 12,
@@ -137,15 +139,30 @@ def should_poll_catalog(state: dict, now: datetime, force_catalog_poll: bool) ->
     return now - parse_utc(last) >= CATALOG_POLL_INTERVAL
 
 
+def statbank_request(method: str, url: str, **kwargs) -> httpx.Response:
+    request = getattr(httpx, method)
+    try:
+        return request(url, **kwargs)
+    finally:
+        if DST_API_SLEEP_SECONDS > 0:
+            sleep(DST_API_SLEEP_SECONDS)
+
+
 def fetch_catalog() -> list[dict]:
-    response = httpx.get("https://api.statbank.dk/v1/tables", params={"lang": "da"}, timeout=120)
+    response = statbank_request(
+        "get",
+        "https://api.statbank.dk/v1/tables",
+        params={"lang": "da"},
+        timeout=120,
+    )
     response.raise_for_status()
     rows = response.json()
     return sorted(rows, key=lambda row: row["id"])
 
 
 def fetch_table_info(table_id: str) -> dict:
-    response = httpx.get(
+    response = statbank_request(
+        "get",
         "https://api.statbank.dk/v1/tableinfo",
         params={"id": table_id, "format": "JSON", "lang": "da"},
         timeout=120,
@@ -241,7 +258,8 @@ def build_variables_payload(table_info: dict, tids: list[str]) -> list[dict]:
 
 
 def copy_table_batch(table_id: str, table_info: dict, tids: list[str]) -> pd.DataFrame:
-    response = httpx.post(
+    response = statbank_request(
+        "post",
         "https://api.statbank.dk/v1/data",
         json={
             "table": table_id,

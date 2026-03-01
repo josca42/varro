@@ -65,10 +65,20 @@ def load_partitions(table_id: str, tids: list[str]) -> tuple[pd.DataFrame, list[
     return pd.concat(dfs, ignore_index=True), missing
 
 
+def normalize_changed_tids(changed_tids: list[str]) -> list[str]:
+    if not changed_tids:
+        return []
+    normalized = process_fact_table(
+        pd.DataFrame({"Tid": changed_tids, "INDHOLD": [0] * len(changed_tids)})
+    )["tid"].astype(str)
+    return list(dict.fromkeys(normalized.tolist()))
+
+
 def apply_table_delta(table_id: str, changed_tids: list[str], df: pd.DataFrame) -> dict:
     table = table_id.lower()
     temp_table = f"_tmp_sync_{table}_{uuid4().hex[:8]}"
     processed = process_fact_table(df)
+    delete_tids = normalize_changed_tids(changed_tids)
 
     with psycopg.connect(POSTGRES_DST) as conn:
         with conn.cursor() as cur:
@@ -82,7 +92,7 @@ def apply_table_delta(table_id: str, changed_tids: list[str], df: pd.DataFrame) 
         with conn.cursor() as cur:
             cur.execute(
                 f"DELETE FROM {fq_name('fact', table)} AS tgt USING (SELECT UNNEST(%s::text[]) AS tid) AS src WHERE tgt.tid::text = src.tid;",
-                (changed_tids,),
+                (delete_tids,),
             )
             deleted_rows = cur.rowcount
             inserted_rows = 0
