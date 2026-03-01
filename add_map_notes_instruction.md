@@ -4,16 +4,16 @@ You are adding map availability notes to fact table documentation. GeoParquet bo
 
 | File | Level | Count | Index (dim_kode) |
 |------|-------|-------|------------------|
-| /geo/kommuner.parquet | Kommuner | 99 | dim.nuts.kode (niveau 3) |
-| /geo/regioner.parquet | Regioner | 5 | dim.nuts.kode (niveau 1) |
-| /geo/landsdele.parquet | Landsdele | 11 | dim.nuts.kode (niveau 2) |
-| /geo/politikredse.parquet | Politikredse | 12 | kode (1460-1471 range) |
-| /geo/retskredse.parquet | Retskredse | 24 | kode (1101-1470 range) |
-| /geo/sogne.parquet | Sogne | 2,097 | kode (7001-9359) |
-| /geo/postnumre.parquet | Postnumre | 1,089 | nr (postal code, 1050-9982) |
-| /geo/storkredse.parquet | Storkredse | 10 | nummer (1-10) |
-| /geo/valgkredse.parquet | Valgkredse | 92 | kode (0001-0092) |
-| /geo/afstemningsomraader.parquet | Afstemningsområder | 1,315 | dagi_id |
+| context/geo/kommuner.parquet | Kommuner | 99 | dim.nuts.kode (niveau 3) |
+| context//geo/regioner.parquet | Regioner | 5 | dim.nuts.kode (niveau 1) |
+| context//geo/landsdele.parquet | Landsdele | 11 | dim.nuts.kode (niveau 2) |
+| context//geo/politikredse.parquet | Politikredse | 12 | dim.politikredse.kode (1-12) |
+| context//geo/retskredse.parquet | Retskredse | 24 | kode (1101-1470 range) |
+| context//geo/sogne.parquet | Sogne | 2,097 | kode (7001-9359) |
+| context//geo/postnumre.parquet | Postnumre | 1,089 | nr (postal code, 1050-9982) |
+| context//geo/storkredse.parquet | Storkredse | 10 | nummer (1-10) |
+| context//geo/valgkredse.parquet | Valgkredse | 92 | kode (0001-0092) |
+| context//geo/afstemningsomraader.parquet | Afstemningsområder | 1,315 | dagi_id |
 
 Every geo file has the same schema: index `dim_kode` (int), column `navn` (str), column `geometry` (polygon, WGS84).
 
@@ -21,7 +21,7 @@ Every geo file has the same schema: index `dim_kode` (int), column `navn` (str),
 
 ```python
 import geopandas as gpd
-geo = gpd.read_parquet("/geo/kommuner.parquet")
+geo = gpd.read_parquet("context/geo/kommuner.parquet")
 merged = geo.merge(df, left_index=True, right_on="omrade")
 ```
 
@@ -99,7 +99,7 @@ For levels [1, 2, 3] (all):
    a. Read the fact doc (context/fact/.../{table_id}.md)
    b. Check columns for geographic joins (dim.nuts, sogn, postal codes, election codes)
    c. If a map note applies, append it to the fact doc's notes section
-3. After processing all tables, add a map note to the subject doc if relevant (e.g. "Tables with regional breakdown: X, Y, Z support choropleth maps via /geo/")
+3. After processing all tables, add a map note to the subject doc if relevant (e.g. "Tables with regional breakdown: X, Y, Z support choropleth maps via context/geo/")
 
 ### Rules
 
