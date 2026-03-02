@@ -8,15 +8,14 @@ import shlex
 import subprocess
 from typing import Literal
 from uuid import uuid4
-
+from varro.config import settings
 from safecmd.bashxtract import extract_commands
 
 from varro.config import DATA_DIR
 from varro.agent.workspace import user_workspace_root
 
 BASH_TIMEOUT_SECONDS = 30
-BashMode = Literal["DEV", "BWRAP"]
-USE_BWRAP: BashMode = "DEV"
+USE_BWRAP: settings["BASH_MODE"] = "BWRAP"
 DEV_ROOT = DATA_DIR / "user" / "1"
 BASH_ALLOWED_COMMANDS = {
     "awk",
