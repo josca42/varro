@@ -1,24 +1,30 @@
-from fasthtml.common import A, Div, Footer, Nav, P, Section, Span, Title
+from fasthtml.common import A, Div, Footer, Img, Nav, P, Section, Span, Title
 
 from ui.components import GameOfLifeAnimation
 
+_STAMPS = [
+    {"topic": "Befolkning",    "slug": "befolkning",    "rotate": "0deg",  "z": 10},
+    {"topic": "Arbejdsmarked", "slug": "arbejdsmarked", "rotate": "3deg",  "z": 20},
+    {"topic": "Bolig",         "slug": "bolig",         "rotate": "-2deg", "z": 30},
+    {"topic": "Uddannelse",    "slug": "uddannelse",    "rotate": "-5deg", "z": 40},
+    {"topic": "Sundhed",       "slug": "sundhed",       "rotate": "1deg",  "z": 50},
+    {"topic": "Indkomst",      "slug": "indkomst",      "rotate": "5deg",  "z": 60},
+]
 
-def _logo_mark():
-    return GameOfLifeAnimation(
-        width=32, height=28, cell_size=2,
-        text="V", color="#9b2743",
+
+def _stamp(topic, slug, rotate, z):
+    return A(
+        Img(src=f"/static/images/stamps/{slug}.png", alt=topic, cls="stamp-img"),
+        Span(topic, cls="stamp-label"),
+        href=f"/dashboard/{slug}",
+        cls="stamp",
+        style=f"--rotate: {rotate}; z-index: {z}",
     )
 
 
 def Frontpage():
     nav = Nav(
         Div(
-            A(
-                _logo_mark(),
-                Span("Varro", cls="text-lg font-semibold tracking-tight"),
-                href="/",
-                cls="flex items-center gap-2 text-base-content no-underline hover:no-underline",
-            ),
             Div(
                 A(
                     "Sign in",
@@ -28,11 +34,11 @@ def Frontpage():
                 A(
                     "Get Started",
                     href="/signup",
-                    cls="btn btn-neutral btn-sm rounded-lg",
+                    cls="btn btn-primary btn-sm rounded-lg",
                 ),
                 cls="flex items-center gap-6",
             ),
-            cls="max-w-5xl mx-auto w-full px-6 flex items-center justify-between",
+            cls="max-w-5xl mx-auto w-full px-6 flex items-center justify-end",
         ),
         cls="py-4",
     )
@@ -45,63 +51,35 @@ def Frontpage():
             ),
             P(
                 "The Danish AI State Statistician",
-                cls="text-lg text-base-content/50 max-w-xl leading-relaxed",
+                cls="text-xl md:text-2xl text-base-content/50 max-w-xl leading-relaxed",
             ),
             A(
-                "Get Started for Free \u2192",
+                "Get Started for Free →",
                 href="/signup",
-                cls="btn btn-neutral px-8 h-11 rounded-lg text-sm font-medium tracking-wide",
+                cls="btn btn-primary px-8 h-11 rounded-lg text-sm font-medium tracking-wide",
             ),
-            P(
-                "Free to explore. No credit card required.",
-                cls="text-sm text-base-content/30",
+            Div(
+                *[_stamp(**s) for s in _STAMPS],
+                cls="stamps-row",
             ),
             cls="flex flex-col items-center text-center gap-6",
         ),
         cls="pt-24 pb-20 md:pt-36 md:pb-28 px-6 bg-base-200",
     )
 
-    features = Section(
-        Div(
-            _feature(
-                "Conversational analysis",
-                "Ask questions in plain language. Get tool-backed statistical analysis with transparent methodology and reproducible results.",
-            ),
-            _feature(
-                "Interactive dashboards",
-                "Browse curated dashboards built from real Danmarks Statistik data with filters, charts, and live visualizations.",
-            ),
-            _feature(
-                "Open & verifiable",
-                "Every analysis traces back to official public statistics. Fully reproducible, fully transparent.",
-            ),
-            cls="max-w-4xl mx-auto grid md:grid-cols-3 gap-12 md:gap-16",
-        ),
-        cls="py-20 md:py-28 px-6 bg-base-100",
-    )
-
     footer = Footer(
         Div(
             Span("Varro", cls="text-sm font-medium text-base-content/40"),
-            Span("\u00a9 2026", cls="text-sm text-base-content/25"),
+            Span("© 2026", cls="text-sm text-base-content/25"),
             cls="max-w-5xl mx-auto px-6 flex items-center justify-between",
         ),
         cls="py-8 bg-base-200",
     )
 
-    return Title("Varro \u2014 Danish AI State Statistician"), Div(
+    return Title("Varro — Danish AI State Statistician"), Div(
         nav,
         hero,
-        features,
         footer,
         cls="min-h-screen bg-base-200",
         data_slot="public-frontpage",
-    )
-
-
-def _feature(title, description):
-    return Div(
-        Div(cls="w-8 h-0.5 bg-primary/30 mb-5"),
-        Div(title, cls="text-sm font-semibold text-base-content mb-3"),
-        P(description, cls="text-sm text-base-content/55 leading-relaxed"),
     )

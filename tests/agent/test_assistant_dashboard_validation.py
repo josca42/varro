@@ -9,6 +9,11 @@ import pytest
 
 
 @pytest.fixture
+def verify_module():
+    return importlib.import_module("varro.dashboard.verify")
+
+
+@pytest.fixture
 def assistant_module(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
 
@@ -27,7 +32,7 @@ def assistant_module(monkeypatch):
 # --- Write: per-file validation ---
 
 
-def test_write_sql_file_validates_single_query(assistant_module, monkeypatch, tmp_path):
+def test_write_sql_file_validates_single_query(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales" / "queries"
     slug_dir.mkdir(parents=True)
     sql_file = slug_dir / "q1.sql"
@@ -39,12 +44,12 @@ def test_write_sql_file_validates_single_query(assistant_module, monkeypatch, tm
         lambda file_path, content, user_id: "Wrote 8 bytes to /dashboard/sales/queries/q1.sql.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "validate_single_query",
         lambda sql, **kw: None,
     )
@@ -55,7 +60,7 @@ def test_write_sql_file_validates_single_query(assistant_module, monkeypatch, tm
     assert "SQL validation passed" in result
 
 
-def test_write_sql_file_returns_error_as_string(assistant_module, monkeypatch, tmp_path):
+def test_write_sql_file_returns_error_as_string(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales" / "queries"
     slug_dir.mkdir(parents=True)
     (slug_dir / "q1.sql").write_text("BAD SQL")
@@ -66,12 +71,12 @@ def test_write_sql_file_returns_error_as_string(assistant_module, monkeypatch, t
         lambda file_path, content, user_id: "Wrote 7 bytes to /dashboard/sales/queries/q1.sql.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "validate_single_query",
         lambda sql, **kw: "syntax error at position 0",
     )
@@ -83,7 +88,7 @@ def test_write_sql_file_returns_error_as_string(assistant_module, monkeypatch, t
     assert "syntax error" in result
 
 
-def test_write_outputs_validates_syntax(assistant_module, monkeypatch, tmp_path):
+def test_write_outputs_validates_syntax(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales"
     slug_dir.mkdir(parents=True)
     (slug_dir / "outputs.py").write_text("x = 1")
@@ -94,7 +99,7 @@ def test_write_outputs_validates_syntax(assistant_module, monkeypatch, tmp_path)
         lambda file_path, content, user_id: "Wrote 5 bytes to /dashboard/sales/outputs.py.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
@@ -105,7 +110,7 @@ def test_write_outputs_validates_syntax(assistant_module, monkeypatch, tmp_path)
     assert "syntax OK" in result
 
 
-def test_write_outputs_returns_syntax_error(assistant_module, monkeypatch, tmp_path):
+def test_write_outputs_returns_syntax_error(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales"
     slug_dir.mkdir(parents=True)
     (slug_dir / "outputs.py").write_text("def f(\n")
@@ -116,7 +121,7 @@ def test_write_outputs_returns_syntax_error(assistant_module, monkeypatch, tmp_p
         lambda file_path, content, user_id: "Wrote 7 bytes to /dashboard/sales/outputs.py.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
@@ -128,7 +133,7 @@ def test_write_outputs_returns_syntax_error(assistant_module, monkeypatch, tmp_p
     assert "SyntaxError" in result
 
 
-def test_write_dashboard_md_validates_structure(assistant_module, monkeypatch, tmp_path):
+def test_write_dashboard_md_validates_structure(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales"
     slug_dir.mkdir(parents=True)
     (slug_dir / "dashboard.md").write_text("# Test\n<fig name=\"chart\" />\n")
@@ -139,12 +144,12 @@ def test_write_dashboard_md_validates_structure(assistant_module, monkeypatch, t
         lambda file_path, content, user_id: "Wrote 10 bytes to /dashboard/sales/dashboard.md.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "validate_dashboard_structure",
         lambda d: [],
     )
@@ -155,7 +160,7 @@ def test_write_dashboard_md_validates_structure(assistant_module, monkeypatch, t
     assert "structure OK" in result
 
 
-def test_write_dashboard_md_returns_structure_warnings(assistant_module, monkeypatch, tmp_path):
+def test_write_dashboard_md_returns_structure_warnings(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales"
     slug_dir.mkdir(parents=True)
     (slug_dir / "dashboard.md").write_text("# Test")
@@ -166,12 +171,12 @@ def test_write_dashboard_md_returns_structure_warnings(assistant_module, monkeyp
         lambda file_path, content, user_id: "Wrote 10 bytes to /dashboard/sales/dashboard.md.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "validate_dashboard_structure",
         lambda d: ["dashboard.md references <chart> but no @output function found"],
     )
@@ -197,7 +202,7 @@ def test_write_non_dashboard_file_skips_validation(assistant_module, monkeypatch
 
 
 def test_write_never_raises_model_retry_for_validation_errors(
-    assistant_module, monkeypatch, tmp_path
+    assistant_module, verify_module, monkeypatch, tmp_path
 ):
     """Write with validation errors should return a string, not raise ModelRetry."""
     slug_dir = tmp_path / "dashboard" / "sales" / "queries"
@@ -210,12 +215,12 @@ def test_write_never_raises_model_retry_for_validation_errors(
         lambda file_path, content, user_id: "Wrote 3 bytes to /dashboard/sales/queries/q1.sql.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "validate_single_query",
         lambda sql, **kw: "column does not exist",
     )
@@ -230,7 +235,7 @@ def test_write_never_raises_model_retry_for_validation_errors(
 # --- Edit: per-file validation ---
 
 
-def test_edit_dashboard_query_validates_single_query(assistant_module, monkeypatch, tmp_path):
+def test_edit_dashboard_query_validates_single_query(assistant_module, verify_module, monkeypatch, tmp_path):
     slug_dir = tmp_path / "dashboard" / "sales" / "queries"
     slug_dir.mkdir(parents=True)
     (slug_dir / "q1.sql").write_text("SELECT 1")
@@ -241,12 +246,12 @@ def test_edit_dashboard_query_validates_single_query(assistant_module, monkeypat
         lambda *args, **kwargs: "Replaced 1 occurrence(s) in /dashboard/sales/queries/q1.sql.",
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "user_workspace_root",
         lambda user_id: tmp_path,
     )
     monkeypatch.setattr(
-        assistant_module,
+        verify_module,
         "validate_single_query",
         lambda sql, **kw: None,
     )
@@ -261,8 +266,8 @@ def test_edit_dashboard_query_validates_single_query(assistant_module, monkeypat
 
 
 def test_validate_dashboard_tool_returns_payload(assistant_module, monkeypatch):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
+    verify = importlib.import_module("varro.dashboard.verify")
+    result = verify.DashboardValidationResult(
         url="/dashboard/sales?region=North",
         unfiltered=False,
         queries={"q1": 0},
@@ -290,8 +295,8 @@ def test_validate_dashboard_tool_returns_payload(assistant_module, monkeypatch):
 def test_validate_dashboard_tool_raises_model_retry_on_blocking_errors(
     assistant_module, monkeypatch
 ):
-    validation = importlib.import_module("varro.agent.dashboard_validation")
-    result = validation.DashboardValidationResult(
+    verify = importlib.import_module("varro.dashboard.verify")
+    result = verify.DashboardValidationResult(
         url="/dashboard/sales",
         unfiltered=True,
         query_errors=["q1: returned 0 rows"],

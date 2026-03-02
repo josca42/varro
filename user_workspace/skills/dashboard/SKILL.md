@@ -1,5 +1,5 @@
 ---
-name: Dashboard Creation
+name: Dashboard
 description: Create, edit, and iterate on data dashboards. Use when the user wants a persistent visual analysis with charts, tables, metrics, and filters — saved as files at /dashboard/{name}/.
 ---
 
