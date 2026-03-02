@@ -1,0 +1,22 @@
+table: fact.dnvpdks
+description: Værdipapirstatistik efter papirtype, kupon, valuta, løbetid, udstedersektor, investorsektor, værdiansættelse, datatype og tid
+measure: indhold (unit Mio. kr.)
+columns:
+- papir: values [10A=Alle værdipapirer, 11A=1. Aktier, i alt, 11N=1.1. Aktier, noterede, 11U=1.2. Aktier, unoterede, 20A=2. Obligationer, i alt, 20I=2.0.0.0.1. Heraf indeksobligationer, 21B=2.0.1. Statsobligationer og statsgældsbeviser, 21K=2.0.2. Skatkammerbeviser, 24A=2.0.3. Realkreditudstedelser, total, 25A=2.0.4. Andre obligationer end stats- og realkreditudstedelser, 30A=3. Investeringsforeningsbeviser, i alt, 30N=3.1. Heraf investeringsforeningsbeviser, noterede]
+- kupon: values [N=Alle papirer med og uden kupon, 0=Kupon <= 2%, A=2% < kupon <= 3%, B=3% < kupon <= 4%, C=4% < kupon <= 5%, D=5% < kupon <= 6%, E=Kupon > 6%]
+- valuta: join dim.valuta_iso on valuta=kode [approx]; levels [1]
+- lobetid: values [A=Alle løbetider/uspecificeret, F=Restløbetid < = 1 år, I=1 år < restløbetid < = 5 år, O=5 år < restløbetid < =10 år, R=10 år < restløbetid < =20 år, S=20 år < restløbetid < = 30 år, T=30 år < restløbetid  (inkl. uendelig løbetid)]
+- udstedsektor: values [0000=0.0.0.0. Alle sektorer, inkl. udland og ufordelt, 00SR=0.0.0.1. Heraf alle sektorer, ekskl. staten og realkreditinstitutter, 1000=1.0.0.0. Alle indenlandske sektorer (Danmark), 10SR=1.0.0.1. Heraf alle indenlandske sektorer, ekskl. staten og realkreditinstituter, 1100=1.1.0.0. Ikke-finansielle selskaber, 1200=1.2.0 0. Finansielle selskaber, 1212=1.2.1.0. Monetære finansielle institutioner (MFI), 122P=1.2.1.1. MFI - Pengeinstitutter, 122R=1.2.1.2. MFI - Realkreditinstitutter, 122A=1.2.1.3. MFI - Andre kreditinstitutter og pengemarkedsforeninger, 1256=1.2.2.0. Forsikring og pension samt andre finansielle formidlere m.m., 1234=1.2.2.1. Andre finansielle formidlere og finansielle hjælpeenheder, 1250=1.2.2.2. Forsikringsselskaber og pensionskasser, 1300=1.3.0.0. Offentlig forvaltning og service, 3000=1.4.0.0. Ufordelt indland, 2000=2.0.0.0. Udlandet]
+- invsektor: values [0000=0.0.0.0. Hele verden (inkl. ufordelt og udland), 1000=1.0.0.0. Alle indenlandske sektorer (Danmark), 1100=1.1.0.0. Ikke-finansielle selskaber, 1254=1.2.0.0. Monetære finansielle insituttioner (MFI) og andre finansielle formidlere m.m., 1212=1.2.1.0. Monetære finansielle institutioner (MFI), 1234=1.2.2.0. Andre finansielle formidlere m.m., 1250=1.3.0.0. Forsikringsselskaber og pensionskasser, 1300=1.4.0.0. Offentlig forvaltning og service, 1311=1.4.1.0. Statslig forvaltning og service, 1313=1.4.2.0. Kommunal forvaltning og service, 1314=1.4.3.0. Sociale kasser og fonde, 1415=1.5.0.0. Husholdninger, 1410=1.5.1.0. Personligt ejede virksomheder, 1430=1.5.2.0. Lønmodtagere, pensionister mv., 1500=1.5.3.0. Non-profit institutioner rettet mod husholdninger, 1ZX0=1.6.0.0. Ufordelt indland, 2000=2.0.0.0. Udland]
+- vaerdian: values [B=Markedsværdi, N=Nominel værdi]
+- data: values [1=Beholdning, 2=Nettotilgang, 3=Kursreguleringer (omvurderinger)]
+- tid: date range 1999-12-01 to 2015-01-01
+dim docs: /dim/valuta_iso.md
+
+notes:
+- This table is discontinued (ends 2015). For current data use dnvpdkbr (from 2008, similar structure but without invsektor and kupon).
+- vaerdian and data are measurement selectors that multiply rows. Every other dimension combination is repeated for each (vaerdian × data) pair. Filter both: typically vaerdian='B' (markedsværdi) and data=1 (beholdning). Forgetting either inflates sums by 3x or more.
+- data values: 1=Beholdning, 2=Nettotilgang, 3=Kursreguleringer — these measure different things and must never be summed together.
+- valuta: Z01 and Z02 are aggregate codes (alle valutaer / anden valuta) — not in dim.valuta_iso. The dim join only works for specific ISO currency codes (DKK, EUR, USD, etc.). For "all currencies" use valuta='Z01' directly rather than joining.
+- udstedsektor and invsektor use numeric codes (0000, 1000, 1100, 1212, etc.) — these are DST-internal and do NOT join to dim.esa (which uses S.xxx notation). Treat as inline coded values using the descriptions in the fact doc.
+- papir has hierarchical totals: 10A=alle værdipapirer, 11A=aktier i alt, 20A=obligationer i alt, 30A=beviser i alt — filter to avoid summing subtotals with totals.

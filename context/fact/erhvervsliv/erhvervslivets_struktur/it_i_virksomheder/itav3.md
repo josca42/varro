@@ -1,0 +1,14 @@
+table: fact.itav3
+description: Virksomhedernes adgang til it-kompetencer (10+ ansatte) efter virksomhedsstørrelse, branche (DB07), emner og tid
+measure: indhold (unit Pct.)
+columns:
+- virkstrrda: values [1010=Alle virksomheder (mindst 10 ansatte), 1110=10-49 ansatte, 1120=50-99 ansatte, 1130=100-249 ansatte, 1140=250 ansatte og derover]
+- brancherev2: values [ITATOT=Alle virksomhedsbrancher (private, ikke-finansielle byerhverv), ITAC=10-39 Industri mv., ITAF=41-43 Bygge og anlæg, ITAGHI=45-56 Handel og transport mv., ITAJ=58-63 Information og kommunikation, ITALMN2=68-75, 77-82, 95.1 Erhvervsservice (2021-), ITALMN=68-74, 77-82, 95.1 Erhvervsservice (-2020)]
+- emner: values [3210=1. Beskæftiger it-specialister, 3310=2. Tilbudt opkvalificering af it-færdigheder til én eller flere type medarbejdere, 3320=2.1 Tilbudt opkvalificering af it-færdigheder til it-specialister, 3330=2.2 Tilbudt opkvalificering af it-færdigheder til andre medarbejdere end it-specialister, 3410=3.1 Har rekrutteret eller forsøgt at rekruttere it-specialister, 3420=3.2 Har rekrutteret eller forsøgt at rekruttere it-specialister fra udlandet, 3510=4. Har oplevet vanskeligheder ved at rekruttere it-specialister, 3610=5. Én eller flere typer it-funktioner blev primært udført af eksterne leverandører, 3620=5.1 Drift og vedligeholdelse af it-infrastruktur blev primært udført af eksterne leverandører, 3630=5.2 Support af standard kontorprogrammer blev primært udført af eksterne leverandører, 3640=5.3 It-funktioner til styring af virksomheden (fx ERP, CRM data) blev primært udført af eksterne leverandører, 3650=5.4 It-funktioner til web løsninger blev primært udført af eksterne leverandører, 3660=5.5 It-funktioner til sikkerhed og databeskyttelse blev primært udført af eksterne leverandører, 3662=6.1 Egne ansatte udførte virksomhedens it-funktioner, 3664=6.2 Eksterne leverandører udførte virksomhedens it-funktioner]
+- tid: date range 2014-01-01 to 2024-01-01
+notes:
+- All values are percentages (Pct.) — never sum across emner; each code is an independent survey question answered by the same companies.
+- emner is hierarchical: 3310 (opkvalificering i alt) contains 3320 (til it-specialister) and 3330 (til andre). 3610 (outsourcing i alt) contains 3620–3660. Pick parent OR children, not both.
+- virkstrrda 1010 is the total (alle virksomheder). The four size bands (1110–1140) are breakdowns of 1010 — don't sum them.
+- brancherev2 has a structural break: ITALMN (68-74, 77-82, 95.1 Erhvervsservice) covers 2014–2020 only; ITALMN2 (68-75, 77-82, 95.1) covers 2021+. For a time series spanning this break use WHERE brancherev2 IN ('ITALMN', 'ITALMN2'). Never GROUP BY brancherev2 across the break — it creates two rows for Erhvervsservice.
+- ITATOT is "alle virksomhedsbrancher (private, ikke-finansielle byerhverv)" — the broadest sector total.

@@ -10,7 +10,6 @@ wheels/
 # Virtual environments
 .venv
 /data
-/context
 /agent_data
 /notebooks
 /docs/llm_docs/alpine_js/*
