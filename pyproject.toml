@@ -37,6 +37,7 @@ dependencies = [
     "geopandas>=1.1.2",
     "prefect>=3.6.18",
     "scipy>=1.17.1",
+    "python-frontmatter>=1.1.0",
 ]
 
 [dependency-groups]

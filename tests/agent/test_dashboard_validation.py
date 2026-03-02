@@ -26,7 +26,7 @@ def _dashboard(outputs: dict[str, object]) -> SimpleNamespace:
 
 
 def test_validate_unfiltered_empty_query_is_blocking(tmp_path: Path, monkeypatch) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"summary": object()})
 
@@ -57,7 +57,7 @@ def test_validate_unfiltered_empty_query_is_blocking(tmp_path: Path, monkeypatch
 
 
 def test_validate_filtered_empty_query_is_warning(tmp_path: Path, monkeypatch) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"summary": object()})
 
@@ -87,7 +87,7 @@ def test_validate_filtered_empty_query_is_warning(tmp_path: Path, monkeypatch) -
 
 
 def test_validate_output_runtime_exception_is_blocking(tmp_path: Path, monkeypatch) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"broken": object()})
 
@@ -118,7 +118,7 @@ def test_validate_output_runtime_exception_is_blocking(tmp_path: Path, monkeypat
 def test_validate_unfiltered_empty_figure_and_table_are_blocking(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"fig": object(), "tbl": object()})
 
@@ -152,7 +152,7 @@ def test_validate_unfiltered_empty_figure_and_table_are_blocking(
 def test_validate_filtered_empty_figure_and_table_are_warnings(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"fig": object(), "tbl": object()})
 
@@ -186,7 +186,7 @@ def test_validate_filtered_empty_figure_and_table_are_warnings(
 def test_validate_unfiltered_none_and_blank_scalar_are_blocking(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"none_value": object(), "blank_value": object()})
 
@@ -220,7 +220,7 @@ def test_validate_unfiltered_none_and_blank_scalar_are_blocking(
 def test_validate_unfiltered_zero_and_false_scalar_are_valid(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = _dashboard({"zero_value": object(), "false_value": object()})
 
@@ -253,7 +253,7 @@ def test_validate_unfiltered_zero_and_false_scalar_are_valid(
 def test_validate_with_incomplete_structure_returns_pending_when_not_strict(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
 
     monkeypatch.setattr(validation, "user_workspace_root", lambda user_id: root)
@@ -279,19 +279,19 @@ def test_validate_with_incomplete_structure_returns_pending_when_not_strict(
 
 
 def test_validate_outputs_syntax_ok() -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     assert validation.validate_outputs_syntax("x = 1\ndef f(): pass") is None
 
 
 def test_validate_outputs_syntax_error() -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     result = validation.validate_outputs_syntax("def f(\n")
     assert result is not None
     assert "SyntaxError" in result
 
 
 def test_validate_dashboard_structure_missing_output_ref(tmp_path: Path) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     dashboard_dir = tmp_path / "myboard"
     dashboard_dir.mkdir()
     (dashboard_dir / "dashboard.md").write_text(
@@ -308,7 +308,7 @@ def test_validate_dashboard_structure_missing_output_ref(tmp_path: Path) -> None
 
 
 def test_validate_dashboard_structure_missing_options_query(tmp_path: Path) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     dashboard_dir = tmp_path / "myboard"
     dashboard_dir.mkdir()
     queries_dir = dashboard_dir / "queries"
@@ -323,7 +323,7 @@ def test_validate_dashboard_structure_missing_options_query(tmp_path: Path) -> N
 
 
 def test_validate_dashboard_structure_all_ok(tmp_path: Path) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     dashboard_dir = tmp_path / "myboard"
     dashboard_dir.mkdir()
     queries_dir = dashboard_dir / "queries"
@@ -345,7 +345,7 @@ def test_validate_dashboard_structure_all_ok(tmp_path: Path) -> None:
 def test_validate_select_filter_values_warns_on_invalid_select_value(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = SimpleNamespace(
         filters=[
@@ -388,7 +388,7 @@ def test_validate_select_filter_values_warns_on_invalid_select_value(
 def test_validate_select_filter_values_accepts_valid_select_value(
     tmp_path: Path, monkeypatch
 ) -> None:
-    validation = importlib.import_module("varro.agent.dashboard_validation")
+    validation = importlib.import_module("varro.dashboard.verify")
     root = _workspace_root(tmp_path)
     dash = SimpleNamespace(
         filters=[
