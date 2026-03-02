@@ -1,0 +1,12 @@
+table: fact.konk3
+description: Erklærede konkurser efter nøgletal og tid
+measure: indhold (unit -)
+columns:
+- bnogle: values [001=Konkurser i alt (A+B+D), 006=Konkurser i alt, sæsonkorrigeret direkte, OMS=Samlet omsætning i konkursramte virksomheder (A3+B1), BES=Samlet beskæftigelse i konkursramte virksomheder (omregnet til fuldtidsansatte) (A2), LEV=Gennemsnitlig levetid for konkursramte virksomheder (år), A=A.  Konkurser i virksomheder med beskæftigelse, A1=A1. Konkurser i virksomheder med beskæftigelse, sæsonkorrigeret, A2=A2. Konkurser i virksomheder med beskæftigelse (tabte job), A3=A3. Konkurser i virksomheder med beskæftigelse (omsætning), A4=A4. Konkurser i virksomheder med beskæftigelse (levetid), B=B.  Konkurser i virksomheder med omsætning over 1 mio. kr., men uden beskæftigelse, B2=B1. Konkurser i virksomheder med omsætning over 1 mio. kr. , men uden beskæftigelse (omsætning), B3=B2. Konkurser i virksomheder med omsætning over 1 mio. kr. , men uden beskæftigelse (levetid), C=C.  Konkurser i aktive virksomheder ( A+B), C1=C1. Konkurser i aktive virksomheder, sæsonkorrigeret, C2=C2. Konkurser i aktive virksomheder (omsætning, A3+B1), C3=C3. Konkurser i aktive virksomheder (levetid), D=D.  Konkurser i virksomheder uden beskæftigelse og omsætning under 1 mio. kr. (Nulvirksomheder), D1=D1. Konkurser i virksomheder uden beskæftigelse og omsætning under 1 mio. kr. (levetid)]
+- tid: date range 2009-01-01 to 2025-09-01
+
+notes:
+- bnogle contains MIXED measure types — never sum across them. Counts (001, A, B, C, D), seasonally adjusted counts (006, A1, C1), aggregate turnover in mDKK (OMS, A3, B2, C2), lost jobs (A2), and average company lifetime in years (LEV, A4, B3, C3, D1). Always filter to a single bnogle.
+- For total bankruptcies use bnogle='001' (Konkurser i alt A+B+D). For active companies only use bnogle='C' (A+B). For nulvirksomheder only use bnogle='D'.
+- Seasonally adjusted variants: bnogle='006' (total adjusted), 'A1' (with employees adjusted), 'C1' (active companies adjusted). Their unadjusted counterparts are '001', 'A', 'C'.
+- There are 19 bnogle codes per time period — 19 rows per month. The unit column shows "-" because units differ by bnogle (counts, mDKK, jobs, years).

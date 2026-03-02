@@ -1,0 +1,16 @@
+table: fact.ppp
+description: Købekraftpariteter og internationale mængde- og prissammenligninger efter varegruppe, land, enhed og tid
+measure: indhold (unit -)
+columns:
+- varegr: values [A0=BNP, A01=Faktisk individuelt forbrug, A0101=Fødevarer og ikke-alkoholiskedrikkevarer, A010101=Fødevarer, A01010101=Brød og kornprodukter ... P02=Tjenester i alt, P0201=Private tjenesteydelser, P0202=Offentlige tjenesteydelser, P020201=Kollektive offentlige tjenesteydelser, P020202=Individuelle offentlige tjenesteydelser]
+- land: join dim.lande_uhv on land=kode [approx]; levels [4]
+- enhed: values [10=Købekraftparitet (nationalvaluta/Euro) (EU-15 = 1) , 15=Købekraftparitet (nationalvaluta/Euro) (EU-27 = 1), 18=Købekraftparitet (nationalvaluta/Euro) (EU-28 = 1), 19=Købekraftparitet (nationalvaluta/Euro) (EU-27 (uden Storbritannien) = 1), 20=Prisniveauindeks (Indeks EU-15 = 100), 25=Prisniveauindeks (Indeks EU-27 = 100), 28=Prisniveauindeks (Indeks EU-28 = 100), 29=Prisniveauindeks (Indeks EU-27 (uden Storbritannien) = 100), 30=Købekraftkorrigerede indeks per indbygger (indeks EU-15 = 100), 35=Købekraftkorrigerede indeks per indbygger  (indeks EU-27 = 100), 38=Købekraftkorrigerede indeks per indbygger (indeks EU-28 = 100), 39=Købekraftkorrigerede indeks per indbygger (Indeks EU-27 (uden Storbritannien) = 100)]
+- tid: date range 2000-01-01 to 2023-01-01
+dim docs: /dim/lande_uhv.md
+
+notes:
+- `enhed` is a mandatory measurement selector — every land/varegr/tid combination appears multiple times, once per enhed. Always filter to exactly one. Three measurement families: PPP (10/18/19), prisniveauindeks (20/28/29), købekraftkorrigerede indeks per indbygger (30/38/39). Within each family, the suffix indicates EU baseline: EU-15 (10/20/30), EU-28 (18/28/38), EU-27 uden UK (19/29/39). Prefer 29 for price level and 39 for per capita index as these are the most current baselines. Note: enhed values 15, 25, 35 (EU-15 baseline for the newer series) are listed in DST metadata but not present in the data.
+- `varegr` codes span 6 hierarchy levels (code lengths 2–9). Parent and child codes coexist — A0 (BNP, len 2), A01 (len 3), A0101 (len 4), A010101 (len 7), A01010101 (len 9). Never aggregate across all varegr values; pick a single level. There are 63 distinct varegr codes total.
+- `land` joins dim.lande_uhv at niveau=4 (individual countries) for 35 codes. Seven codes are unmatched: DK (Danmark), U2 (Euroområdet/EU-27), D2 (EU-28), D3 (EU-27), V5 (EU-27 pre-Brexit), V3 (EU-15), RS (Serbien). These are Eurostat aggregate codes plus Denmark itself — reference them directly without joining the dim. DK is the most important unmatched code for Danish context.
+- Sample query — Denmark's price level for top-level categories (EU-27=100, 2023): `SELECT varegr, indhold FROM fact.ppp WHERE land='DK' AND enhed=29 AND tid='2023-01-01' AND varegr IN ('A0','A01','P02')` → BNP 132.3, Individuelt forbrug 144.3, Tjenester 156.6.
+- To list countries by name, join dim.lande_uhv on niveau=4. For the 7 unmatched codes, add them manually or use a CASE expression.

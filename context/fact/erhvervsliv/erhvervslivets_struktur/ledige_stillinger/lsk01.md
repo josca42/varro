@@ -1,0 +1,15 @@
+table: fact.lsk01
+description: Ledige stillinger efter branche, enhed, størrelse og tid
+measure: indhold (unit -)
+columns:
+- branche: values [0=I alt, 2=2 Industri, råstofindvinding og forsyningsvirksomhed, 3=3 Bygge og anlæg, 4=4 Handel og transport mv., 5=5 Information og kommunikation, 6-7=6-7 Finansiering, forsikring og ejendomshandel, 8=8 Erhvervsservice]
+- enhed: values [LS=Ledige stillinger (antal), ALS=Andel ledige stillinger (procent)]
+- storrelse: values [0=Arbejdssteder i alt, 105=1-9 ansatte, 115=10-49 ansatte, 125=50-99 ansatte, 130=100 ansatte og derover, 135=Fiktive enheder]
+- tid: date range 2010-01-01 to 2025-04-01
+
+notes:
+- Quarterly data (tid steps are Jan/Apr/Jul/Oct). For annual data, use ls01.
+- enhed is a measurement selector: LS=antal, ALS=procent. Always filter to one. ALS must never be summed.
+- branche code 0 = I alt (all industries). Codes 2-8 are individual industries. Exclude code 0 when working with industry breakdown to avoid double-counting.
+- storrelse code 0 = all sizes total. Codes 105/115/125/130 are size bands. Code 135 = Fiktive enheder (included in 0). Filter storrelse=0 for the size-aggregated total.
+- Simple national quarterly vacancy count: WHERE branche='0' AND storrelse=0 AND enhed='LS'.

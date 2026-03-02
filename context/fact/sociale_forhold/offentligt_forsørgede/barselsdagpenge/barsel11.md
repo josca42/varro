@@ -1,0 +1,18 @@
+table: fact.barsel11
+description: Dage med barselsdagpenge (forældreårgange) efter enhed, berettigelse, sektor, social status, branche og tid
+measure: indhold (unit -)
+columns:
+- enhed: values [1=Antal fædre, 2=Antal mødre, 200=Mor - Dage med barselsdagpenge i alt (gennemsnit), 202=Mor - Dage med barselsdagpenge før fødsel (gennemsnit), 220=Mor - Dage med barselsdagpenge efter fødsel (gennemsnit), 330=Far - Dage med barselsdagpenge efter fødsel (gennemsnit), 400=Mor - Dage med barselsdagpenge med løn i alt (gennemsnit), 404=Mor - Dage med barselsdagpenge med løn før fødsel (gennemsnit), 440=Mor - Dage med barselsdagpenge med løn efter fødsel (gennemsnit), 550=Far - Dage med barselsdagpenge med løn efter fødsel (gennemsnit), 600=Mor - Dage med barselsdagpenge uden løn i alt (gennemsnit), 606=Mor - Dage med barselsdagpenge uden løn før fødsel (gennemsnit), 660=Mor - Dage med barselsdagpenge uden løn efter fødsel (gennemsnit), 770=Far - Dage med barselsdagpenge uden løn efter fødsel (gennemsnit), 800=Mor - Fuldtidsdage med delvist genoptaget arbejde i alt (gennemsnit), 808=Mor - Fuldtidsdage med delvist genoptaget arbejde før fødsel (gennemsnit), 880=Mor - Fuldtidsdage med delvist genoptaget arbejde efter fødsel (gennemsnit), 990=Far - Fuldtidsdage med delvist genoptaget arbejde efter fødsel (gennemsnit)]
+- beret: values [201=Far er berettiget til barselsdagpenge, 203=Far holdt barselsorlov, 310=Mor er berettiget til barselsdagpenge, 330=Mor holdt barselsorlov, 511=Både mor og far er berettigede til barselsdagpenge, 513=Mor er berettiget, far holdt barselslov, 519=Mor er berettiget, far er ikke berettiget til barselsdagpenge, 631=Mor holdt barselsorlov, far er berettiget, 633=Både mor og far holdt barseslsorlov, 639=Mor holdt barselsorlov, far er ikke berettiget til barselsdagpenge, 791=Mor er ikke berettiget, far er berettiget til barselsdagpenge, 793=Mor er ikke berettiget, far holdt barselsorlov]
+- sektor: values [0=Sektor i alt, 120=Offentlig sektor, i alt, 230=Private sektor, i alt, 231=Private sektor, lønmodtager, 233=Private sektor, selvstændig, 340=Forsikret ledige, 440=Skift mellem sektorer under barsel, 990=Ukendt sektor]
+- socialstatus: values [0=I alt, 1015=Selvstændig eller medarbejdende ægtefæller, 1520=Topledere eller lønmodtager på højeste niveau, 2500=Lønmodtagere på mellemniveau, 3000=Lønmodtager på grundniveau, 3040=Andre lønmodtagere og u.n.a., 9900=Andre eller ukendt]
+- branche: join dim.db on branche=kode::text [approx: Fact uses simplified codes (1, 10, TOT) without dots; db uses dotted codes (01, 01.1)]; levels [2, 3]
+- tid: date range 2015-01-01 to 2023-01-01
+dim docs: /dim/db.md
+
+notes:
+- `enhed` is a measurement selector (counts + averages): values 1/2 are antal fædre/mødre (raw counts); values 200+ are averages (days). Do not mix — always filter to a single `enhed` value.
+- `sektor` total is `'0'`. `socialstatus` total is `'0'`. Filter both to `'0'` when not analysing sector/status breakdown. These are independent dimensions and leaving either unfiltered inflates results.
+- `beret` has no explicit total code here (unlike barsel04). The most inclusive codes are `511` (both entitled) or individual parent codes. To get all parents, use the highest-level code that suits the question or sum explicitly — there is no single "all" code.
+- `branche` joins dim.db at niveau 2 (integer codes 1, 2, 3, 5–11 match NACE divisions). Join: `JOIN dim.db d ON f.branche = d.kode::text AND d.niveau = 2`. Code `'TOT'` = national total (not in dim); code `'4'` = custom aggregate not in dim.db (covers divisions 5–9, raw material extraction sector). Exclude both from dim joins.
+- No regional breakdown in this table. For regional data use barsel04.
