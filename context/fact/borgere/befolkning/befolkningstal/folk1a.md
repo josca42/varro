@@ -11,7 +11,7 @@ dim docs: /dim/nuts.md
 
 notes:
 - omrade has 3 hierarchy levels in the same column: omrade='0' (Hele landet, not in dim.nuts), niveau=1 (5 regioner), niveau=3 (99 kommuner). Every person is counted at all three levels — summing without filtering inflates by 3x (verified: no-filter SUM = 17.98M vs correct 5.99M for Jan 2025).
-- For national total: omrade='0'. For regions: JOIN dim.nuts d ON f.omrade=d.kode::text WHERE d.niveau=1. For municipalities: WHERE d.niveau=3. Never mix levels in the same query.
+- For national total: omrade='0'. For regions: JOIN dim.nuts d ON f.omrade=d.kode WHERE d.niveau=1. For municipalities: WHERE d.niveau=3. Never mix levels in the same query.
 - This table has 5 dimension columns (omrade, kon, alder, civilstand, tid). Filter all non-target dimensions to their total: kon='TOT', alder='IALT', civilstand='TOT'. Forgetting any one inflates the sum.
 - alder has 126 individual ages (0–125) plus IALT. For age groups, aggregate in SQL with CASE expressions — there is no pre-aggregated age-group dimension.
 - civilstand G=Gift/separeret covers both married and legally separated in one code.
