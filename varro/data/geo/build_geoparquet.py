@@ -35,6 +35,48 @@ LAYERS = [
         "dim_kode": lambda gdf: gdf["nuts3"].map(LANDSDELE_NUTS3_TO_DIM_KODE),
         "tolerance": 150,
     },
+    {
+        "name": "politikredse",
+        "file": "politikredse.geojson",
+        "dim_kode": lambda gdf: gdf["kode"].astype(int) - 1459,
+        "tolerance": 200,
+    },
+    {
+        "name": "retskredse",
+        "file": "retskredse.geojson",
+        "dim_kode": lambda gdf: gdf["kode"].astype(int),
+        "tolerance": 150,
+    },
+    {
+        "name": "sogne",
+        "file": "sogne.geojson",
+        "dim_kode": lambda gdf: gdf["kode"].astype(int),
+        "tolerance": 50,
+    },
+    {
+        "name": "postnumre",
+        "file": "postnumre.geojson",
+        "dim_kode": lambda gdf: gdf["nr"].astype(int),
+        "tolerance": 50,
+    },
+    {
+        "name": "storkredse",
+        "file": "storkredse.geojson",
+        "dim_kode": lambda gdf: gdf["nummer"].astype(int),
+        "tolerance": 200,
+    },
+    {
+        "name": "valgkredse",
+        "file": "valgkredse.geojson",
+        "dim_kode": lambda gdf: gdf["kode"].astype(int),
+        "tolerance": 100,
+    },
+    {
+        "name": "afstemningsomraader",
+        "file": "afstemningsomraader.geojson",
+        "dim_kode": lambda gdf: gdf["dagi_id"].astype(int),
+        "tolerance": 30,
+    },
 ]
 
 

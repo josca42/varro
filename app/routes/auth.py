@@ -5,6 +5,7 @@ import json
 import os
 import secrets
 import time
+from urllib.parse import urlsplit
 
 import resend
 from fasthtml.common import APIRouter, RedirectResponse
@@ -117,6 +118,23 @@ def token_secret() -> str:
     return secret
 
 
+def safe_next_path(next_path: str | None) -> str | None:
+    if not next_path:
+        return None
+    value = next_path.strip()
+    if not value.startswith("/") or value.startswith("//"):
+        return None
+    parsed = urlsplit(value)
+    if parsed.scheme or parsed.netloc:
+        return None
+    path = parsed.path or "/"
+    if not path.startswith("/"):
+        return None
+    query = f"?{parsed.query}" if parsed.query else ""
+    fragment = f"#{parsed.fragment}" if parsed.fragment else ""
+    return f"{path}{query}{fragment}"
+
+
 def _b64encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode().rstrip("=")
 
@@ -212,41 +230,69 @@ If you did not request this, you can ignore this email.
 
 
 @ar("/login", methods=["GET"])
-def login(sess, error: str | None = None, info: str | None = None):
+def login(
+    sess,
+    error: str | None = None,
+    info: str | None = None,
+    next: str | None = None,
+):
     if sess.get("auth"):
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse("/app", status_code=303)
+    next_path = safe_next_path(next)
     error_msg, info_msg = auth_notices(error, info)
     links = AuthLinks(
         Link("Need an account? Sign up", href=signup),
         Link("Forgot password?", href=password_reset),
         Link("Resend verification", href=verify_email_resend),
     )
+    oauth_href = auth_google.to(next=next_path) if next_path else auth_google
     return AuthFormCard(
         "Sign in",
-        AuthLoginForm(login_post),
+        AuthLoginForm(login_post, next_path=next_path),
         subtitle="Log in to your account",
         notices=AuthNotices(error_msg, info_msg),
-        oauth_cta=AuthGoogleCta(google_enabled(), auth_google),
+        oauth_cta=AuthGoogleCta(google_enabled(), oauth_href),
         links=links,
     )
 
 
 @ar("/login", methods=["POST"])
-def login_post(email: str | None = None, password: str | None = None, sess=None):
+def login_post(
+    email: str | None = None,
+    password: str | None = None,
+    next: str | None = None,
+    sess=None,
+):
+    next_path = safe_next_path(next)
     if not email or not password:
-        return RedirectResponse(login.to(error="missing_fields"), status_code=303)
+        return RedirectResponse(
+            login.to(error="missing_fields", next=next_path),
+            status_code=303,
+        )
     email = email.strip().lower()
     db_user = user_crud.get_by_email(email)
     if not db_user:
-        return RedirectResponse(login.to(error="invalid_credentials"), status_code=303)
+        return RedirectResponse(
+            login.to(error="invalid_credentials", next=next_path),
+            status_code=303,
+        )
     if not db_user.is_active:
-        return RedirectResponse(login.to(error="account_inactive"), status_code=303)
+        return RedirectResponse(
+            login.to(error="account_inactive", next=next_path),
+            status_code=303,
+        )
     if not db_user.password_hash:
-        return RedirectResponse(login.to(error="oauth_only"), status_code=303)
+        return RedirectResponse(
+            login.to(error="oauth_only", next=next_path),
+            status_code=303,
+        )
     if not user_crud.verify_password(password, db_user.password_hash):
-        return RedirectResponse(login.to(error="invalid_credentials"), status_code=303)
+        return RedirectResponse(
+            login.to(error="invalid_credentials", next=next_path),
+            status_code=303,
+        )
     sess["auth"] = db_user.id
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(next_path or "/app", status_code=303)
 
 
 @ar("/signup", methods=["GET"])
@@ -452,10 +498,18 @@ def password_reset_confirm_post(
 
 
 @ar("/auth/google", methods=["GET"])
-def auth_google(req, sess):
+def auth_google(req, sess, next: str | None = None):
+    next_path = safe_next_path(next)
+    if next_path:
+        sess["oauth_next"] = next_path
+    else:
+        sess.pop("oauth_next", None)
     client = google_client()
     if not client:
-        return RedirectResponse(login.to(error="google_not_configured"), status_code=303)
+        return RedirectResponse(
+            login.to(error="google_not_configured", next=next_path),
+            status_code=303,
+        )
     state = secrets.token_urlsafe(16)
     sess["oauth_state"] = state
     login_url = client.login_link(
@@ -499,11 +553,13 @@ def auth_google_callback(
         name = info.get("name") if info else None
         db_user = user_crud.create(User(email=email, name=name))
     sess["auth"] = db_user.id
-    return RedirectResponse("/", status_code=303)
+    next_path = safe_next_path(sess.pop("oauth_next", None))
+    return RedirectResponse(next_path or "/app", status_code=303)
 
 
 @ar("/logout", methods=["GET"])
 def logout(sess):
     sess.pop("auth", None)
     sess.pop("oauth_state", None)
+    sess.pop("oauth_next", None)
     return RedirectResponse("/login", status_code=303)

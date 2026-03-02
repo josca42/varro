@@ -31,6 +31,18 @@ class DashboardTestEnv:
     def base_url(self) -> str:
         return f"/dashboard/{self.dashboard_name}"
 
+    @property
+    def public_base_url(self) -> str:
+        return f"/public/{self.user_id}/{self.dashboard_name}"
+
+    def dashboard_dir(self, user_id: int, name: str | None = None) -> Path:
+        slug = name or self.dashboard_name
+        return self.dashboards_root / "user" / str(user_id) / "dashboard" / slug
+
+    def public_dashboard_dir(self, owner_id: int, name: str | None = None) -> Path:
+        slug = name or self.dashboard_name
+        return self.dashboards_root / "public" / str(owner_id) / slug
+
 
 def _seed_db(engine: Engine, table_name: str) -> None:
     with engine.begin() as conn:
@@ -181,8 +193,23 @@ def dashboard_env(tmp_path: Path) -> DashboardTestEnv:
     _write_dashboard(dashboards_dir / dashboard_name, table_name)
 
     app, _ = daisy_app()
+
+    @app.get("/__test/login/{test_user_id}")
+    def test_login(test_user_id: int, sess):
+        sess["auth"] = test_user_id
+        sess["user_id"] = test_user_id
+        return "ok"
+
+    @app.get("/__test/logout")
+    def test_logout(sess):
+        sess.pop("auth", None)
+        sess.pop("user_id", None)
+        sess.pop("chat_id", None)
+        return "ok"
+
     mount_dashboard_routes(app, dashboards_root, engine)
     client = TestClient(app)
+    client.get(f"/__test/login/{user_id}")
 
     yield DashboardTestEnv(
         client=client,

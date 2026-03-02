@@ -1,8 +1,7 @@
 from datetime import datetime
 import json
 from dataclasses import dataclass
-from difflib import SequenceMatcher
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import pandas as pd
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from typing import Callable
@@ -16,32 +15,24 @@ from pydantic_ai import (
 )
 from pydantic_ai.messages import ToolReturn
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
-from varro.data.utils import (
-    df_preview,
-    df_dtypes,
-    df_dtype_map,
-    normalize_column_name,
-)
+from varro.data.utils import df_preview, df_dtypes, df_dtype_map
 from varro.context.utils import fuzzy_match
-from varro.agent.utils import show_element
-from varro.agent.utils import get_dim_tables
-from varro.agent.utils import generate_hierarchy
+from varro.agent.utils import show_element, get_dim_tables, generate_hierarchy
 from varro.agent.filesystem import read_file, write_file, edit_file
+from varro.agent.skills import build_available_skills_prompt
+from varro.agent.columns import normalize_table_name, filter_dimension_values_for_table
 from varro.db.db import dst_read_engine
-from varro.config import COLUMN_VALUES_DIR, DST_DIMENSION_LINKS_DIR
+from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
 from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
 from varro.agent.bash import run_bash_command
-from varro.agent.dashboard_validation import (
+from varro.dashboard.verify import (
     format_validation_error,
     format_validation_result,
-    format_validation_summary,
     validate_dashboard_url,
     validate_select_filter_values,
-    validate_single_query,
-    validate_outputs_syntax,
-    validate_dashboard_structure,
+    run_validation_after_write,
 )
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.agent.workspace import user_workspace_root
@@ -51,7 +42,6 @@ logfire.configure(scrubbing=False)
 logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
-DIMENSION_LINKS_DIR = DST_DIMENSION_LINKS_DIR
 
 sonnet_model = AnthropicModel("claude-opus-4-6")
 sonnet_settings = AnthropicModelSettings(
@@ -98,6 +88,7 @@ agent = Agent(
 async def get_system_prompt(ctx: RunContext[AssistantRunDeps]) -> str:
     prompts = {
         "CURRENT_DATE": datetime.now().strftime("%Y-%m-%d"),
+        "AVAILABLE_SKILLS": build_available_skills_prompt(ctx.deps.user_id),
         **get_static_prompts(),
     }
     return crud.prompt.render_prompt(name="rigsstatistiker", **prompts)
@@ -111,155 +102,6 @@ def get_static_prompts() -> dict[str, str]:
     if _STATIC_PROMPTS is None:
         _STATIC_PROMPTS = {"SUBJECT_HIERARCHY": generate_hierarchy()}
     return _STATIC_PROMPTS
-
-
-def _parse_dashboard_file_path(file_path: str) -> tuple[str, str] | None:
-    """Parse a sandbox file path into (slug, file_kind).
-
-    file_kind is one of: "sql", "outputs", "dashboard_md", or None if not a
-    recognised dashboard file.
-    """
-    path = PurePosixPath(file_path)
-    if not path.is_absolute():
-        return None
-    parts = [part for part in path.parts if part != "/"]
-    if len(parts) < 3 or parts[0] != "dashboard":
-        return None
-    slug = parts[1].strip()
-    if not slug:
-        return None
-    tail = parts[2:]
-    if tail == ["outputs.py"]:
-        return slug, "outputs"
-    if tail == ["dashboard.md"]:
-        return slug, "dashboard_md"
-    if len(tail) == 2 and tail[0] == "queries" and tail[1].endswith(".sql"):
-        return slug, "sql"
-    return None
-
-
-def run_dashboard_validation_after_write(
-    ctx: RunContext[AssistantRunDeps], file_path: str
-) -> str | None:
-    parsed = _parse_dashboard_file_path(file_path)
-    if not parsed:
-        return None
-    slug, kind = parsed
-    workspace = user_workspace_root(ctx.deps.user_id)
-    dashboard_dir = workspace / "dashboard" / slug
-
-    if kind == "sql":
-        sql_path = dashboard_dir / PurePosixPath(file_path).relative_to(f"/dashboard/{slug}")
-        if not sql_path.exists():
-            return None
-        error = validate_single_query(sql_path.read_text())
-        if error:
-            return f"SQL validation error in {sql_path.name}: {error}"
-        return f"SQL validation passed for {sql_path.name}."
-
-    if kind == "outputs":
-        outputs_path = dashboard_dir / "outputs.py"
-        if not outputs_path.exists():
-            return None
-        error = validate_outputs_syntax(outputs_path.read_text())
-        if error:
-            return f"outputs.py validation error: {error}"
-        return "outputs.py syntax OK."
-
-    if kind == "dashboard_md":
-        warnings = validate_dashboard_structure(dashboard_dir)
-        if warnings:
-            return "dashboard.md structure warnings:\n" + "\n".join(f"- {w}" for w in warnings)
-        return "dashboard.md structure OK."
-
-    return None
-
-
-def normalize_table_name(table: str) -> str:
-    return table.strip().lower().replace("fact.", "").replace("dim.", "")
-
-
-def load_dimension_links(table: str) -> dict[str, str]:
-    path = DIMENSION_LINKS_DIR / f"{table.upper()}.json"
-    if not path.exists():
-        return {}
-    entries = json.loads(path.read_text())
-    links = {}
-    for entry in entries:
-        links[normalize_column_name(entry["column"])] = entry["dimension"].strip().lower()
-    return links
-
-
-def get_fact_value_files(table: str) -> list[Path]:
-    table_dir = COLUMN_VALUES_DIR / table
-    if not table_dir.exists():
-        raise ModelRetry(f"No column values directory found for fact table '{table}'.")
-    files = sorted(table_dir.glob("*.parquet"))
-    if not files:
-        raise ModelRetry(f"No fact column values found for table '{table}'.")
-    return files
-
-# TODO: If no overlap then create an appropriate string representation with the report generated
-# and then let the Agent decide the best action going forward.
-def infer_fact_column_for_dim(df: pd.DataFrame, dim_table: str, for_table: str) -> str:
-    value_files = get_fact_value_files(for_table)
-    columns = [file.stem for file in value_files]
-
-    prefix_matches = sorted(col for col in columns if dim_table.startswith(col))
-    if len(prefix_matches) == 1:
-        return prefix_matches[0]
-
-    ranked_names = sorted(
-        ((col, SequenceMatcher(None, col, dim_table).ratio()) for col in columns),
-        key=lambda item: item[1],
-        reverse=True,
-    )
-    if ranked_names and ranked_names[0][1] >= 0.7:
-        return ranked_names[0][0]
-
-    codes = {str(code) for code in df["kode"].dropna()}
-    ranked_overlaps = []
-    for file in value_files:
-        values = pd.read_parquet(file)
-        if "id" not in values:
-            continue
-        value_ids = {str(value) for value in values["id"].dropna()}
-        overlap = len(value_ids & codes)
-        overlap_ratio = overlap / len(value_ids) if value_ids else 0.0
-        ranked_overlaps.append((file.stem, overlap, overlap_ratio))
-
-    ranked_overlaps.sort(key=lambda item: (item[1], item[2]), reverse=True)
-    if ranked_overlaps and ranked_overlaps[0][1] > 0:
-        return ranked_overlaps[0][0]
-
-    raise ModelRetry(
-        f"Could not infer a fact column in '{for_table}' for dim table '{dim_table}'."
-    )
-
-# TODO: Again implement good messages to the agent here about, what is happening. It is important that the knows a filter has been applied and what the filter is. Primarily, due to error cases where case mismatch like "001" vs "1" etc.. And hence filter should not be applied blindly.
-def filter_dimension_values_for_table(
-    df: pd.DataFrame, dim_table: str, for_table: str
-) -> pd.DataFrame:
-    links = load_dimension_links(for_table)
-    fact_columns = sorted(col for col, dim in links.items() if dim == dim_table)
-    fact_column = (
-        fact_columns[0]
-        if fact_columns
-        else infer_fact_column_for_dim(df, dim_table, for_table)
-    )
-    fact_values_path = COLUMN_VALUES_DIR / for_table / f"{fact_column}.parquet"
-    if not fact_values_path.exists():
-        raise ModelRetry(
-            f"Missing column values for '{for_table}.{fact_column}' at '{fact_values_path}'."
-        )
-
-    fact_values = pd.read_parquet(fact_values_path)
-    if "id" not in fact_values:
-        raise ModelRetry(
-            f"Column values file for '{for_table}.{fact_column}' must include an 'id' column."
-        )
-    codes = {str(code) for code in fact_values["id"].dropna()}
-    return df[df["kode"].astype(str).isin(codes)]
 
 
 @agent.tool_plain(docstring_format="google")
@@ -441,7 +283,7 @@ def Write(ctx: RunContext[AssistantRunDeps], file_path: str, content: str) -> st
     result = write_file(file_path, content, user_id=ctx.deps.user_id)
     if result.startswith("Error:"):
         return result
-    validation = run_dashboard_validation_after_write(ctx, file_path)
+    validation = run_validation_after_write(ctx.deps.user_id, file_path)
     if not validation:
         return result
     return f"{result}\n{validation}"
@@ -482,7 +324,7 @@ def Edit(
     )
     if result.startswith("Error:"):
         return result
-    validation = run_dashboard_validation_after_write(ctx, file_path)
+    validation = run_validation_after_write(ctx.deps.user_id, file_path)
     if not validation:
         return result
     return f"{result}\n{validation}"

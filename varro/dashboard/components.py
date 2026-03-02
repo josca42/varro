@@ -68,7 +68,7 @@ def render_filter(
     return None
 
 
-def render_placeholder(dash_name: str, output_type: str, output_name: str) -> Any:
+def render_placeholder(base_path: str, output_type: str, output_name: str) -> Any:
     """Render a placeholder card that lazy-loads via HTMX."""
     return Card(
         CardBody(
@@ -76,7 +76,7 @@ def render_placeholder(dash_name: str, output_type: str, output_name: str) -> An
                 Span(cls="loading loading-spinner"),
                 cls="flex justify-center items-center h-32",
             ),
-            hx_get=f"/dashboard/{dash_name}/_/{output_type}/{output_name}",
+            hx_get=f"{base_path}/_/{output_type}/{output_name}",
             hx_include="#filters",
             hx_trigger="load, filtersChanged from:body",
             hx_swap="innerHTML",
@@ -112,6 +112,7 @@ def render_tabs(
     dash: Dashboard,
     filters: dict[str, Any],
     options: dict[str, list[SelectOption]],
+    base_path: str,
 ) -> Any:
     """Render tabs with Alpine.js."""
     tab_buttons = []
@@ -131,7 +132,7 @@ def render_tabs(
         )
         tab_contents.append(
             Div(
-                *render_ast(tab.children, dash, filters, options),
+                *render_ast(tab.children, dash, filters, options, base_path),
                 x_show=f"active === {i}",
                 x_cloak=True,
             )
@@ -149,6 +150,7 @@ def render_ast(
     dash: Dashboard,
     filters: dict[str, Any],
     options: dict[str, list[SelectOption]],
+    base_path: str,
 ) -> list[Any]:
     """Render AST nodes to FastHTML """
     result = []
@@ -162,7 +164,7 @@ def render_ast(
             output_map = {"fig": "figure", "df": "table", "metric": "metric"}
             if node.type in output_map:
                 name = node.attrs.get("name", "")
-                result.append(render_placeholder(dash.name, output_map[node.type], name))
+                result.append(render_placeholder(base_path, output_map[node.type], name))
 
         elif isinstance(node, ContainerNode):
             if node.type == "filters":
@@ -177,7 +179,7 @@ def render_ast(
                     HtmlForm(
                         *filter_elements,
                         id="filters",
-                        hx_get=f"/dashboard/{dash.name}/_/filters",
+                        hx_get=f"{base_path}/_/filters",
                         hx_trigger="change delay:500ms",
                         hx_swap="none",
                         cls="flex flex-wrap gap-4 items-end mb-6 p-4 bg-base-200 rounded-box",
@@ -186,7 +188,7 @@ def render_ast(
 
             elif node.type == "grid":
                 cols = node.attrs.get("cols", "2")
-                children = render_ast(node.children, dash, filters, options)
+                children = render_ast(node.children, dash, filters, options, base_path)
                 result.append(Grid(*children, cols=int(cols), gap=4))
 
             elif node.type == "tabs":
@@ -196,13 +198,13 @@ def render_ast(
                     if isinstance(c, ContainerNode) and c.type == "tab"
                 ]
                 if tab_nodes:
-                    result.append(render_tabs(tab_nodes, dash, filters, options))
+                    result.append(render_tabs(tab_nodes, dash, filters, options, base_path))
 
             elif node.type == "tab":
                 pass
 
             else:
-                children = render_ast(node.children, dash, filters, options)
+                children = render_ast(node.children, dash, filters, options, base_path)
                 result.extend(children)
 
     return result
@@ -212,7 +214,8 @@ def render_shell(
     dash: Dashboard,
     filters: dict[str, Any],
     options: dict[str, list[SelectOption]],
+    base_path: str,
 ) -> Any:
     """Render the full dashboard shell."""
-    content = render_ast(dash.ast, dash, filters, options)
+    content = render_ast(dash.ast, dash, filters, options, base_path)
     return Div(*content, cls="p-6", data_slot="dashboard-shell")

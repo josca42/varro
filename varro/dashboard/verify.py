@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
@@ -367,3 +367,61 @@ def validate_dashboard_structure(dashboard_dir: Path) -> list[str]:
                 )
 
     return warnings
+
+
+# --- Write-time validation helpers ---
+
+
+def _parse_dashboard_file_path(file_path: str) -> tuple[str, str] | None:
+    path = PurePosixPath(file_path)
+    if not path.is_absolute():
+        return None
+    parts = [part for part in path.parts if part != "/"]
+    if len(parts) < 3 or parts[0] != "dashboard":
+        return None
+    slug = parts[1].strip()
+    if not slug:
+        return None
+    tail = parts[2:]
+    if tail == ["outputs.py"]:
+        return slug, "outputs"
+    if tail == ["dashboard.md"]:
+        return slug, "dashboard_md"
+    if len(tail) == 2 and tail[0] == "queries" and tail[1].endswith(".sql"):
+        return slug, "sql"
+    return None
+
+
+def run_validation_after_write(user_id: int, file_path: str) -> str | None:
+    parsed = _parse_dashboard_file_path(file_path)
+    if not parsed:
+        return None
+    slug, kind = parsed
+    workspace = user_workspace_root(user_id)
+    dashboard_dir = workspace / "dashboard" / slug
+
+    if kind == "sql":
+        sql_path = dashboard_dir / PurePosixPath(file_path).relative_to(f"/dashboard/{slug}")
+        if not sql_path.exists():
+            return None
+        error = validate_single_query(sql_path.read_text())
+        if error:
+            return f"SQL validation error in {sql_path.name}: {error}"
+        return f"SQL validation passed for {sql_path.name}."
+
+    if kind == "outputs":
+        outputs_path = dashboard_dir / "outputs.py"
+        if not outputs_path.exists():
+            return None
+        error = validate_outputs_syntax(outputs_path.read_text())
+        if error:
+            return f"outputs.py validation error: {error}"
+        return "outputs.py syntax OK."
+
+    if kind == "dashboard_md":
+        warnings = validate_dashboard_structure(dashboard_dir)
+        if warnings:
+            return "dashboard.md structure warnings:\n" + "\n".join(f"- {w}" for w in warnings)
+        return "dashboard.md structure OK."
+
+    return None

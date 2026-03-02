@@ -6,6 +6,7 @@
 - `beforeware` now follows the auth-first pattern:
   - `auth = req.scope["auth"] = sess.get("auth")`
   - unauthenticated internal requests redirect to `/login` (303)
+  - unauthenticated requests under `/public/*` are allowed
   - authenticated requests set `sess["user_id"] = auth`
   - chat state is initialized with `req.state.chats = crud.chat.for_user(auth)`
 - Auth skip list combines:
@@ -31,6 +32,11 @@
   - `PUT /app/code` saves editor content with hash guard for optimistic conflict handling.
 - Internal routes requiring auth include:
   - `/app`, `/app/code`, `/settings`, `/chat*`, `/dashboard*`, `/commands/search`.
+- Public dashboard routes are anonymous-readable:
+  - `/public/{owner_id}/{slug}`
+  - `/public/{owner_id}/{slug}/_/*` lazy output/filter endpoints
+  - `/public/_/context-action`
+  - `/public/{owner_id}/{slug}/fork` (redirects to login if anonymous)
 - Legacy `/welcome/code` is no longer routed.
 
 ## Shell layout (`ui/app/layout.py`)
@@ -53,6 +59,10 @@ Content panel behavior:
   - dashboard fallback -> `/app`
   - code fallback -> `/app/code`
   - overview -> `/app`
+- Navbar includes dynamic context actions loaded from `/public/_/context-action`:
+  - private dashboard: `Publish` / `Update`
+  - public dashboard: `Edit`
+- Navbar shows a `Sign in` button when no authenticated user is present.
 - Command palette Home command now targets `/app`.
 - `GET /chat` redirect target is `/app`.
 
