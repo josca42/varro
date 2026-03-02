@@ -25,10 +25,11 @@ def create_user_workspace(user_id: int) -> Path:
     root = user_workspace_root(user_id)
     root.mkdir(parents=True, exist_ok=True)
 
-    for source in (CONTEXT_DIR | AGENT_DATA_DIR).iterdir():
-        target = root / source.name
-        rel_source = Path(os.path.relpath(source, start=target.parent))
-        target.symlink_to(rel_source, target_is_directory=True)
+    for dir_path in (CONTEXT_DIR, AGENT_DATA_DIR):
+        for source in dir_path.iterdir():
+            target = root / source.name
+            rel_source = Path(os.path.relpath(source, start=target.parent))
+            target.symlink_to(rel_source, target_is_directory=True)
 
     for source in USER_WORKSPACE_INIT_DIR.iterdir():
         target = root / source.name

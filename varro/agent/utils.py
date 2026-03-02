@@ -1,3 +1,4 @@
+from functools import lru_cache
 from sqlalchemy import text
 from varro.db.db import dst_read_engine
 from pydantic_ai import BinaryContent
@@ -11,13 +12,14 @@ from varro.agent.images import (
 )
 from varro.data.utils import df_preview
 import pandas as pd
+import geopandas as gpd
 from pandas.io.formats.style import Styler
 import matplotlib.pyplot as plt
 import io
 from typing import Any
 
 from pathlib import Path
-from varro.config import SUBJECTS_DIR
+from varro.config import SUBJECTS_DIR, GEO_DIR
 
 
 def generate_hierarchy() -> str:
@@ -57,6 +59,15 @@ def get_dim_tables() -> tuple[str, ...]:
                 )
             )
         )
+
+
+@lru_cache
+def _load_geo(layer: str) -> gpd.GeoDataFrame:
+    return gpd.read_parquet(GEO_DIR / f"{layer}.parquet")
+
+
+def get_geo(layer: str) -> gpd.GeoDataFrame:
+    return _load_geo(layer).copy(deep=False)
 
 
 # Helper functions for allowing the agent to view plotly and matplotlib figures

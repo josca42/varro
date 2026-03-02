@@ -185,7 +185,7 @@ def Sql(ctx: RunContext[AssistantRunDeps], query: str, df_name: str | None = Non
 async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] = []):
     """
     Stateful Jupyter notebook environment. Each call executes as a new cell.
-    All printed output in the notebook cell will be included in the response.
+    Only printed output (stdout) in the notebook cell will be included in the text response.
 
     To see figures and dataframes in the response then add the name of the figure or dataframe to the show list. Do not call fig.show() or plt.show() — figures are displayed via the show parameter only.
 
@@ -198,6 +198,8 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     import plotly.express as px
     import plotly.graph_objects as go
     import matplotlib.pyplot as plt
+    import geopandas as gpd
+    from varro.agent.utils import get_geo
     ```
 
     Args:

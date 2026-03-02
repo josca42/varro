@@ -32,8 +32,7 @@ Each file is a GeoParquet with:
 ## Add geo data
 
 ```python
-import geopandas as gpd
-geo = gpd.read_parquet("/geo/kommuner.parquet")
+geo = get_geo("kommuner")
 df = df[df["omrade"] != 0]  # drop whole-country aggregate
 merged = geo.merge(df, left_index=True, right_on="omrade")
 ```
