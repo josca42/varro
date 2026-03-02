@@ -87,6 +87,10 @@ def _user_dropdown(user_name: str | None = None, user_email: str | None = None):
     )
 
 
+def _sign_in_button():
+    return A("Sign in", href="/login", cls="btn btn-outline btn-sm")
+
+
 def NavbarNavScript():
     return Script(
         """
@@ -131,6 +135,28 @@ def NavbarNavScript():
     }
     window.location.assign(url);
   };
+
+  window.__varroRefreshNavbarContextAction = function() {
+    const target = document.getElementById('navbar-context-action');
+    if (!target || !window.htmx) return;
+    const current = `${window.location.pathname}${window.location.search || ''}`;
+    htmx.ajax('GET', `/public/_/context-action?url=${encodeURIComponent(current)}`, {
+      target: '#navbar-context-action',
+      swap: 'innerHTML',
+    });
+  };
+
+  document.body.addEventListener('htmx:afterSwap', (event) => {
+    const target = event?.detail?.target;
+    if (!target || target.id !== 'content-panel') return;
+    window.__varroRefreshNavbarContextAction();
+  });
+
+  window.addEventListener('popstate', () => {
+    window.__varroRefreshNavbarContextAction();
+  });
+
+  window.__varroRefreshNavbarContextAction();
 })();
 """
     )
@@ -163,8 +189,16 @@ def Navbar(
         cls="hidden lg:flex",
     )
 
+    context_action = Div(id="navbar-context-action", cls="flex items-center")
+    account_control = (
+        _user_dropdown(user_name, user_email)
+        if (user_name or user_email)
+        else _sign_in_button()
+    )
+
     end = NavbarEnd(
-        _user_dropdown(user_name, user_email),
+        context_action,
+        account_control,
         cls="flex gap-2 items-center",
     )
 

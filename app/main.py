@@ -24,14 +24,14 @@ STATIC_SKIP = [
 ]
 
 LOGIN_REDIRECT = RedirectResponse("/login", status_code=303)
-DEV_USER_ID = 1  # Just for development purposes.
 
 
 def before(req, sess):
-    # auth = req.scope["auth"] = sess.get("auth")
-    # if not auth:
-    #     return LOGIN_REDIRECT
-    auth = DEV_USER_ID
+    auth = req.scope["auth"] = sess.get("auth")
+    if not auth:
+        if req.url.path.startswith("/public/"):
+            return
+        return LOGIN_REDIRECT
     sess["user_id"] = auth
     req.state.chats = crud.chat.for_user(auth)
 

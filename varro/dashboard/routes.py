@@ -6,12 +6,23 @@ FastHTML routes for dashboards with on-demand loading.
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode, urlsplit
 
-from fasthtml.common import APIRouter, A, Button, Div, Form, Input, Response, Textarea
+from fasthtml.common import (
+    APIRouter,
+    A,
+    Button,
+    Div,
+    Form,
+    Input,
+    RedirectResponse,
+    Response,
+    Textarea,
+)
 from sqlalchemy.engine import Engine
 
 from varro.dashboard.loader import Dashboard, load_dashboard
@@ -28,12 +39,15 @@ from varro.dashboard.components import (
     render_figure,
 )
 from varro.dashboard.filters import Filter, SelectFilter
+from varro.dashboard.public_fs import (
+    copy_dashboard_source,
+    has_public_dashboard,
+    next_fork_slug,
+    public_dashboard_dir,
+)
 from varro.db import crud
 from ui.app.layout import AppShell
 
-# TODO: remove the sess.get("user_id", 1) and use the user_id from the session directly. With no default value.
-
-# Module-level configuration
 _dashboards_root: Path | None = None
 _engine: Engine | None = None
 
@@ -44,13 +58,12 @@ class CachedDashboard:
     mtimes: tuple[float, ...]
 
 
-_cache: dict[tuple[int, str], CachedDashboard] = {}
+_cache: dict[tuple[str, int, str], CachedDashboard] = {}
 
 ar = APIRouter()
 
 
 def configure(dashboards_root: Path | str, engine: Engine) -> None:
-    """Configure dashboard routes with dashboards root and database engine."""
     global _dashboards_root, _engine, _cache
     _dashboards_root = Path(dashboards_root)
     _engine = engine
@@ -58,19 +71,59 @@ def configure(dashboards_root: Path | str, engine: Engine) -> None:
 
 
 def mount_dashboard_routes(app, dashboards_root: Path | str, engine: Engine) -> None:
-    """Configure and mount dashboard routes on the app."""
     configure(dashboards_root, engine)
     ar.to_app(app)
 
 
-def _dashboards_dir(user_id: int) -> Path | None:
+def _session_user_id(sess) -> int | None:
+    auth = sess.get("auth")
+    if auth is None:
+        auth = sess.get("user_id")
+    if auth is None:
+        return None
+    return int(auth)
+
+
+def _private_dashboards_dir(user_id: int) -> Path | None:
     if _dashboards_root is None:
         return None
     return _dashboards_root / "user" / str(user_id) / "dashboard"
 
 
+def _public_dashboards_dir(owner_id: int) -> Path | None:
+    if _dashboards_root is None:
+        return None
+    return _dashboards_root / "public" / str(owner_id)
+
+
+def _dashboard_mtimes(folder: Path) -> tuple[float, ...]:
+    queries_dir = folder / "queries"
+    files = [folder / "dashboard.md", folder / "outputs.py"]
+    if queries_dir.exists() and queries_dir.is_dir():
+        files.extend(sorted(queries_dir.glob("*.sql")))
+    return tuple(f.stat().st_mtime for f in files)
+
+
+def _load_cached_dashboard(
+    scope: str,
+    owner_id: int,
+    name: str,
+    folder: Path,
+) -> Dashboard:
+    cache_key = (scope, owner_id, name)
+    mtimes = _dashboard_mtimes(folder)
+    cached = _cache.get(cache_key)
+    if cached and cached.mtimes == mtimes:
+        return cached.dashboard
+
+    clear_query_cache()
+    dash = load_dashboard(folder)
+    _cache[cache_key] = CachedDashboard(dashboard=dash, mtimes=mtimes)
+    return dash
+
+
 def list_dashboards(user_id: int) -> list[str]:
-    path = _dashboards_dir(user_id)
+    path = _private_dashboards_dir(user_id)
     if path is None or not path.exists():
         return []
     slugs = []
@@ -80,37 +133,38 @@ def list_dashboards(user_id: int) -> list[str]:
     return slugs
 
 
-def get_mtimes(folder: Path) -> tuple[float, ...]:
-    queries_dir = folder / "queries"
-    files = [folder / "dashboard.md", folder / "outputs.py"]
-    if queries_dir.exists() and queries_dir.is_dir():
-        files.extend(sorted(queries_dir.glob("*.sql")))
-    return tuple(f.stat().st_mtime for f in files)
-
-
 def get_dashboard(name: str, user_id: int) -> Dashboard | None:
-    """Load a dashboard on-demand with caching."""
-    dashboards_dir = _dashboards_dir(user_id)
+    dashboards_dir = _private_dashboards_dir(user_id)
     if dashboards_dir is None:
         return None
-    path = dashboards_dir / name
-    if not (path / "dashboard.md").exists():
+    folder = dashboards_dir / name
+    if not (folder / "dashboard.md").exists():
         return None
+    return _load_cached_dashboard("private", user_id, name, folder)
 
-    cache_key = (user_id, name)
-    mtimes = get_mtimes(path)
-    cached = _cache.get(cache_key)
-    if cached and cached.mtimes == mtimes:
-        return cached.dashboard
 
-    clear_query_cache()
-    dash = load_dashboard(path)
-    _cache[cache_key] = CachedDashboard(dashboard=dash, mtimes=mtimes)
-    return dash
+def get_public_dashboard(name: str, owner_id: int) -> Dashboard | None:
+    dashboards_dir = _public_dashboards_dir(owner_id)
+    if dashboards_dir is None:
+        return None
+    folder = dashboards_dir / name
+    if not (folder / "dashboard.md").exists():
+        return None
+    return _load_cached_dashboard("public", owner_id, name, folder)
 
 
 def _dashboard_dir(name: str, user_id: int) -> Path | None:
-    dashboards_dir = _dashboards_dir(user_id)
+    dashboards_dir = _private_dashboards_dir(user_id)
+    if dashboards_dir is None:
+        return None
+    folder = dashboards_dir / name
+    if not (folder / "dashboard.md").exists():
+        return None
+    return folder
+
+
+def _public_dashboard_source_dir(owner_id: int, name: str) -> Path | None:
+    dashboards_dir = _public_dashboards_dir(owner_id)
     if dashboards_dir is None:
         return None
     folder = dashboards_dir / name
@@ -155,7 +209,11 @@ def _shell_or_fragment(req, sess, content):
     chats = getattr(req.state, "chats", None)
     if chats and (chat_id := sess.get("chat_id")):
         chat = chats.get(chat_id, with_turns=True)
-    db_user = crud.user.get(sess.get("user_id"))
+
+    db_user = None
+    if user_id := _session_user_id(sess):
+        db_user = crud.user.get(user_id)
+
     return AppShell(
         chat,
         content,
@@ -224,10 +282,6 @@ def parse_filters_from_request(
     req: Any,
     filters: list[Filter],
 ) -> dict[str, Any]:
-    """Parse filter values from request query params.
-
-    Applies defaults for missing values.
-    """
     values = {}
     for f in filters:
         values.update(f.parse_query_params(req.query_params))
@@ -235,46 +289,126 @@ def parse_filters_from_request(
 
 
 def build_filter_url(
-    dash_name: str,
+    base_path: str,
     values: dict[str, Any],
     filters: list[Filter],
 ) -> str:
-    """Build URL with filter params, omitting defaults."""
     params: dict[str, str] = {}
-
     for f in filters:
         params.update(f.url_params(values))
-
-    base = f"/dashboard/{dash_name}"
     if params:
-        return f"{base}?{urlencode(params)}"
-    return base
+        return f"{base_path}?{urlencode(params)}"
+    return base_path
 
 
-@ar("/dashboard/{name}", methods=["GET"])
-def dashboard_shell(name: str, req, sess):
-    user_id = sess.get("user_id", 1)
-    dash = get_dashboard(name, user_id=user_id)
-    if not dash:
-        return Response("Dashboard not found", status_code=404)
-
+def _dashboard_content(dash: Dashboard, req, base_path: str):
     filters = parse_filters_from_request(req, dash.filters)
-
     options: dict[str, list[SelectOption]] = {}
     for f in dash.filters:
         if isinstance(f, SelectFilter) and f.options_query:
             options[f.name] = execute_options_query(dash, f, _engine)
+    return Div(render_shell(dash, filters, options, base_path=base_path))
 
-    content = Div(
-        render_shell(dash, filters, options),
-    )
 
+def _render_output_fragment(dash: Dashboard, output_name: str, req, renderer):
+    filters = parse_filters_from_request(req, dash.filters)
+    try:
+        result = execute_output(dash, output_name, filters, _engine)
+        return renderer(result)
+    except Exception:
+        return None
+
+
+def _match_private_dashboard_path(path: str) -> str | None:
+    match = re.match(r"^/dashboard/([^/]+)$", path)
+    if not match:
+        return None
+    return unquote(match.group(1))
+
+
+def _match_public_dashboard_path(path: str) -> tuple[int, str] | None:
+    match = re.match(r"^/public/([0-9]+)/([^/]+)$", path)
+    if not match:
+        return None
+    return int(match.group(1)), unquote(match.group(2))
+
+
+def _context_path(url: str) -> str:
+    value = (url or "").strip()
+    if not value:
+        return ""
+    parsed = urlsplit(value)
+    if parsed.scheme or parsed.netloc:
+        return ""
+    return parsed.path
+
+
+@ar("/public/_/context-action", methods=["GET"])
+def navbar_context_action(url: str = "", sess=None):
+    path = _context_path(url)
+    if not path:
+        return ""
+    if path.endswith("/code"):
+        return ""
+
+    user_id = _session_user_id(sess) if sess else None
+    private_slug = _match_private_dashboard_path(path)
+    if private_slug:
+        if user_id is None or _dashboards_root is None:
+            return ""
+        if _dashboard_dir(private_slug, user_id=user_id) is None:
+            return ""
+
+        label = "Update" if has_public_dashboard(_dashboards_root, user_id, private_slug) else "Publish"
+        return Form(
+            Button(label, type="submit", cls="btn btn-primary btn-sm"),
+            hx_post=f"/dashboard/{private_slug}/publish",
+            hx_swap="none",
+            **{
+                "hx-on::after-request": "window.__varroRefreshNavbarContextAction && window.__varroRefreshNavbarContextAction()",
+            },
+        )
+
+    public_match = _match_public_dashboard_path(path)
+    if public_match:
+        owner_id, slug = public_match
+        if _public_dashboard_source_dir(owner_id, slug) is None:
+            return ""
+        return A("Edit", href=f"/public/{owner_id}/{slug}/fork", cls="btn btn-primary btn-sm")
+
+    return ""
+
+
+@ar("/dashboard/{name}", methods=["GET"])
+def dashboard_shell(name: str, req, sess):
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
+
+    dash = get_dashboard(name, user_id=user_id)
+    if not dash:
+        return Response("Dashboard not found", status_code=404)
+
+    content = _dashboard_content(dash, req, base_path=f"/dashboard/{name}")
+    return _shell_or_fragment(req, sess, content)
+
+
+@ar("/public/{owner_id}/{name}", methods=["GET"])
+def public_dashboard_shell(owner_id: int, name: str, req, sess):
+    dash = get_public_dashboard(name, owner_id=owner_id)
+    if not dash:
+        return Response("Dashboard not found", status_code=404)
+
+    content = _dashboard_content(dash, req, base_path=f"/public/{owner_id}/{name}")
     return _shell_or_fragment(req, sess, content)
 
 
 @ar("/dashboard/{name}/code", methods=["GET"])
 def dashboard_code(name: str, req, sess):
-    user_id = sess.get("user_id", 1)
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
+
     folder = _dashboard_dir(name, user_id=user_id)
     if folder is None:
         return Response("Dashboard not found", status_code=404)
@@ -301,7 +435,10 @@ def dashboard_code(name: str, req, sess):
 
 @ar("/dashboard/{name}/code", methods=["PUT"])
 async def dashboard_code_save(name: str, req, sess):
-    user_id = sess.get("user_id", 1)
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
+
     folder = _dashboard_dir(name, user_id=user_id)
     if folder is None:
         return Response("Dashboard not found", status_code=404)
@@ -329,23 +466,90 @@ async def dashboard_code_save(name: str, req, sess):
         return _shell_or_fragment(req, sess, content)
 
     path.write_text(next_content, encoding="utf-8")
-    _cache.pop((user_id, name), None)
+    _cache.pop(("private", user_id, name), None)
     clear_query_cache()
 
     content = _render_dashboard_code_editor(name, files, selected_file, next_content)
     return _shell_or_fragment(req, sess, content)
 
 
+@ar("/dashboard/{name}/publish", methods=["POST"])
+def publish_dashboard(name: str, req, sess):
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
+    if _dashboards_root is None:
+        return Response("Dashboard root not configured", status_code=500)
+
+    source_dir = _dashboard_dir(name, user_id=user_id)
+    if source_dir is None:
+        return Response("Dashboard not found", status_code=404)
+
+    destination_dir = public_dashboard_dir(_dashboards_root, user_id, name)
+    copy_dashboard_source(source_dir, destination_dir)
+    _cache.pop(("public", user_id, name), None)
+
+    if req.headers.get("HX-Request"):
+        return Response("", headers={"HX-Trigger": '{"dashboardPublished": {}}'})
+    return RedirectResponse(f"/dashboard/{name}", status_code=303)
+
+
+@ar("/public/{owner_id}/{name}/fork", methods=["GET"])
+def fork_public_dashboard(owner_id: int, name: str, sess):
+    source_dir = _public_dashboard_source_dir(owner_id, name)
+    if source_dir is None:
+        return Response("Dashboard not found", status_code=404)
+
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        next_url = f"/public/{owner_id}/{name}/fork"
+        return RedirectResponse(
+            f"/login?{urlencode({'next': next_url})}",
+            status_code=303,
+        )
+
+    private_dir = _private_dashboards_dir(user_id)
+    if private_dir is None:
+        return Response("Dashboard root not configured", status_code=500)
+    private_dir.mkdir(parents=True, exist_ok=True)
+
+    fork_slug = next_fork_slug(private_dir, name)
+    destination_dir = private_dir / fork_slug
+    copy_dashboard_source(source_dir, destination_dir)
+    _cache.pop(("private", user_id, fork_slug), None)
+
+    return RedirectResponse(f"/dashboard/{fork_slug}", status_code=303)
+
+
 @ar("/dashboard/{name}/_/filters", methods=["GET"])
 def filter_sync(name: str, req, sess):
-    user_id = sess.get("user_id", 1)
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
+
     dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
     filters = parse_filters_from_request(req, dash.filters)
-    url = build_filter_url(name, filters, dash.filters)
+    url = build_filter_url(f"/dashboard/{name}", filters, dash.filters)
+    return Response(
+        "",
+        headers={
+            "HX-Replace-Url": url,
+            "HX-Trigger": '{"filtersChanged": {}}',
+        },
+    )
 
+
+@ar("/public/{owner_id}/{name}/_/filters", methods=["GET"])
+def public_filter_sync(owner_id: int, name: str, req):
+    dash = get_public_dashboard(name, owner_id=owner_id)
+    if not dash:
+        return Response("Dashboard not found", status_code=404)
+
+    filters = parse_filters_from_request(req, dash.filters)
+    url = build_filter_url(f"/public/{owner_id}/{name}", filters, dash.filters)
     return Response(
         "",
         headers={
@@ -357,47 +561,80 @@ def filter_sync(name: str, req, sess):
 
 @ar("/dashboard/{name}/_/figure/{output_name}", methods=["GET"])
 def render_figure_endpoint(name: str, output_name: str, req, sess):
-    user_id = sess.get("user_id", 1)
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
     dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
-    filters = parse_filters_from_request(req, dash.filters)
-
-    try:
-        result = execute_output(dash, output_name, filters, _engine)
-        return render_figure(result)
-    except Exception:
+    content = _render_output_fragment(dash, output_name, req, render_figure)
+    if content is None:
         return Div("Error loading chart", cls="text-error text-center p-4")
+    return content
+
+
+@ar("/public/{owner_id}/{name}/_/figure/{output_name}", methods=["GET"])
+def render_public_figure_endpoint(owner_id: int, name: str, output_name: str, req):
+    dash = get_public_dashboard(name, owner_id=owner_id)
+    if not dash:
+        return Response("Dashboard not found", status_code=404)
+
+    content = _render_output_fragment(dash, output_name, req, render_figure)
+    if content is None:
+        return Div("Error loading chart", cls="text-error text-center p-4")
+    return content
 
 
 @ar("/dashboard/{name}/_/table/{output_name}", methods=["GET"])
 def render_table_endpoint(name: str, output_name: str, req, sess):
-    user_id = sess.get("user_id", 1)
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
     dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
-    filters = parse_filters_from_request(req, dash.filters)
-
-    try:
-        result = execute_output(dash, output_name, filters, _engine)
-        return render_table(result)
-    except Exception:
+    content = _render_output_fragment(dash, output_name, req, render_table)
+    if content is None:
         return Div("Error loading table", cls="text-error text-center p-4")
+    return content
+
+
+@ar("/public/{owner_id}/{name}/_/table/{output_name}", methods=["GET"])
+def render_public_table_endpoint(owner_id: int, name: str, output_name: str, req):
+    dash = get_public_dashboard(name, owner_id=owner_id)
+    if not dash:
+        return Response("Dashboard not found", status_code=404)
+
+    content = _render_output_fragment(dash, output_name, req, render_table)
+    if content is None:
+        return Div("Error loading table", cls="text-error text-center p-4")
+    return content
 
 
 @ar("/dashboard/{name}/_/metric/{output_name}", methods=["GET"])
 def render_metric_endpoint(name: str, output_name: str, req, sess):
-    user_id = sess.get("user_id", 1)
+    user_id = _session_user_id(sess)
+    if user_id is None:
+        return Response("Unauthorized", status_code=401)
     dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
 
-    filters = parse_filters_from_request(req, dash.filters)
-
-    try:
-        result = execute_output(dash, output_name, filters, _engine)
-        return render_metric_card(result)
-    except Exception:
+    content = _render_output_fragment(dash, output_name, req, render_metric_card)
+    if content is None:
         return Div("Error loading metric", cls="text-error text-center p-4")
+    return content
+
+
+@ar("/public/{owner_id}/{name}/_/metric/{output_name}", methods=["GET"])
+def render_public_metric_endpoint(owner_id: int, name: str, output_name: str, req):
+    dash = get_public_dashboard(name, owner_id=owner_id)
+    if not dash:
+        return Response("Dashboard not found", status_code=404)
+
+    content = _render_output_fragment(dash, output_name, req, render_metric_card)
+    if content is None:
+        return Div("Error loading metric", cls="text-error text-center p-4")
+    return content
