@@ -76,6 +76,9 @@ Output execution:
   - HTMX request -> content fragment
   - full request -> wraps in `AppShell`
   - select filters receive `(value, label)` options; UI renders labels while submitting values.
+- `POST /dashboard/{name}/publish`:
+  - copies dashboard source files to `data/public/{user_id}/{name}`
+  - upsert behavior (publish/update in one endpoint)
 - `GET /dashboard/{name}/_/filters`:
   - returns empty body with:
     - `HX-Replace-Url`
@@ -83,9 +86,36 @@ Output execution:
 - `GET /dashboard/{name}/_/figure/{output}`
 - `GET /dashboard/{name}/_/table/{output}`
 - `GET /dashboard/{name}/_/metric/{output}`
+- `GET /public/{owner_id}/{name}`:
+  - renders published dashboard (anonymous-readable)
+- `GET /public/{owner_id}/{name}/_/filters`
+- `GET /public/{owner_id}/{name}/_/figure/{output}`
+- `GET /public/{owner_id}/{name}/_/table/{output}`
+- `GET /public/{owner_id}/{name}/_/metric/{output}`
+- `GET /public/{owner_id}/{name}/fork`:
+  - authenticated: copies published dashboard to viewer workspace and redirects to `/dashboard/{fork_slug}`
+  - anonymous: redirects to `/login?next=/public/{owner_id}/{name}/fork`
+- `GET /public/_/context-action?url=...`:
+  - returns navbar action fragment (`Publish`, `Update`, `Edit`, or empty)
 
-Dashboards are cached by file mtimes (`dashboard.md`, `outputs.py`, all query files).
+Dashboards are cached by file mtimes (`dashboard.md`, `outputs.py`, all query files) with cache keys scoped by `private/public`.
 Dashboards are discovered per-user from `data/user/{user_id}/dashboard/{slug}`.
+Published dashboards are stored in `data/public/{owner_id}/{slug}`.
+
+## Publish and fork filesystem helpers (`public_fs.py`)
+
+- `public_dashboard_dir(data_root, owner_id, slug)`
+- `copy_dashboard_source(src, dst)` copies only:
+  - `dashboard.md`
+  - `outputs.py`
+  - `queries/*.sql`
+  - optional `notes.md`
+- destination directory is replaced on publish/update (stale files removed)
+- `next_fork_slug(private_dashboards_dir, base_slug)` picks:
+  - `{slug}`
+  - `{slug}-fork`
+  - `{slug}-fork-2`
+  - ...
 
 ## Example dashboard
 

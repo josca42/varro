@@ -123,8 +123,9 @@ def AuthGoogleCta(enabled: bool, href, cls: str = "", **kw):
     return None
 
 
-def AuthLoginForm(action):
+def AuthLoginForm(action, next_path: str | None = None):
     return Form(
+        Input(type="hidden", name="next", value=next_path or ""),
         FormField(
             "Email",
             Input(
