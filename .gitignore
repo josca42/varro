@@ -11,6 +11,7 @@ wheels/
 .venv
 /data
 /context
+/agent_data
 /notebooks
 /docs/llm_docs/alpine_js/*
 /node_modules/
