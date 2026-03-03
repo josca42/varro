@@ -13,4 +13,4 @@ notes:
 - seg is the trip purpose dimension: TOT=I alt, 1000=Forretning individuelt, 1010=Forretning gruppe, 1020=Ferie individuelt, 1030=Ferie gruppe, 1040=Andet. Always filter seg; TOT for total overnights. The four non-TOT values (forretning + ferie × individuelt/gruppe) are mutually exclusive and sum to TOT.
 - periode has the same encoding collision as hotel1: codes 1 and 2 each return 2 rows per combination (Hele-året + Januar; År-til-dato + Februar). For annual totals, filter periode=1 and take MAX(indhold) per group. Periods 3–12 are unambiguous monthly values.
 - Data starts 2004 (later than hotel1's 1992). Use hotel1 for nationality breakdown; use hotel7 for travel purpose (business vs. leisure) from 2004 onwards.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

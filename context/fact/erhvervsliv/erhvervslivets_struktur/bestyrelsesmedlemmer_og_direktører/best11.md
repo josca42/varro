@@ -14,4 +14,4 @@ notes:
 - bopland uses numeric codes 0–12. Codes 1–11 join dim.nuts at niveau=2 (landsdele). Code 0 = Hele landet (total), code 12 = Landsdel ukendt. Exclude code 0 when summing across regions; ColumnValues("best11", "bopland") returns all labels without needing a dim join.
 - type has a total row (10=I alt) plus 20=Bestyrelse, 30=Direktører, 40=Uoplyst. Filter type to avoid double-counting.
 - This table has 5 dimension columns. For a simple total, filter all non-target dimensions to their aggregate: type='10', kon='100', uddannelse='TOT', alder='IALT', bopland='0'. Forgetting any one inflates the sum.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on bopland=dim_kode. Exclude bopland IN (0, 12).
+- Map: /geo/landsdele.parquet (niveau 2) — merge on bopland=dim_kode. Exclude bopland IN (0, 12).

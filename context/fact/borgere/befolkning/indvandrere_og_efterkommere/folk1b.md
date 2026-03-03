@@ -14,4 +14,4 @@ notes:
 - statsb=0 is the "I alt" total across all nationalities. In dim.lande_psd, kode=0 is labelled "Helt uoplyst" — ignore that label here; in fact.folk1b it is the aggregate. All other statsb codes are niveau=3 individual countries (~207 countries).
 - To avoid overcounting: 5 dimension columns (omrade, kon, alder, statsb, tid). Filter all non-target dimensions to their totals: omrade=0 for national, kon='TOT', alder='IALT', statsb=0 for all nationalities.
 - Use ColumnValues("lande_psd", "titel", for_table="folk1b") to browse the ~208 nationality codes in this table.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -12,4 +12,4 @@ notes:
 - ophgr2 = nuværende opholdsgrundlag (CURRENT permit type). Adds code 9998=Permanent opholdstilladelse compared to ophgr1 in indoph1. Use ophgr2=0 for all permit types.
 - Key difference from indoph1: ophgr1 shows the permit type when the person FIRST arrived; ophgr2 shows their CURRENT permit. Many asylum seekers will have moved to permanent residence (9998) over time.
 - This table covers immigrants only (indvandrere), not descendants or persons of Danish origin.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

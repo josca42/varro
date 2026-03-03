@@ -13,4 +13,4 @@ notes:
 - dyrkat limited to 9015=Udlån and 9020=Lånere — no "persons in population" (9025) unlike ibib1–3.
 - ibib4 (to 2025) vs ibib4a (archive, to 2024).
 - Useful for analyzing access equity — areas with longer distances to libraries tend to show lower borrowing rates.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

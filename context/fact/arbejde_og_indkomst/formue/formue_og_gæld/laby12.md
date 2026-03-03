@@ -12,4 +12,4 @@ notes:
 - alder='1802' is the total (18+). The 7 age groups are broad (10-year bands). Filter to one alder value.
 - indhold is median nettoformue in kr. No form1/enhed/popu selectors needed. Simpler structure than formue11-17.
 - Unlike laby11, there is no age standardization here — values are raw medians by age group and kommunegruppe.
-- Map: context/geo/kommuner.parquet — merge on komgrp=dim_kode when filtered to niveau=2 in dim.kommunegrupper (niveau=2 codes match NUTS niveau=3 kommune codes). Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — merge on komgrp=dim_kode when filtered to niveau=2 in dim.kommunegrupper (niveau=2 codes match NUTS niveau=3 kommune codes). Exclude komgrp=0.

@@ -13,4 +13,4 @@ notes:
 - omrade at landsdele level only (niveau=2, 11 landsdele). omrade='0' = Hele landet (not in dim.nuts).
 - ieland: hierarchical codes — aggregates (TOT, 30=Dansk oprindelse, UDL, 1=Vestlige, 2=Ikke-vestlige) and individual country codes. Never sum across hierarchy levels.
 - No alder column.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

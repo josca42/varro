@@ -87,4 +87,4 @@ notes:
 - laby11/12/14 are simpler pre-aggregated tables (kommunegrupper only, no form1/enhed/popu selectors). laby11 adds age standardization for fair cross-group comparison; laby12 breaks by age; laby14 shows share of population with negative nettoformue (Pct.). komgrp=0 in all three is the national total (not in dim).
 - ligeii7/8 are pre-computed gender gap tables. ligeii7=nettoformue by family type; ligeii8=pensionsformue by age. Both mix units per indikator (kr. and pct.) — always filter to one indikator value.
 - formue15 and formue16 only cover 2020-2023. All other tables cover 2014-2023.
-- Map: formue12 supports choropleth via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) on omrade. laby11, laby12, laby14 support kommune-level choropleth via context/geo/kommuner.parquet — komgrp niveau=2 codes are identical to NUTS niveau=3 kommune codes.
+- Map: formue12 supports choropleth via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) on omrade. laby11, laby12, laby14 support kommune-level choropleth via /geo/kommuner.parquet — komgrp niveau=2 codes are identical to NUTS niveau=3 kommune codes.

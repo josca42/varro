@@ -12,4 +12,4 @@ notes:
 - dyr has 20 values, all kvæg categories: D17=Kvæg i alt (overall total), then handyr subtypes (D2,D3,D39,D4,D5,D52,D53), hundyr subtypes (D6,D7,D72,D8,D10,D11,D13,D136,D16), and D14=Malkekøer, D15=Ammekøer, KKIALT=Køer i alt. Hierarchical: D17 > D53/D16 > individual types. Filter to D17 for total kvæg count.
 - omrade has 12 values; 10 join to dim.nuts (5 regioner niveau 1, 5 landsdele niveau 2). Code 0=Hele landet and code 15=merged Copenhagen-area landsdel don't join. Same pattern as hdyr07.
 - Most up-to-date kvæg table (to 2025). Simpler than hdyr07 — kvæg only, no enhed selector, no herd-size groups.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).

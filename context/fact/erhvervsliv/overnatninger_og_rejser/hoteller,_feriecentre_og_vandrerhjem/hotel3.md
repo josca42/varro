@@ -12,4 +12,4 @@ notes:
 - omrade joins dim.nuts. Code 0 = Hele landet (not in dim). Levels 1 and 2: 5 regioner (81–85) and 11 landsdele (1–11). Use ColumnValues("nuts", "titel", for_table="hotel3") to see the 16 joinable codes.
 - kapacitet is a measurement selector — always filter to exactly one value. The 5 values mix counts (antal) and percentages (kapacitetsudnyttelse pct.): 1080=antal hoteller/feriecentre, 1090=antal værelser, 1100=antal senge, 1110=værelsesbel. pct., 1120=sengebel. pct. Never SUM across kapacitet values.
 - For capacity utilization questions, use 1110 or 1120. For structural counts (how many hotels, rooms, beds), use 1080–1100.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

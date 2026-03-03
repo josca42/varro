@@ -13,4 +13,4 @@ notes:
 - anvend joins dim.byganv at niveauer 2 and 3. Code '009' (boligbyggeri i alt) and 'UOPL' are not in the dim — '009' is an aggregate row for all residential types; exclude it when summing subtypes.
 - bygherre does NOT join cleanly to dim.bygherre. The codes used are: '10+30+40+90' (combined private builders), '20' (almene boligselskaber), '41' (private andelsboligforeninger), 'SK' (stat og kommuner), 'UOPL'. Only '20' and '41' match dim.bygherre. Query bygherre as inline codes, not via dim join.
 - bygfase has 4 mutually exclusive phases — always filter to one when aggregating.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

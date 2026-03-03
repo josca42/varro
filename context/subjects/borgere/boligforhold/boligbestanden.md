@@ -60,4 +60,4 @@ notes:
 - bolrd is the only table with pre-2010 data (back to 1930). National level only, owner vs. renter. Use for long-term historical trend analysis.
 - laby45a is a single-year (2022) percentage table by kommunegruppe. Very narrow use case: share of families with a holiday home.
 - opforelsesar in all tables uses period ranges for pre-2005 (e.g. '1950-1959') and individual years from 2005+. No total code exists — sum all values to aggregate across construction periods.
-- Map: bol101–bol106 all support choropleth maps at kommune (niveau 3), landsdel (niveau 2), and region (niveau 1) level via dim.nuts. Use context/geo/kommuner.parquet, landsdele.parquet, or regioner.parquet. bolrd and laby45a have no geographic breakdown.
+- Map: bol101–bol106 all support choropleth maps at kommune (niveau 3), landsdel (niveau 2), and region (niveau 1) level via dim.nuts. Use /geo/kommuner.parquet, landsdele.parquet, or regioner.parquet. bolrd and laby45a have no geographic breakdown.

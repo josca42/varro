@@ -15,4 +15,4 @@ notes:
 - perpct is a measurement selector: L=Fuldtidsledige antal, L10=Procent af arbejdsstyrken. Every row exists twice — once per perpct. Always filter to one perpct before aggregating.
 - omrade joins dim.nuts at niveau=2 only (11 landsdele). Extra code 0=Hele landet not in dim.
 - Only table in this subject with education breakdown. Stopped at 2024-01 (no aulk equivalent).
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

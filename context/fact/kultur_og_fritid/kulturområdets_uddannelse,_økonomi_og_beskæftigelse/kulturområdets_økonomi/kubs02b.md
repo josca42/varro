@@ -16,4 +16,4 @@ notes:
 - `omrade` joins dim.nuts but requires a cast to int: `f.omrade::int = d.kode`. The documented text join fails for region codes (081–085) and landsdel codes (01–11) because of leading zeros. `omrade='00'` is the national aggregate (not in dim).
 - `omrade` has hierarchy levels 2 (landsdele, codes 01–11) and 3 (kommuner, codes 101+). Regions (niveau 1, 081–085) are also present — join via int cast. Filter `d.niveau` to pick your geographic granularity.
 - `finansart=0` is I alt. Filter kulturemne=0 for all topics.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade::int=dim_kode. Exclude omrade='00'.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade::int=dim_kode. Exclude omrade='00'.

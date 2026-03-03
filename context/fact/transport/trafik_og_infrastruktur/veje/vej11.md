@@ -12,4 +12,4 @@ notes:
 - vejtype has a 3-level inline hierarchy. 0=total, 25/65/70 are mid-level subtotals, and 10/15/20/30/35/40/66/67/68/85/90/91 are detail codes. The three top-level categories are: 25=STATSVEJE (state roads), 65=KOMMUNEVEJE (municipal roads), 70=ANDRE VEJE (other roads). Summing vejtype without filtering silently double-counts — pick one level.
 - For a simple total road length by region: filter vejtype='0' and landdel != '0'. For breakdown by road class: use vejtype IN ('25','65','70').
 - Annual data from 2007, measure is km of road network.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel='0'.
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel='0'.

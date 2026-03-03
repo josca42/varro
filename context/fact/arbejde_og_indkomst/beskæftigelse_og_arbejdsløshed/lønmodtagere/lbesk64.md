@@ -13,4 +13,4 @@ notes:
 - arbejdslands is inline (no dim join). Contains regioner (81–85) and landsdele (1–11) plus 0=Hele landet, 950=Uden for Danmark, 99=Uoplyst — filter by range to pick a level.
 - WARNING: dim.herkomst join is mostly broken. herkomst uses: 1=Dansk, 24=Indvandrere vestlige, 25=Indvandrere ikke-vestlige, 34=Efterkommere vestlige, 35=Efterkommere ikke-vestlige, TOT=I alt, UDK=Uoplyst. Treat as inline.
 - Workplace-based regional breakdown combined with herkomst. Pair with lbesk45 (bopæl + herkomst) to compare commuting patterns by origin.
-- Map: context/geo/regioner.parquet (codes 81–85) or context/geo/landsdele.parquet (codes 1–11) — merge on arbejdslands::int=dim_kode. Exclude 0, 950, 99.
+- Map: /geo/regioner.parquet (codes 81–85) or /geo/landsdele.parquet (codes 1–11) — merge on arbejdslands::int=dim_kode. Exclude 0, 950, 99.

@@ -17,4 +17,4 @@ notes:
 - dranst splits by account type (1=drift, 2=statsrefusion, 3=anlæg, 4=renter, 7=finansiering). For operating expenditure use dranst=1. Summing across all dranst types mixes operating, capital, and financing flows.
 - funk1 has 6 high-level sector codes: X=all, 1=Sundhed, 2=Social og specialundervisning, 3=Regional udvikling, 4=Fælles formål og administration, 5=Renter m.v. No dim join — use inline values.
 - Minimal filtering example for total regional operating expenditure 2023: WHERE funk1='X' AND dranst='1' AND art='UE' AND prisenhed='LOBM' AND tid='2023-01-01'. All 5 filters required.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

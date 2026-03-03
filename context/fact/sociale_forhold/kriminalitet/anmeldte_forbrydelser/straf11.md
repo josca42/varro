@@ -15,5 +15,5 @@ notes:
 - Only Straffelov and Særlov at niveau 1 — Færdselslov absent (same as straf10).
 - For crimes by region: `JOIN dim.nuts d ON f.omrade = d.kode WHERE d.niveau = 1 AND f.overtraed = 'TOT'` gives 5-region totals. Add AND `f.omrade NOT IN ('0', '998')` to be safe.
 - Covers 2007–2025, so shorter than straf10 (1995). Use straf10 for historical series.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0 and omrade=998.
-- Map (indirect): kommune data can be aggregated to politikredse via dim.politikredse (JOIN ON f.omrade = dp.kode WHERE dp.niveau=2; dp.parent_kode maps to 12 politikredse). Use context/geo/politikredse.parquet for boundaries.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0 and omrade=998.
+- Map (indirect): kommune data can be aggregated to politikredse via dim.politikredse (JOIN ON f.omrade = dp.kode WHERE dp.niveau=2; dp.parent_kode maps to 12 politikredse). Use /geo/politikredse.parquet for boundaries.

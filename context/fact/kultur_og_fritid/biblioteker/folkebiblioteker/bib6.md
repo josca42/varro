@@ -12,4 +12,4 @@ notes:
 - indtudg contains aggregates and subtypes: 17110=Bruttodriftregnskab (gross total), 17180=Nettodriftregnskab (net = gross minus revenues). Don't sum across udtudg — always filter to one value.
 - 17130=I alt materialeudgifter is the total for 17140 + 17150. 17120=Lønudgifter and 17130+17160=Øvrige are the main cost components summing to Bruttodrift.
 - For per-library efficiency analysis, combine with bib2b (number of service locations) or laby42 (FTE per 1000 inhabitants).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

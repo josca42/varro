@@ -15,5 +15,5 @@ notes:
 - overtraed: niveaux 1, 2, 3 coexist — filter to one niveau. overtraed='TOT' = grand total (not in dim).
 - Only Straffelov and Særlov at niveau 1 — Færdselslov absent.
 - Covers 2007–2024. Use straf20 (no regional breakdown, goes to 2024) or straf10 (goes to 2025) when geography is not needed.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0 and omrade=998.
-- Map (indirect): kommune data can be aggregated to politikredse via dim.politikredse (JOIN ON f.omrade = dp.kode WHERE dp.niveau=2; dp.parent_kode maps to 12 politikredse). Use context/geo/politikredse.parquet for boundaries.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0 and omrade=998.
+- Map (indirect): kommune data can be aggregated to politikredse via dim.politikredse (JOIN ON f.omrade = dp.kode WHERE dp.niveau=2; dp.parent_kode maps to 12 politikredse). Use /geo/politikredse.parquet for boundaries.

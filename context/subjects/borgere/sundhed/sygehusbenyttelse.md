@@ -58,4 +58,4 @@ notes:
 - All tables with kon and alder include total codes (00/0000 or TOT). Filter these when not aggregating.
 - sbr08 herkomst dim join is broken — codes in the fact table (10/20/30/40) do not match dim.herkomst (1/2/3/9). Use inline labels; do not join dim.herkomst.
 - sbr04 and sbr05 have "overlap" categories (persons using both somatic+psychiatric, or both public+private). These overlap with the individual categories — use the "all" code (200500 / 200700) for totals, not a sum.
-- Map: sbr01 supports choropleth maps at kommune level — context/geo/kommuner.parquet, merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: sbr01 supports choropleth maps at kommune level — /geo/kommuner.parquet, merge on kommunedk=dim_kode. Exclude kommunedk=0.

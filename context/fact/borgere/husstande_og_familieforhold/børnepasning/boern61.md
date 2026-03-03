@@ -10,4 +10,4 @@ notes:
 - amt contains kode 0 (national total, not in dim.nuts) and niveau 3 (98 kommuner) only — no regional breakdown.
 - stilkat has STOT=Stillingskategori i alt as the aggregate. Filter to STOT for total FTE staff; filter to individual codes (80-91) for breakdown by role.
 - Covers kommunale skolefritidsordninger (SFO) only. For all fritidsordninger staff including selvejende and private, no comparable table exists in this subject.
-- Map: context/geo/kommuner.parquet — merge on amt=dim_kode. Exclude amt=0.
+- Map: /geo/kommuner.parquet — merge on amt=dim_kode. Exclude amt=0.

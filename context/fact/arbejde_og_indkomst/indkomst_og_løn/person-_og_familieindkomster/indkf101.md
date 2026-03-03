@@ -14,4 +14,4 @@ notes:
 - boligartud: TOT=I alt, EJ=ejer, LEJ=lejer. Filter to TOT for overall income, or split by tenure type.
 - enhed selector (4 types). Always filter to one. Note: enhed=100 gives family count, not an income amount.
 - indkomsttype is hierarchical with 35+ types — pick one specific type.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

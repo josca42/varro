@@ -13,4 +13,4 @@ notes:
 - hfudd: TOT=I alt, H10–H70 (standard Danish education levels), 900=Ingen eller uoplyst. Filter to TOT to avoid double-counting.
 - udlanssted and dyrkat must each be filtered — same rules as ibib1.
 - ibib3 (to 2025) vs ibib3a (archive, to 2024).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

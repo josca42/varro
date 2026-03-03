@@ -13,4 +13,4 @@ notes:
 - alder uses 5-year bands like km5 ('[0,5)', '[5,10)', ..., '[100,)'). No IALT total — sum all bands for aggregate.
 - To find net change: SUM(CASE WHEN fkmed='F' THEN indhold ELSE -indhold END) groups by sogns/tid.
 - F and U rows are independent counts and should NOT be summed together.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

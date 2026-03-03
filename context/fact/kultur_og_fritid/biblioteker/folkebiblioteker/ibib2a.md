@@ -10,4 +10,4 @@ columns:
 dim docs: /dim/nuts.md
 notes:
 - Archive version of ibib2 (age breakdown) — only to 2024. See ibib2.md for full notes.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

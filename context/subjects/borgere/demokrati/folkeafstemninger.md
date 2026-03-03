@@ -37,4 +37,4 @@ notes:
 - For long historical series (all referendums since 1971): use fabpct (national counts) or fapct (national percentages). Neither has geographic breakdown.
 - All tables with Ja/Nej have aggregate valres codes (GYLD_IALT, UGYLD_IALT, etc.) that must be filtered out to avoid double-counting. Always select a specific valres — 434284=Ja, 434285=Nej, VAELG=vælgere.
 - fa22tot and fa22tota cover the same 2022 referendum. fa22tot uses a custom election geography hierarchy (not NUTS) with integer codes; there is no dim table — use ColumnValues to browse omrade labels.
-- Map: fakom supports choropleth at kommune level (context/geo/kommuner.parquet). fa22tot supports storkredse choropleth (context/geo/storkredse.parquet, omrade 10-19, subtract 9). fa22tota polling station codes do not match afstemningsomraader dagi_ids — no geo join available.
+- Map: fakom supports choropleth at kommune level (/geo/kommuner.parquet). fa22tot supports storkredse choropleth (/geo/storkredse.parquet, omrade 10-19, subtract 9). fa22tota polling station codes do not match afstemningsomraader dagi_ids — no geo join available.

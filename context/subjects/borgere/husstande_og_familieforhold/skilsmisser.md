@@ -50,5 +50,5 @@ notes:
 - For age + duration analysis without geography: ski125k (2020–2024, also has month of divorce).
 - For cohort survival analysis (track a marriage year through time): opl2025 — unique table with vielsesaar × agtvar matrix. agtopl mixes counts (=1) and rates per 10,000 (=2,3,4); always filter to one agtopl value.
 - ski125 and ski225 share the same bopaegt1/bopaegt2 geography — use ski125 when you need age/duration, ski225 when you need month of divorce.
-- Map: ski125 and ski225 support choropleth maps at kommune level via context/geo/kommuner.parquet — merge on bopaegt1=dim_kode or bopaegt2=dim_kode. Exclude codes '0' and '997'.
+- Map: ski125 and ski225 support choropleth maps at kommune level via /geo/kommuner.parquet — merge on bopaegt1=dim_kode or bopaegt2=dim_kode. Exclude codes '0' and '997'.
 - None of the detailed tables (ski125, ski225, ski125k) include aggregate totals in the non-geographic dimensions (alderaegt, agtvar) — you cannot filter to an "IALT" code to get a marginal total for those columns. Sum across values in SQL instead.

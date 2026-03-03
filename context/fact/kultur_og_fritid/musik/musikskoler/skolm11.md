@@ -12,4 +12,4 @@ notes:
 - komk joins dim.kommunegrupper at niveau 2. komk='0' is national total, not in the dim.
 - bnogle is a measurement selector — 3050=Forløb, 3070=Deltagende elever, 3075=Undervisningstimer. Always filter to one bnogle value.
 - kunstart='TOTK' is total across art forms.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

@@ -15,4 +15,4 @@ notes:
 - ydelsestype: 100=i alt; 200/300/400 are mutually exclusive care types. Each gives the private-provider share within that care type. Never sum percentages across ydelsestype.
 - alder=50 is total; alder=850 is 67+ sub-total. Do not mix with individual bands. koen=100 is total.
 - Compare with aed012 for the equivalent percentage for leveret (delivered) rather than visiteret (authorized) help.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

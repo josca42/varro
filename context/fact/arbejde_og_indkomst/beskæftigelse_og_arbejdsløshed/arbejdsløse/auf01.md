@@ -14,4 +14,4 @@ notes:
 - omrade joins dim.nuts. Levels 1 (5 regioner), 2 (11 landsdele), 3 (98 kommuner). For national total use WHERE f.omrade = '0' directly — code 0 (Hele landet) is not in dim.nuts. Extra unmatched codes: 997=Udlandet, 998=Uoplyst kommune. Note: Hele landet (0) = sum of 5 regioner + 997 (Udlandet).
 - ydelsestype: TOT=Bruttoledige is the sum of all components (LDP+LKT+ADP+AKT ≈ TOT). Don't sum all ydelsestype values — filter to TOT for a single total or pick one component.
 - This is the most current preliminary table (foreløbig opgørelse) from Jul 2017. For longer history from 2007, use auf02 (also current) or aulk01 (also current, same structure, finer alder bands).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

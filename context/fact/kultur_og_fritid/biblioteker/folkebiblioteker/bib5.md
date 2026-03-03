@@ -12,4 +12,4 @@ notes:
 - opgoer1 contains 3 aggregate totals (150=I ALT INTERURBANINDLÅN, 154=I ALT INTERURBANUDLÅN, 160=I ALT INTERURBANUDLÅNSFORNYELSER) and their subtypes. Don't sum opgoer1 — pick either the total or individual subtypes.
 - mater contains the same material type hierarchy as bib3: 500=Alle materialetyper (total), 560=I ALT MONOGRAFIER (subtotal). Filter to one level.
 - Interurbanlending = interlibrary loans between library systems. These are library-to-library transfers, not loans to end users.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

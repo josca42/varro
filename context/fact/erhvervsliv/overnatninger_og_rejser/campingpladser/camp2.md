@@ -12,4 +12,4 @@ notes:
 - kapacitet is a measurement selector — 1200=Antal campingpladser (number of sites), 1210=Campingenheder (number of camping units/pitches), 1260=Kapacitetsudnyttelse pct. These are completely different metrics; always filter to one value. Never sum across kapacitet values.
 - tid is monthly (YYYY-MM-01). This is the monthly view of capacity, covering the camping season (March–December). camp3 is the annual equivalent with seasonal min/max figures.
 - kapacitetsudnyttelse (1260) is a percentage — do not SUM it; take an average if aggregating across regions.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

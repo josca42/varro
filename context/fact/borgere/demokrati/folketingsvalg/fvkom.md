@@ -11,4 +11,4 @@ notes:
 - omrade joins dim.nuts niveau 3 only (99 kommuner). Clean 99/99 match. Use ColumnValues("nuts", "titel", for_table="fvkom") to browse kommuner.
 - valres has 50 distinct values: aggregate summary codes (GYLD_IALT, UGYLD_IALT, BREV_IALT, PERS_IALT, UDENFOR_IALT, VAELG), party vote codes (numeric IDs like 5891=A), and 32 detailed invalid-ballot sub-codes (1–32). Never sum all valres — it wildly overcounts. Typical queries: filter valres to a specific party code, or use GYLD_IALT for total valid votes.
 - Party codes are numeric DST IDs (same as fvkand and fvpandel). Use ColumnValues("fvkom", "valres") to see the full list.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode.

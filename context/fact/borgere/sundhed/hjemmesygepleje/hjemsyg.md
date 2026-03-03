@@ -12,4 +12,4 @@ notes:
 - omrade joins dim.nuts at niveau 3 only (98 kommuner). Use ColumnValues("nuts", "titel", for_table="hjemsyg") to browse available municipalities. No regional aggregates — this table is kommuner-only.
 - koen and alder1 both include totals (koen=100, alder1=50). To get a single count per municipality, filter both: WHERE koen=100 AND alder1=50. Omitting either doubles or multiplies the sum.
 - alder1 groups are: under 65, then five-year bands from 65–69 up to 90+. No finer age breakdown. To get elderly recipients, sum the 65+ bands or use alder1=50 and filter koen only.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

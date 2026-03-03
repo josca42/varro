@@ -15,4 +15,4 @@ notes:
 - Same omrade/indvland/statsb structure as van1kvt: omrade=0 is national total (not in dim.nuts), niveau 1 = 5 regioner, niveau 3 = 99 kommuner. Always add WHERE d.niveau = 1 or 3 when joining dim.nuts.
 - indvland and statsb only use niveau 3 (~195/186 countries). ColumnValues("lande_psd", "titel", for_table="van1uge") for available countries.
 - Covers 2021–present only. For longer series use van1kvt (quarterly from 2007) or van1aar (annual from 2007).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -15,4 +15,4 @@ notes:
 - indvland and statsb only use niveau 3 (individual countries, ~212 each). Use ColumnValues("lande_psd", "titel", for_table="van1kvt") to see which countries appear.
 - kon has no total row (only 1=Mænd, 2=Kvinder). alder has individual ages 0–103, no total row — aggregate in SQL if needed.
 - This table is preliminary (foreløbig). For final annual figures use van1aar; for quarterly finals prefer van1aar grouped by year.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

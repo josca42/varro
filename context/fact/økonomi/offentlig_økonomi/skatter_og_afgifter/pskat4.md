@@ -12,4 +12,4 @@ notes:
 - indkomst mixes units within the same column: indkomst=1 is antal persons (raw number), indkomst=2–15 are amounts in 1.000 kr., indkomst=16 is kr. per person (average). Always filter to exactly one indkomst value per query.
 - indkomst=15 (Slutskat i alt) = sum of individual tax types 3–14 (not verified, but follows from the label). For total tax burden by kommune: WHERE indkomst='15'.
 - For per-capita analysis: divide indkomst=15 by indkomst=1 (or use indkomst=16 directly for average slutskat per person).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

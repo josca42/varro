@@ -14,4 +14,4 @@ notes:
 - branche07='Y' (Vederlag fra udlandet) only appears under omrade=997 — it has no regional breakdown.
 - For a clean regional breakdown by branche: filter omrade IN (81,82,83,84,85) and join dim.nuts. Omitting this filter inflates counts via 99 and 997.
 - For total national income by branche, SUM all omrade values (81–85 + 99 + 997) but note this mixes regional and non-regional figures.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Filter omrade IN (81,82,83,84,85) before merging; exclude 99 and 997.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Filter omrade IN (81,82,83,84,85) before merging; exclude 99 and 997.

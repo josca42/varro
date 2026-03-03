@@ -10,4 +10,4 @@ notes:
 - indkn is a threshold selector (50% or 60% of median income). Always filter to one: indkn = '60' is standard. Forgetting doubles all counts.
 - kommunedk code 0 = Danmark i alt (not in dim.nuts). All other codes join dim.nuts at niveau=3 (kommuner).
 - indhold is Antal (absolute count of low-income persons). See ifor12p for the same table as percentages (Pct.).
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

@@ -12,4 +12,4 @@ notes:
 - indhold unit is "-" because the unit differs by maengde4 value: Antal for 0/110/120, Pct. for 130, Dage for 140.
 - omrade joins dim.nuts niveau 3 only (98 kommuner). omrade=0 is the national total (not in dim).
 - To get waiting time in days: filter maengde4='140'. To get the share choosing free choice: filter maengde4='130'.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

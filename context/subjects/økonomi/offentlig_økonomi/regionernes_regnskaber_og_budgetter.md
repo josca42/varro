@@ -65,4 +65,4 @@ notes:
 - Universal pitfall — prisenhed: regr11, regr31, budr1, budr32 all have LOBM (1.000 kr.) and INDL (per inhabitant) rows for every observation. Always filter prisenhed='LOBM' unless per-capita figures are needed. Forgetting this silently doubles every sum.
 - Universal pitfall — art: all regnskab/budget tables have hierarchical art codes. TOT=net total, UE=gross expenditure, UI=gross incl. computed costs. Never sum across all art values — always filter to a single aggregate (usually UE for gross or TOT for net).
 - The region join key differs: regr11/regr4 use omrade; regr31/regr55/budr1/budr32 use regi07. Both join to dim.nuts on kode; only niveau=1 codes (81-85) are present.
-- Map: regr11, regr31, regr4, regr55, budr1, budr32 all support choropleth maps at region level via context/geo/regioner.parquet. regr63/regr64/regr65 are national totals only — no map.
+- Map: regr11, regr31, regr4, regr55, budr1, budr32 all support choropleth maps at region level via /geo/regioner.parquet. regr63/regr64/regr65 are national totals only — no map.

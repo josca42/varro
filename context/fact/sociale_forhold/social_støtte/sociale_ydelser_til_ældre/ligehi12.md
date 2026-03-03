@@ -15,4 +15,4 @@ notes:
 - alder=TOT is the all-age total; individual bands (6569-9099) are non-overlapping. famtyp=FAMIALT is the total; ENL and PAF are mutually exclusive sub-groups.
 - To compare gender equality in home help by region: filter indikator='LA3' (gender gap in pct. points) and join dim.nuts at niveau 1.
 - Pair with ligehi13 for the equivalent by hours per person.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

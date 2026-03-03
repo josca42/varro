@@ -15,4 +15,4 @@ notes:
 - morstat/farstat codes here differ from brn9: DIA=died in the past year, DT=died earlier, IRD=no registered deaths, MU/FU=unknown parent. Use DIA+DT combined to get all children with deceased parent.
 - forst is a convenient combined summary of morstat+farstat: IRD=neither dead, BFDIA=one or both died this year, FDT=one died earlier, BFDT=both died earlier. For simple "orphan" queries, filter forst directly rather than combining morstat and farstat.
 - morstat, farstat, and forst are partially redundant — do not sum across all three.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

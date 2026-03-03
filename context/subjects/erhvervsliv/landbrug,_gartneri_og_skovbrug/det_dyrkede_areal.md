@@ -44,4 +44,4 @@ notes:
 - vhus15 (2015–2024) covers greenhouse cultures only: area (m²) or number of farms by crop type. Use for greenhouse vegetable, flower, and plant production.
 - arealafg in afg207/afg3 encodes crop type and farm-size class together (10000–10505). Always use ColumnValues to find the right code — there's no separate crop column.
 - All tables with enhed or tal have a measurement selector that doubles all rows. Always filter: enhed='HA'/'ANTAL', tal='KVM'/'ANTAL', or areal1=specific code in afg4.
-- Map: afg207 supports choropleth at region (niveau 1) and landsdel (niveau 2) level via context/geo/regioner.parquet and context/geo/landsdele.parquet. afg3 and afg4 use non-standard regional codes (L3/L4/1580) with no geo file match.
+- Map: afg207 supports choropleth at region (niveau 1) and landsdel (niveau 2) level via /geo/regioner.parquet and /geo/landsdele.parquet. afg3 and afg4 use non-standard regional codes (L3/L4/1580) with no geo file match.

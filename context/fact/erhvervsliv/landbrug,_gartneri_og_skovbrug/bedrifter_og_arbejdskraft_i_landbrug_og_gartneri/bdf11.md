@@ -15,4 +15,4 @@ notes:
 - bedrift is the farm-type filter: B10=Alle bedrifter, B15-B60 are specific types. Filter to B10 for totals. Specific types are NOT mutually exclusive (one farm can appear in multiple) — sum only over B10 or a single type.
 - areal1 contains AIALT (total across all sizes) plus size brackets. Filter to AIALT unless you want a specific size class.
 - To get total farm counts nationally by farm type: WHERE tal='ANTAL' AND areal1='AIALT' AND omrade=0 AND bedrift='B10'. Each of these 4 filters is required to avoid overcounting.
-- Map: context/geo/regioner.parquet (niveau 1, omrade 81-85) or context/geo/landsdele.parquet (niveau 2, omrade 4,7,8,9,10 — 5 of 11 landsdele only) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).
+- Map: /geo/regioner.parquet (niveau 1, omrade 81-85) or /geo/landsdele.parquet (niveau 2, omrade 4,7,8,9,10 — 5 of 11 landsdele only) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).

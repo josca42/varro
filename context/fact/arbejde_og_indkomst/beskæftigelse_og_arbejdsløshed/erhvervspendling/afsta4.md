@@ -13,4 +13,4 @@ notes:
 - socio uses a CUSTOM encoding that does NOT match dim.socio. Do NOT join dim.socio. Code 2='Beskæftigede i alt' (total employed) is the overall total. Subcategories: 5=Selvstændige, 10=Medarbejdende ægtefæller, 15=Lønmodtager med ledelsesarbejde, 20=Lønmodtagere på højeste niveau, 25=Lønmodtagere på mellemniveau, 30=Lønmodtagere på grundniveau, 35=Andre lønmodtagere, 40=Lønmodtagere u.n.a. Use ColumnValues("afsta4", "socio").
 - arbejdssted contains all 3 nuts levels plus 0=Hele landet (national). Join dim.nuts and filter to a single niveau. Code 0 is not in dim.nuts — filter it out or handle separately as the national figure.
 - koen has TOT, M, K — filter koen='TOT' for overall average or use M/K to compare gender.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on arbejdssted=dim_kode. Exclude arbejdssted=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on arbejdssted=dim_kode. Exclude arbejdssted=0.

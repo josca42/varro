@@ -13,4 +13,4 @@ notes:
 - This is the only table in this subject with individual municipality-level NEET percentages. Use it when the question asks for kommuneniveau data.
 - alder: T1624=16-24 year olds total, plus 9 individual ages (16-24). Filter to alder='T1624' for the overall NEET percentage. The national NEET rate for 2023 (komgrp='0', alder='T1624') is 9.6%.
 - Sample: NEET pct by kommunegruppe type 2023 → JOIN dim.kommunegrupper WHERE d.niveau=1 AND alder='T1624' AND tid='2023-01-01'.
-- Map: context/geo/kommuner.parquet — merge on komgrp=dim_kode for niveau=2 data (98 kommuner; kodes match dim.nuts niveau=3). Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — merge on komgrp=dim_kode for niveau=2 data (98 kommuner; kodes match dim.nuts niveau=3). Exclude komgrp=0.

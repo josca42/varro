@@ -72,4 +72,4 @@ notes:
 - For regional investment by sector: nrbi10. Shortest series (2000–2023) and coarsest geography (regioner only).
 - For population by region (useful for per-capita denominators): nrhb. No measurement selectors — the simplest table here.
 - nrhp and nrs include per-capita prisenhed options (V_C, LRG_C), so you can get per-capita figures directly without dividing by nrhb.
-- Map: all tables support choropleth via context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. nrbi10 is regioner only. Exclude omrade IN (0, 999) in all tables except nrhb (which only has omrade=0 as non-regional code).
+- Map: all tables support choropleth via /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. nrbi10 is regioner only. Exclude omrade IN (0, 999) in all tables except nrhb (which only has omrade=0 as non-regional code).

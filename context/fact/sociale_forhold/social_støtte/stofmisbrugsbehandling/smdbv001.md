@@ -12,4 +12,4 @@ notes:
 - omrade = '0' is the national total ("Hele landet"). This code is not in dim.nuts, so it won't appear in a JOIN — use WHERE f.omrade = '0' directly if you want national figures.
 - akti has 3 independent activity types: ANMOD (requests), IVAERK (treatment starts), BEHSLUT (completed treatments). These are distinct counts for the same population — filter to one akti at a time. Summing all three is meaningless.
 - Sample query — treatment starts by region (2024): SELECT d.titel, f.indhold FROM fact.smdbv001 f JOIN dim.nuts d ON f.omrade = d.kode WHERE d.niveau = 1 AND f.akti = 'IVAERK' AND f.tid = '2024-01-01'
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

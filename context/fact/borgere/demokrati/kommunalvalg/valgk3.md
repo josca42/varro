@@ -14,4 +14,4 @@ notes:
 - parti includes EJR = all non-reserved party letters in aggregate. To get total votes across all parties, sum GSA through GSÅ or use valres='GS' from kvres instead.
 - Sample query — elected women by party nationally in 2021:
   SELECT f.parti, f.indhold FROM fact.valgk3 f WHERE f.omrade='0' AND f.stemmer='7' AND f.tid='2021-01-01' ORDER BY f.indhold DESC;
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -13,4 +13,4 @@ notes:
 - alder includes TOT. Filter alder='TOT' for overall totals. Individual ages go 0-100+.
 - kon has M and K only, no total. SUM to get all-gender figures.
 - Horizon is 2025-2050. For national-level herkomst breakdown, use frdk125 instead.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

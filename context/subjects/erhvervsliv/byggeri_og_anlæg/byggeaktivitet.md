@@ -108,4 +108,4 @@ notes:
 - **For national totals from 1982**: bygv01 (etageareal) or bygv03 (boliger) — cleaner than the historisk tables, same dimension structure as the regional tables but national only.
 - **Common pitfall**: All tables with multiple omrade/komgrp levels include aggregate rows (omrade='0' or komgrp='0' for Denmark total) that are not in the dim tables and will silently drop from inner joins. All tables with multiple bygfase values include mutually exclusive phases — always filter to one phase when aggregating.
 - **bygvfors**: Not a construction volume table — it measures the percentage revision between first and latest reporting. Useful only for data quality assessment.
-- **Map**: bygv11, bygv22, and bygv33 support choropleth maps via context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode, exclude omrade=0.
+- **Map**: bygv11, bygv22, and bygv33 support choropleth maps via /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode, exclude omrade=0.

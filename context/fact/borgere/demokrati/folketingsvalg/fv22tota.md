@@ -10,4 +10,4 @@ notes:
 - 2022 election only. Same structure as fv22tot but with individual afstemningssteder (polling stations) added: 1453 distinct omrade codes total. Low-numbered codes (0, 7–9, 10–19, 20–111) are the same geographic hierarchy as fv22tot; high-numbered codes (>1,000,000) are individual polling station IDs (afstemningssteder, e.g. Aalborghallen, specific school gyms).
 - Use this table only when you need polling-station granularity. For afstemningskredse or storkredse, fv22tot is cleaner with fewer rows.
 - valres identical to fvkom/fv22tot: 50 values. Filter to specific valres; never sum all.
-- Map: storkreds-level data (omrade 10–19) → context/geo/storkredse.parquet — merge on (omrade - 9)=dim_kode. Valgkreds-level data (omrade 20–111) → context/geo/valgkredse.parquet — merge on (omrade - 19)=dim_kode. Polling station codes (omrade > 1,000,000) have no geo file.
+- Map: storkreds-level data (omrade 10–19) → /geo/storkredse.parquet — merge on (omrade - 9)=dim_kode. Valgkreds-level data (omrade 20–111) → /geo/valgkredse.parquet — merge on (omrade - 19)=dim_kode. Polling station codes (omrade > 1,000,000) have no geo file.

@@ -13,4 +13,4 @@ notes:
 - organisation=100 is NOT the sum of 101+102+103. Clubs and members can belong to multiple organisations simultaneously (e.g. a club in both DIF and DGI), so summing orgs double-counts. Use organisation=100 for the deduplicated national total.
 - blstkom joins dim.nuts at niveaus 2 (11 landsdele) and 3 (98 kommuner). Filter d.niveau to avoid mixing levels. blstkom=0 is the national total; blstkom=99 is unknown/unspecified municipality — exclude it for geographic analysis.
 - Example: total members by landsdel for latest year: JOIN dim.nuts ON blstkom=kode AND niveau=2, filter organisation=100 (I alt) and aktp=105.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom IN (0, 99).
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom IN (0, 99).

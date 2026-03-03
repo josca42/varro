@@ -13,4 +13,4 @@ notes:
 - kommunedk joins dim.nuts at niveau 3 (98 kommuner). Code 0 = national total.
 - Use ColumnValues("nuts", "titel", for_table="isbu01") to see available kommuner.
 - For total active interventions per kommune: WHERE indsatser=3 AND tid='2024-01-01'.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

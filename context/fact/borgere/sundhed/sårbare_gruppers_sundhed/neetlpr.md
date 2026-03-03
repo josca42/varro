@@ -16,4 +16,4 @@ notes:
 - statusneet=0 is the aggregate total. Filter statusneet IN (5, 10) to compare NEET vs active; never sum alongside statusneet=0.
 - bop=0 is national total, not in dim.nuts. JOIN dim.nuts ON bop=kode WHERE d.niveau=1 for 5 regions, d.niveau=2 for 11 landsdele.
 - kon=MOK is the both-genders total — never sum all three kon values.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on bop=dim_kode. Exclude bop=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on bop=dim_kode. Exclude bop=0.

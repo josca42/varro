@@ -15,4 +15,4 @@ notes:
 - periode: same critical overcounting risk as lyst1. Filter to one value: 1=Hele året, 2=År til dato, or monthly 5-9.
 - nation1: 27 values, TOT=I alt is the grand total.
 - For annual person-nights nationally: WHERE f.omrade='0' AND f.nation1='TOT' AND f.periode='1' AND f.overnatf='210'.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

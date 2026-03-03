@@ -16,4 +16,4 @@ notes:
 - `omrade` joins dim.nuts. Code `0` = national total (not in dim). niveau 2 = 11 landsdele, niveau 3 = 98 kommuner.
 - `tid` is a cohort year covering Aug–Dec births only (e.g. 2019 = children born Aug–Dec 2019). Time periods are not full calendar years — do not compare magnitudes directly to annual barsel04 figures.
 - barlov2 (education breakdown, no region) and barlov3 (region breakdown, no education) cover the same birth cohort with week-by-week detail.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

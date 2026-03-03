@@ -11,4 +11,4 @@ notes:
 - bnogle contains both absolute counts and per-1000-inhabitant normalized rates (codes 14340–14420 are per-1000 rates). Never sum per-1000 rates across areas.
 - Designed for cross-municipality comparison. Each bnogle is a distinct KPI — always filter to one.
 - Use ColumnValues("sbs1", "bnogle") to see the full list of ~40 KPIs available.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -9,4 +9,4 @@ notes:
 - fui01 encodes multiple classification perspectives — pick exactly ONE per query. See forsk01 notes for the full breakdown (industry 1000–1090, technology level 2000–2030, IT 2040–2080, knowledge services 2090–2160, size groups 3000–3040, regions 0/81–85).
 - levrtyp='80' = grand total. '90' = domestic total, '160' = foreign total. Sub-items under 90 (100–150) and under 160 (170–190) are components — never sum sub-items together with their parent totals.
 - To get total purchased R&D spending by industry: WHERE levrtyp='80', filter fui01 to industry range (1000–1090).
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

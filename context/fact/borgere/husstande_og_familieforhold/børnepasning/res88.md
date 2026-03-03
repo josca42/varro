@@ -12,4 +12,4 @@ notes:
 - Not all institution types are available in all municipalities (e.g., F48=Kommunal dagpleje 3-5 år only reported in 3 kommuner; F45=Fritidsklubber only in 25). Filter to specific institution types and expect sparse data.
 - F58 (frokost 0-2 år) and F59 (frokost 3-5 år) are separate frokost surcharge rates, only available from 2012. The main rates F47 and F50 already note "inklusiv frokost".
 - Longest time series in subject: 2007-2025, making it useful for price trend analysis across institution types.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

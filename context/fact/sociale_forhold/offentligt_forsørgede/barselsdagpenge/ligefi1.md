@@ -17,4 +17,4 @@ notes:
 - `omrade` joins dim.nuts. Code `0` = national total (not in dim). niveau 2 only (11 landsdele).
 - For a simple national gender gap time series: `WHERE indikator='LA333' AND morudd='TOT' AND farudd='TOT' AND foraeldreudd='TOT' AND omrade='0'`.
 - Use ligefb1 to get the underlying population counts (number of parent pairs) that correspond to these averages.
-- Map: context/geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.

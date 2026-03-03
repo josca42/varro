@@ -15,4 +15,4 @@ notes:
 - enhed selector (4 types). Always filter to one.
 - indkomsttype is hierarchical — pick one specific type, never sum across types.
 - koen='MOK' is total.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.

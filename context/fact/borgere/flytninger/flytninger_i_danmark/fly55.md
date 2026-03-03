@@ -15,4 +15,4 @@ notes:
 - alder contains only individual ages (0–125), no total row.
 - This is an origin-destination matrix: each row is moves from frareg to tilreg. To get "moves into Region X" filter `tilreg = X`. To get "moves out of Region X" filter `frareg = X`. Summing across all rows gives national inter-regional move total without double-counting.
 - This table covers only *inter-regional* moves. Moves within a region are not represented here.
-- Map: context/geo/regioner.parquet — OD matrix; merge on tilreg=dim_kode (moves into) or frareg=dim_kode (moves out of) for choropleth. Exclude omrade=0.
+- Map: /geo/regioner.parquet — OD matrix; merge on tilreg=dim_kode (moves into) or frareg=dim_kode (moves out of) for choropleth. Exclude omrade=0.

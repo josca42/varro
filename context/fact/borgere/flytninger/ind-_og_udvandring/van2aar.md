@@ -15,4 +15,4 @@ notes:
 - omrade=0 is national total (not in dim.nuts). Join dim.nuts with WHERE d.niveau = 1 (5 regioner) or d.niveau = 3 (99 kommuner).
 - udvland and statsb only use niveau 3 (~211/202 countries). ColumnValues("lande_psd", "titel", for_table="van2aar") for available countries.
 - kon: 1=Mænd, 2=Kvinder (no total). alder: individual ages only, no total.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

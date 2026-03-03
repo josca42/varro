@@ -16,4 +16,4 @@ notes:
 - koen and alerams both have total rows (koen=10, alerams=IALT). When not breaking down by these dimensions, always filter to their totals to avoid double-counting.
 - dffekom joins dim.nuts at niveau 2 (11 landsdele) and niveau 3 (98 kommuner). Niveau 1 (regioner) is absent. Code '0' is a national total not in dim.nuts — use it directly for landstotaler or exclude it when joining to the dim. Use ColumnValues("nuts", "titel", for_table="sygedp01") to see the available codes.
 - To get a clean count of sick-pay recipients by kommune: filter maengde6=0, koen=10, alerams='IALT', ydelsesmodtager='TOT', and d.niveau=3 in the dim join.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on dffekom=dim_kode. Exclude dffekom='0'.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on dffekom=dim_kode. Exclude dffekom='0'.

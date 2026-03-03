@@ -16,4 +16,4 @@ notes:
 - funktion codes are stored as floats with .0 suffix (e.g., 2201.0). Use WHERE funktion=2201 or CAST(funktion AS int)=2201 in SQL. The underlying values are the same 4–5 digit account codes as regk31.
 - art: TOT=netto (UE minus I). Do not sum TOT with UE or I.
 - Budget table (budgetter), not actuals. For actual expenditure at function level use regk31.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on regi07a=dim_kode. Exclude regi07a=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on regi07a=dim_kode. Exclude regi07a=0.

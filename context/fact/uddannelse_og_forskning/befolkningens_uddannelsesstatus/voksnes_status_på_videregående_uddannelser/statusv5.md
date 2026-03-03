@@ -13,4 +13,4 @@ notes:
 - Two dimensions with totals: uddstat='AA_TOTAL' and uddannelse='TOT'. Filter both to get a single count per municipality.
 - Use ColumnValues("statusv5", "grundbel") to get the municipality code-to-name mapping (all 98 communes listed inline). No dim table join needed.
 - Useful for geographic analysis of higher education completion by childhood municipality — where you grew up predicts your education outcome.
-- Map: context/geo/kommuner.parquet — merge on grundbel=dim_kode. Exclude grundbel IN (0, 98).
+- Map: /geo/kommuner.parquet — merge on grundbel=dim_kode. Exclude grundbel IN (0, 98).

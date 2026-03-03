@@ -14,4 +14,4 @@ notes:
   Never SUM across tal values — the unit of indhold differs completely between rows.
 - omrade joins dim.nuts at niveau=3 (98 kommuner). omrade=0 is a national total not in dim.nuts — use it for Denmark-wide figures.
 - The "unit Antal" label in the measure column is misleading for tal=6 (weeks) and tal=7 (kr.). Treat indhold unit as determined by the tal filter.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

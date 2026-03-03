@@ -16,4 +16,4 @@ notes:
 - art has the same hierarchy as regr31 (52 values, aggregates + detail). Filter to one art value.
 - No prisenhed column — values are in 1.000 kr. directly.
 - Best used to answer questions like "how much did regions spend on IT?" or "what were payments to municipalities?" — not for total expenditure (use regr31 for that).
-- Map: context/geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.
+- Map: /geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.

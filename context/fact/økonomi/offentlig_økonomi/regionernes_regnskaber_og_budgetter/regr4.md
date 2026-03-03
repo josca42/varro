@@ -12,4 +12,4 @@ notes:
 - funktion has 69 detailed balance sheet account codes (assets and liabilities mixed). All appear to be leaf nodes — no AKTIV/PASSIV aggregate rows in this table. For national aggregated assets/liabilities totals, use regr63 instead.
 - No prisenhed column — simpler than the regnskab tables. No art/dranst either. Just omrade × funktion × tid.
 - The 6xxxxx codes follow the standard Danish public accounts balance sheet structure: 61xxx=likvide aktiver, 62xxx=kortfristede tilgodehavender, 63xxx=langfristede tilgodehavender, 64xxx=fonds/formue, 65xxx=gæld, 66xxx=hensatte forpligtelser, 67xxx=egenkapital.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

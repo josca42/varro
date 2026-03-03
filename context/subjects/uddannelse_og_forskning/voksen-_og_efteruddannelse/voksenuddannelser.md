@@ -38,4 +38,4 @@ notes:
 - For employer-provided training in companies (CVTS survey): use cvts1. Covers 2005, 2010, 2015, 2020 only (every 5 years). indhold is % of companies — not headcounts, not annual data.
 - Common pitfall across veu20 and ligeui2: bopomr='0' is the national total and is not in dim.nuts. Join dim.nuts only when filtering by named region. Filter d.niveau to avoid mixing geographic levels.
 - Common pitfall across veu20, veuhel10, veuhel20, ligeui2: tidspunkter doubles (or for veu20 quadruples with overnat1) the row count. Always filter to a single tidspunkter value.
-- Map: veu20 and ligeui2 support choropleth maps via bopomr — use context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1). Merge on bopomr=dim_kode; exclude bopomr=0 (and bopomr=996 for veu20).
+- Map: veu20 and ligeui2 support choropleth maps via bopomr — use /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1). Merge on bopomr=dim_kode; exclude bopomr=0 (and bopomr=996 for veu20).

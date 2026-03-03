@@ -15,4 +15,4 @@ notes:
 - famstor and antborn have NO total codes. To get total family count, SUM across all famtyp × famstor × antborn combinations.
 - Use ColumnValues("nuts", "titel", for_table="fam44n") to see the 104 region/kommune codes.
 - Key difference from fam55n: fam44n counts families (familier), fam55n counts households (husstande). A family is a smaller unit (e.g., couple + children); a household can contain multiple families.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

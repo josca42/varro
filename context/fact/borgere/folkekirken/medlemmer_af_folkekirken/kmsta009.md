@@ -13,4 +13,4 @@ notes:
 - For standard "how many members live in this sogns" question: filter pendling='10' (Natbefolkning).
 - Covers only population aged 15+. Available 2016–2024.
 - fkmed: F=Medlem, U=Ikke-Medlem. Both rows present for each combination.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

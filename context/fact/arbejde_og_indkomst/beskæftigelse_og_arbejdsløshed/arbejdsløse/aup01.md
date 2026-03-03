@@ -12,4 +12,4 @@ notes:
 - indhold is a percentage (pct. of workforce). Do not sum across omrade or alder — these are rates, not counts.
 - omrade joins dim.nuts at levels 1/2/3. omrade='0'=Hele landet not in dim.
 - Preliminary (foreløbig) counterpart to aup02, from Jul 2017. For longer history from 2007 use aup02. For rates by a-kasse (pct. of insured) use aup03 instead.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -11,4 +11,4 @@ notes:
 - paregion and afregion use custom prefixed codes (F01–F11, T01–T11) that do NOT join to dim.nuts. The landsdel numbering matches (e.g. F01=Landsdel Byen København = nuts code 1), but you must not join to dim.nuts directly. Use ColumnValues("skib481", "paregion") / ColumnValues("skib481", "afregion") for labels.
 - Aggregate/special codes: F000/T000=hele landet (national total), F888/T888=Danske søområder. Exclude these when summing across regions to avoid double-counting.
 - This is the only table in the subject showing goods flow as an origin-destination matrix between Danish regions (domestic inland/coastal shipping).
-- Map: context/geo/landsdele.parquet — strip the F/T prefix and cast to int (e.g. paregion.str[1:].astype(int)) to get dim_kode 1–11. Exclude F000/T000 and F888/T888. Aggregate by origin (paregion) or destination (afregion) before merging.
+- Map: /geo/landsdele.parquet — strip the F/T prefix and cast to int (e.g. paregion.str[1:].astype(int)) to get dim_kode 1–11. Exclude F000/T000 and F888/T888. Aggregate by origin (paregion) or destination (afregion) before merging.

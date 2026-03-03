@@ -14,4 +14,4 @@ notes:
 - agebygroup has `TOT1529` as aggregate. Filter to `IN ('1519', '2024', '2529')` for age group breakdown.
 - flyttetype has `0` = total. All three non-tid columns have aggregates — filter appropriately.
 - Covers only young people aged 15–29.
-- Map: context/geo/landsdele.parquet — merge on fraflytland::int=dim_kode. Exclude fraflytland='TOTFL' before casting.
+- Map: /geo/landsdele.parquet — merge on fraflytland::int=dim_kode. Exclude fraflytland='TOTFL' before casting.

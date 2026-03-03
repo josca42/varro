@@ -12,4 +12,4 @@ notes:
 - komk joins dim.kommunegrupper at niveau 2 (98 kommuner). komk='0' is the national total, not in the dim.
 - Counts unique students (elever), unlike skolm02a which counts aktiviteter (subject enrollments). Use this for headcounts of individual students.
 - TOT rows present for alder and kon. Filter both to avoid overcounting: e.g. alder='TOT', kon='TOT' for total students.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

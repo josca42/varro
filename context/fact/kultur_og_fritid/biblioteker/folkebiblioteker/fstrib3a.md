@@ -9,4 +9,4 @@ columns:
 dim docs: /dim/nuts.md
 notes:
 - Archive version of fstrib3 (Filmstriben, education breakdown) — only 2024. See fstrib3.md for full notes.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.

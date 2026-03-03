@@ -11,4 +11,4 @@ notes:
 - omrade only has niveau=3 (kommuner). omrade='0.0' is a national total (not in dim.nuts). Use ColumnValues("nuts","titel",for_table="eskat") to see the 98 kommuner.
 - skatgrl has 4 values with completely different units: 1/2/3 are property values in mio. kr., 4 is taxes paid in 1.000 kr. Never sum or mix across skatgrl. The unit column header '-' reflects this mix.
 - Typical use: pick one skatgrl per query. For total property tax paid by kommune: WHERE skatgrl='4'. For the taxable land value base: WHERE skatgrl='3'.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.0.

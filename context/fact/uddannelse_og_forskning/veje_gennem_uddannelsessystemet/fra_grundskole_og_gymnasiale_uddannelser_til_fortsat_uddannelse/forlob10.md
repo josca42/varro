@@ -22,4 +22,4 @@ notes:
 - To get a simple cohort count: filter afgklas='TOT', uddannelse='TOT', koen='10', herkomst='0', afgreg='0', and pick one statustid and one tid.
 - herkomst sub-values 10+20+30+40 sum exactly to herkomst='0' (I alt). 40=Uoplyst is very small (~13 persons per cohort). koen M+K sum to koen='10'.
 - afgklas sub-values H1020 (7.–9. klasse) + H1030 (10. klasse) sum to TOT.
-- Map: context/geo/regioner.parquet — merge on afgreg=dim_kode. Exclude afgreg=0.
+- Map: /geo/regioner.parquet — merge on afgreg=dim_kode. Exclude afgreg=0.

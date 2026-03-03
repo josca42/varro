@@ -74,5 +74,5 @@ notes:
 - Supply-chain / input-output multiplier tables: van2mu1n (water consumption by production branch), van2mu2n (by final demand category), van4mu1n (wastewater by branch), van4mu2n (wastewater by final demand). Use these for footprint analysis and intensity comparisons.
 - All erhverv/branche columns use V-prefixed codes (e.g. V010000) that join dim.nr_branche via: REPLACE(REPLACE(f.erhverv, 'V', ''), '_', '-') = TRIM(d.kode). The dim has 5 hierarchy levels — always filter by d.niveau to avoid cross-level double-counting. ETOT and EHUSHOLD are aggregate codes not in the dim.
 - vandud.udl encodes 4 completely different pollutants with different units — always filter to one udl value; never sum across them.
-- Map: vandind and vandud support choropleth maps via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: vandind and vandud support choropleth maps via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
 - vandrg3/vandrg5 enhed and van2mu1n/van4mu1n mult/prisenhed are selector columns — each creates separate rows for the same underlying data. Always filter each selector to one value to avoid overcounting.

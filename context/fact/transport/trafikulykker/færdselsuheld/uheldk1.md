@@ -16,5 +16,5 @@ notes:
 - alder, kon, and indbland have no total codes; all values are specific.
 - kon: values are 1, 2, 9 — NO 0=I alt total. Sum all three (or just 1+2) to get total.
 - indbland describes the involved vehicle type. 11 specific types, no "I alt". Sum all to get total injured by any vehicle type.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
 - alder codes here are 4-digit without leading zeros in both ColumnValues and DB (9917, 1824, etc.) — no mismatch.

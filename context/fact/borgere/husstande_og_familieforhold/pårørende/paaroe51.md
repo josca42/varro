@@ -15,4 +15,4 @@ notes:
 - omrade joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (98 kommuner). Code 0 = national total, does not join dim.nuts. Same pattern as paaroe50.
 - alder and parorendeforhold are identical to paaroe50. paaroe50 and paaroe51 are companion tables: paaroe50 = share receiving home care, paaroe51 = hours per person among recipients.
 - To understand both penetration and intensity together, query paaroe50 (share) alongside paaroe51 (hours) with matching filters.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -15,4 +15,4 @@ notes:
 - This is an origin-destination matrix. Rows with paregion=0 OR afregion=0 are marginal totals (all-origin or all-destination), not additional shipments — do not sum them with the region-level rows.
 - Use ColumnValues("nuts", "titel", for_table="bane401") to confirm which codes are present (only the 5 regions + aggregate 0).
 - Annual data from 2007. National transport only — no international flow data in this table.
-- Map: context/geo/regioner.parquet — merge on paregion=dim_kode (origin) or afregion=dim_kode (destination) for choropleth by region. Exclude paregion=0 / afregion=0 (marginal totals).
+- Map: /geo/regioner.parquet — merge on paregion=dim_kode (origin) or afregion=dim_kode (destination) for choropleth by region. Exclude paregion=0 / afregion=0 (marginal totals).

@@ -78,4 +78,4 @@ notes:
 - CRITICAL — kapacitet is a measurement selector: all capacity tables (hotel3–hotel6, hotel31, turist3) mix counts and percentages in the same column. Always filter to exactly one kapacitet value.
 - omrade code 0 = Hele landet is present in all regional tables but is NOT in dim.nuts — filter it out or handle separately when joining.
 - Table naming pattern: odd numbers (hotel3, hotel5, hotel7) have finer geographic breakdown (landsdele); even numbers (hotel4, hotel6, hotel8) trade geographic granularity for an additional type dimension (hoteller vs. feriecentre).
-- Map: hotel1, hotel3, hotel4, hotel7 support choropleth at both region and landsdel level (context/geo/regioner.parquet / context/geo/landsdele.parquet). hotel2, hotel5, hotel6, hotel8, vandrer support regioner only. hotel31 and turist3 are national-only — no map possible.
+- Map: hotel1, hotel3, hotel4, hotel7 support choropleth at both region and landsdel level (/geo/regioner.parquet / /geo/landsdele.parquet). hotel2, hotel5, hotel6, hotel8, vandrer support regioner only. hotel31 and turist3 are national-only — no map possible.

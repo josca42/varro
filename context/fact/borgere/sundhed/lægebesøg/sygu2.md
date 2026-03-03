@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts niveau 1 only (5 regioner). omrade=0 is "Hele landet" and omrade=86 is uoplyst — exclude both when joining.
 - ydelsesart is hierarchical: 120=I ALT is the grand total. Do not sum all ydelsesart values. Includes ydelsesart 310=LABORATORIER.
 - alerams has single-year ages (0, 1, 2, ... 99-=99+) plus IALT.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

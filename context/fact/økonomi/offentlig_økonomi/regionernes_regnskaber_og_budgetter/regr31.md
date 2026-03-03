@@ -17,4 +17,4 @@ notes:
 - art has 52 values with the same hierarchy as regr11 (TOT, UE, UI, I, S0-S9, numeric 00-97). Filter to a single aggregate value; never SUM across all art values.
 - dranst has 5 account types. Same pitfall as regr11: summing across all dranst mixes operating and capital flows.
 - For detailed breakdown of health expenditure by region: filter funk1 to 1xxxx codes, dranst=1, art='UE', prisenhed='LOBM'.
-- Map: context/geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.
+- Map: /geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.

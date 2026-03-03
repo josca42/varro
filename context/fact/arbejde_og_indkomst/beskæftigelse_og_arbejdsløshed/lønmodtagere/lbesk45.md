@@ -13,4 +13,4 @@ notes:
 - boplandk joins dim.nuts correctly (89% match). Unmatched: 0=Hele landet, 950=Uden for Danmark. Contains both regioner (81–85) and landsdele (1–11) — filter d.niveau to pick one level.
 - WARNING: dim.herkomst join is mostly broken. herkomst uses: 1=Dansk oprindelse, 24=Indvandrere vestlige, 25=Indvandrere ikke-vestlige, 34=Efterkommere vestlige, 35=Efterkommere ikke-vestlige, TOT=I alt, UDK=Uoplyst. Treat as inline — see lbesk43 notes.
 - To get breakdown by region AND herkomst: filter tal, then cross boplandk with herkomst (exclude TOT and UDK in both unless summarising).
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on boplandk=dim_kode. Exclude boplandk IN (0, 950).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on boplandk=dim_kode. Exclude boplandk IN (0, 950).

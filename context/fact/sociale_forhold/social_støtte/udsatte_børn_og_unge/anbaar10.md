@@ -15,4 +15,4 @@ notes:
 - landdel joins dim.nuts at niveau 2 (11 landsdele). Code 0 = national total.
 - alder1 here goes only to 12-17 (no 18+ group, unlike other anbaar tables). Missing 18-22 year olds.
 - Only goes back to 2018 — shorter series than other anbringelse tables.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.

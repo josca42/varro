@@ -13,4 +13,4 @@ notes:
 - tilkommune joins dim.nuts niveau 3 (99 kommuner), but has aggregate code `TOTTK` (all til-kommuner). Filter `WHERE f.tilkommune != 'TOTTK'` before joining.
 - tilflytomr has `TOT` and flyttetype has `0` as aggregates. Must filter all three to avoid overcounting — same pattern as flyung1.
 - Covers only young people aged 15–29.
-- Map: context/geo/kommuner.parquet — merge on tilkommune::int=dim_kode. Exclude tilkommune='TOTTK' before casting.
+- Map: /geo/kommuner.parquet — merge on tilkommune::int=dim_kode. Exclude tilkommune='TOTTK' before casting.

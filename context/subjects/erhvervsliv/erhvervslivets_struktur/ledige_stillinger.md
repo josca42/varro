@@ -39,4 +39,4 @@ notes:
 - All tables have enhed as a measurement selector (LS=antal, ALS=procent). Always filter to one — mixing doubles the data. ALS values are percentages and must never be summed across dimensions.
 - branche and storrelse both have a code 0 = I alt row. Always exclude code 0 when aggregating across categories to avoid double-counting.
 - lsk03 has an additional saeson selector (Sæsonkorrigeret vs Faktiske tal) that must also be filtered to one value.
-- Map: ls02 and lsk02 support regional choropleth via context/geo/regioner.parquet — merge on region=dim_kode, filter to region IN ('81','82','83','84','85').
+- Map: ls02 and lsk02 support regional choropleth via /geo/regioner.parquet — merge on region=dim_kode, filter to region IN ('81','82','83','84','85').

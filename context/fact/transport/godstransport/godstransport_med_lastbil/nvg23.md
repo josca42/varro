@@ -15,4 +15,4 @@ notes:
 - gods has a layered hierarchy: 100=GODS I ALT (total), 112-152 are the 5 goods categories (these 5 sum to 100), 202-252 are the same 5 goods in containers (subset of 100), 302-352 are the same 5 in other load type (subset of 100). The 100/1xx/2xx/3xx groups are overlapping. For total goods by category use 112-152; for container breakdown use 202-252.
 - For a clean origin-destination matrix: WHERE gods='100' AND enhed='70' AND paregion != '0' AND afregion != '0' gives 11×11 landsdel-level cells.
 - Join example: JOIN dim.nuts pa ON f.paregion=pa.kode AND pa.niveau=2 JOIN dim.nuts af ON f.afregion=af.kode AND af.niveau=2
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on paregion=dim_kode or afregion=dim_kode. Exclude code 0. OD table; aggregate by one dimension for choropleth.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on paregion=dim_kode or afregion=dim_kode. Exclude code 0. OD table; aggregate by one dimension for choropleth.

@@ -30,4 +30,4 @@ notes:
 - vej23: total traffic volume (Mio. køretøjskm) by vehicle type, national level only, 2000–2024. Good for modal split or trend questions. transmid is hierarchical — always filter to a single level (e.g. transmid='0' for total, or a non-overlapping set of sub-categories).
 - vej11: road network length (km) by landsdel and road type, 2007–2024. Only table with regional breakdown. landdel joins dim.nuts at niveau=2 (11 landsdele); vejtype has 3-tier hierarchy (filter to one level).
 - vej2: road investment (Mio. kr.) by investment type and price base, 1990–2022. enhed is a price-base selector (årets priser / 1995-priser / 2000-priser) — must always filter to one value or counts triple. Best default: enhed='2004' (årets priser, full time range).
-- Map: only vej11 has a geographic breakdown (landdel at niveau 2). Use context/geo/landsdele.parquet — merge on landdel=dim_kode, exclude landdel='0'.
+- Map: only vej11 has a geographic breakdown (landdel at niveau 2). Use /geo/landsdele.parquet — merge on landdel=dim_kode, exclude landdel='0'.

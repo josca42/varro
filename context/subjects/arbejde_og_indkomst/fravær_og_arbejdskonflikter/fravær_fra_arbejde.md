@@ -124,4 +124,4 @@ notes:
 - **ligehi8/ligehi9** = gender gap in own-sickness absence: ligehi8 by job function + age, ligehi9 by job function + family type.
 - All ligeXX tables use indikator as a gender-comparison selector (LAV1/LAV2/LAV3 or M111/K111/F111). Always filter to one indikator value.
 - fra021a starts in 2015; all other fra0XX and ligeXX tables start in 2013 (ligehb11 from 2015 through 2024).
-- Map: fra023, fra025, fra026, fra028 support regional choropleth (niveau 1, 5 regioner) via context/geo/regioner.parquet — merge on omrade=dim_kode. fra027 supports kommune-level choropleth (niveau 3) via context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade='0' in all cases.
+- Map: fra023, fra025, fra026, fra028 support regional choropleth (niveau 1, 5 regioner) via /geo/regioner.parquet — merge on omrade=dim_kode. fra027 supports kommune-level choropleth (niveau 3) via /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade='0' in all cases.

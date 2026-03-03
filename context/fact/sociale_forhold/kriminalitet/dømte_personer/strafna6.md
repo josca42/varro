@@ -14,5 +14,5 @@ notes:
 - herkomst1 has only 2 values (1=Personer med dansk oprindelse, 6=Personer med udenlandsk oprindelse) — no total row. Sum both for total. This is a coarser origin split than the herkomst column in strafna9/strfna10/strfna11.
 - alder TOT is aggregate — filter to one level.
 - kon has only M and K — no total row.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
-- Map: kommune data (niveau 3) can be aggregated to politikredse via dim.politikredse (niveau 2 = kommuner, niveau 1 = 12 politikredse). Use context/geo/politikredse.parquet for boundaries.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: kommune data (niveau 3) can be aggregated to politikredse via dim.politikredse (niveau 2 = kommuner, niveau 1 = 12 politikredse). Use /geo/politikredse.parquet for boundaries.

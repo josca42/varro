@@ -16,4 +16,4 @@ notes:
 - straflang: TOTB = betinget i alt (aggregate), then bands in days (1-14, 15-21, ..., 1081-8999). 9001 = straffastsættelse udsat, 9000 = uoplyst. Filter straflang='TOTB' for totals.
 - omrade: same as straf44 — niveaux 1 and 3, omrade='0' = I alt, '998' = Uoplyst.
 - koen includes VIRKSOMHEDER. Note the column is called koen here (not kon as in straf40/44).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN ('0', '998'). Kommune data can also be aggregated to 12 politikredse via dim.politikredse (niveau 2 koder match dim.nuts niveau 3; parent_kode → politikredsgrænser in context/geo/politikredse.parquet).
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN ('0', '998'). Kommune data can also be aggregated to 12 politikredse via dim.politikredse (niveau 2 koder match dim.nuts niveau 3; parent_kode → politikredsgrænser in /geo/politikredse.parquet).

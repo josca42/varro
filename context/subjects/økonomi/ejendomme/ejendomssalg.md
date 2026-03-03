@@ -99,4 +99,4 @@ notes:
 
 **ejendomskate code 9999 in ejen77/ejen88:** = "Samlet salg" (grand total across all property types). Not in dim.ejendom. Exclude it when you want per-category breakdowns.
 
-**Map support:** All tables with an area column support choropleth maps via dim.nuts. Geographic depth varies: ej56, ej67, ejen77, ejen88 cover regioner (niveau 1) and landsdele (niveau 2); ej121 and ej131 cover regioner only; ej99 covers landsdele only; ejen99 goes deepest — down to kommuner (niveau 3). Use context/geo/regioner.parquet, landsdele.parquet, or kommuner.parquet accordingly. Exclude omrade=0 (and omrade=95 for ejen99) before merging.
+**Map support:** All tables with an area column support choropleth maps via dim.nuts. Geographic depth varies: ej56, ej67, ejen77, ejen88 cover regioner (niveau 1) and landsdele (niveau 2); ej121 and ej131 cover regioner only; ej99 covers landsdele only; ejen99 goes deepest — down to kommuner (niveau 3). Use /geo/regioner.parquet, landsdele.parquet, or kommuner.parquet accordingly. Exclude omrade=0 (and omrade=95 for ejen99) before merging.

@@ -13,4 +13,4 @@ notes:
 - indikator must always be filtered: LA1=% male students, LA2=% female students, LA3=difference (male minus female, in pp — negative means more women). LA1+LA2 ≈ 100 (except for uoplyst).
 - komk joins dim.kommunegrupper at niveau 2. komk='0' is national total, not in the dim.
 - alder1='TOT' for all ages combined. No uoplyst row (unlike skolm02a/02b). Age groups are the same as in skolm02a/02b.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

@@ -12,4 +12,4 @@ notes:
 - Annual version of auk03 (activated recipients only). Latest to 2024-01-01.
 - omrade joins dim.nuts: niveau 1-3. omrade='0' = Hele landet, omrade='997' = Uoplyst — not in dim.nuts. Filter by niveau for a single geographic level.
 - ydelsestype codes are activation-specific (AKTOT = total). Don't mix hierarchy levels (AKTOT covers AKD+AKK; each of those covers sub-types).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).

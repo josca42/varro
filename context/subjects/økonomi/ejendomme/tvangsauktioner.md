@@ -24,4 +24,4 @@ notes:
 - For long monthly time series by property type or region: use tvang1 (from 1993) or tvang2 (from 1979). tvang1 also has a seasonally adjusted total; tvang2 has the longer history and includes pre-2007 geographic zones (Hovedstadsregionen/Øerne/Jylland).
 - All three tables: the `type` / `omrade` column encodes multiple categorizations — never sum across all values. Always pick one view (national total, by region, or by property type) and filter accordingly.
 - Property type categories changed in 2018 in both tvang1 and tvang2: Erhvervsejendomme and Nedlagte landbrug were split into three finer codes. Cross-2018 comparisons of commercial property need care.
-- Map: tvang3 supports choropleth maps at kommune, landsdel, or region level via context/geo/kommuner.parquet, context/geo/landsdele.parquet, or context/geo/regioner.parquet — merge on omrade=dim_kode.
+- Map: tvang3 supports choropleth maps at kommune, landsdel, or region level via /geo/kommuner.parquet, /geo/landsdele.parquet, or /geo/regioner.parquet — merge on omrade=dim_kode.

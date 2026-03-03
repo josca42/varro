@@ -45,4 +45,4 @@ notes:
 - For counts with herkomst (origin) breakdown: use ligeub1 (2005-2024, the longest count series). herkomst uses inline codes (0/10/21/24/25/31/34/35) — filter to one hierarchy level. bopomr joins dim.nuts.
 - For gender gap indicators (% men, % women, procentpoint difference): use ligeui1 (2005-2024, with region+herkomst) or ligeui0 (1986-2024, national only). Both have indikator/indikator1 as a MEASUREMENT SELECTOR — always filter to one value (LA1/LA2/LA3) or results are tripled.
 - herkomst dimension: ligeub1.herkomst and ligeui1.herkams use the same inline coding (0/10/21/24/25/31/34/35) but do NOT join dim.herkomst (which uses codes 1/2/3/9).
-- Map: hfudd16, ligeub1, ligeui1 support choropleth via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) on bopomr=dim_kode. laby19 supports kommune-level maps on komgrp=dim_kode (filter komgrp > 100).
+- Map: hfudd16, ligeub1, ligeui1 support choropleth via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) on bopomr=dim_kode. laby19 supports kommune-level maps on komgrp=dim_kode (filter komgrp > 100).

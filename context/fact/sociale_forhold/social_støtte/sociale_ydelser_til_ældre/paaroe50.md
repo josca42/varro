@@ -15,4 +15,4 @@ notes:
 - parorendeforhold has 4 mutually exclusive categories (no total row). There is no "pårørende i alt" — if you need the overall rate regardless of family situation, use alder=TOT85 and omit the parorendeforhold filter while summing is not correct; rather, do not filter on parorendeforhold and restrict to the indikator and alder of interest with omrade as the grouping dimension (the rows will span all 4 parorendeforhold values, so you'd need to pick one or average appropriately).
 - omrade joins dim.nuts with niveau 1 (5 regioner) and niveau 3 (98 kommuner). Filter WHERE d.niveau=3 or d.niveau=1. omrade=0 is national total (not in dim).
 - Pair with paaroe51 for hours per person per parorendeforhold.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -83,4 +83,4 @@ notes:
 - Experimental tables (konk10e/11e/12e): provide Konkursbegæring (petition filings, K04) as a leading indicator not available in the official series. konk10e=weekly, konk11e=monthly, konk12e=annual.
 - virktyp1 appears in konk4, konk8, konk15: always filter to one value (K01=total, K02=aktive, K03=nulvirksomheder). K01=K02+K03 — summing all three triples the count. Same pattern for saeson in konk9 (EJSÆSON vs SÆSON) and indikator in konkeum.
 - All single-dimension tables (konk5/6/7) include a total code (000 or BTSXO_S94) that equals the sum of the breakdown categories — exclude it when aggregating by category.
-- Map: konk8 supports choropleth at region level — context/geo/regioner.parquet, merge on region=dim_kode. No other table in this group has geographic breakdown.
+- Map: konk8 supports choropleth at region level — /geo/regioner.parquet, merge on region=dim_kode. No other table in this group has geographic breakdown.

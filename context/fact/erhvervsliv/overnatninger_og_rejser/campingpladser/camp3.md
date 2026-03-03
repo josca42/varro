@@ -12,4 +12,4 @@ notes:
 - kapacitet is a measurement selector with 5 independent values: 1220=Antal campingpladser max, 1230=Antal campingpladser min, 1240=Antal campingenheder max, 1250=Antal campingenheder min, 1260=Kapacitetsudnyttelse pct. Always filter to one value. Max/min refer to within-year seasonal variation; they should not be summed.
 - tid is annual (YYYY-01-01). This is the annual view of capacity with seasonal max/min. For monthly capacity data use camp2 instead.
 - kapacitetsudnyttelse (1260) is a percentage — do not SUM across regions; use AVG if aggregating.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

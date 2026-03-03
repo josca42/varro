@@ -11,4 +11,4 @@ notes:
 - kommunedk contains kode 0 (national total, not in dim.nuts), niveau 1 (5 regioner, kode 81-85), and niveau 3 (98 kommuner). Filter WHERE d.niveau = 1 or d.niveau = 3; exclude kode '0' or LEFT JOIN and check d.niveau IS NOT NULL.
 - paskat has NO total — the 3 values (Dagpleje, 0-2 år, 3-5 år) are independent staffing norms. indhold is a ratio (e.g., 3.2 children per normeret staff at national level for Dagpleje), not a headcount. Do NOT sum across paskat.
 - 2-year snapshot only (2023 and 2024). For trend data use boern2 (enrolled children, back to 2015).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.

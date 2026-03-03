@@ -20,4 +20,4 @@ notes:
   JOIN dim.nuts d ON f.omrade = d.kode AND d.niveau = 3
   WHERE f.tid = '2025-01-01'
   GROUP BY d.titel, f.ejer;
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

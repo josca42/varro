@@ -14,4 +14,4 @@ notes:
 - bopomr contains all 3 nuts levels plus 0=Hele landet (national total). Join dim.nuts and filter to a single niveau. Code 0 is not in dim.nuts.
 - socio uses the same CUSTOM encoding as afsta3 — do NOT join dim.socio. 5=Selvstændige, 10=Medarbejdende ægtefæller, 15–40=Lønmodtager subcategories. Use ColumnValues("afstb3", "socio").
 - pendafst=0 is total (I alt); pendafst=80 is 'Ikke beregnet'. koen has TOT, M, K.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

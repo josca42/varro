@@ -16,4 +16,4 @@ notes:
 - biltype and driv both have I alt totals. brug also has I alt (1000). Always anchor non-target dims to their total.
 - Sample: new registrations by region 2024: JOIN dim.nuts d ON f.omrade=d.kode WHERE d.niveau=1 AND biltype='4000100001' AND brug='1000' AND driv='20200' AND tid='2024-01-01'
 - Only table in this subject with regional breakdown. Covers from 2018-01-01 only.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 99).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 99).

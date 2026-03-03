@@ -11,4 +11,4 @@ notes:
 - B01A=population start of year, B20A=population end of year; the difference equals B11 (Befolkningstilvækst).
 - 0=Uden placerbar adresse and 9999=Uden fast bopæl are non-geographic catch-alls.
 - Shortest time range of all movement tables (2015–2024). Parish-level movement data — for commune/region level use bev107 (annual) or bev22 (quarterly).
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).

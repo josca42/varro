@@ -16,4 +16,4 @@ notes:
 - omrade=0 is the national aggregate, not in dim.nuts — use directly (WHERE omrade = 0) for national totals.
 - overnatf hierarchy same as turist: 100 contains 110 (which contains 120+130), 140, 150, 160, 170. Filter to overnatf=100 for all-type total; never SUM parent and child codes.
 - Shorter time series than turist — only from 2018. For pre-2018 guest data, this table cannot help; use turist (which covers overnight stays back to 1992).
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -11,4 +11,4 @@ notes:
 - perstyp='300' = FoU-personale i alt (total). 310=Forskere and 320=Andet personale are sub-components summing to 300.
 - koen='0' = Køn i alt (total), koen='1' = Kvinder, koen='2' = Mænd. Filter to koen='0' for totals; use koen='1' or '2' for gender breakdown.
 - This counts headcount (Antal). For FTE (årsværk), use forsk114.
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

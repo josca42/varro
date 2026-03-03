@@ -16,4 +16,4 @@ notes:
 - Like eb2 but adds municipal (niveau=3) geographic breakdown. Use when you need børn af efterkommere by region.
 - alder in 5-year bands (like eb1). No total band.
 - No total row for opher or kon. SUM across all categories for aggregates.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. No omrade=0 in this table (all rows are kommuner).
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. No omrade=0 in this table (all rows are kommuner).

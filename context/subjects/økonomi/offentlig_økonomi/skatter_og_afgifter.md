@@ -106,4 +106,4 @@ notes:
 
 - For corporate tax: selsk1 counts all selskaber by type and income bracket (incl. loss-making). selsk2 covers only tax-paying selskaber with count/income/tax in one indskat column (always filter to one indskat). selsk3 is the same as selsk2 but by DB07 industry instead of company type. Both selsk2 and selsk3 mixes units in indskat (Antal, Mio. kr., Mio. kr.) — never aggregate across indskat values.
 
-- Map: pskat, ejdsk2 support kommune + region choropleths (niveau 3 + 1). pskat4, eskat, ejdsk1, ejdsk3 support kommune-only choropleths (niveau 3). All merge on omrade=dim_kode via context/geo/kommuner.parquet or context/geo/regioner.parquet.
+- Map: pskat, ejdsk2 support kommune + region choropleths (niveau 3 + 1). pskat4, eskat, ejdsk1, ejdsk3 support kommune-only choropleths (niveau 3). All merge on omrade=dim_kode via /geo/kommuner.parquet or /geo/regioner.parquet.

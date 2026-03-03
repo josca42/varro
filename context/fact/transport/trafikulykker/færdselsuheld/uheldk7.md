@@ -15,4 +15,4 @@ notes:
 - uheldsit=0 means Eneuheld (single-vehicle), NOT a total.
 - byland has no total code (I byzone / I landzone only). Sum both for national counts.
 - Sample query — accidents by kommune in 2024: SELECT d.titel, SUM(f.indhold) FROM fact.uheldk7 f JOIN dim.nuts d ON f.omrade=d.kode WHERE f.tid='2024-01-01' AND d.niveau=3 AND f.uhelda='0' AND f.byland IN ('1','2') AND f.uheldsit IN ('0','100','200','300','400','500','600','700','800','900','999') GROUP BY d.titel ORDER BY SUM(f.indhold) DESC;
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

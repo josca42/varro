@@ -17,4 +17,4 @@ notes:
 - This table ends 2020-01-01. For current data use folk1e (herkomst without country detail) or folk1b (statsb with country detail).
 - 6 dimension columns (omrade, kon, alder, herkomst, ieland, tid). Filter non-target dims to totals: omrade=0, kon='TOT', alder='IALT', herkomst='TOT', ieland=0.
 - Use ColumnValues("lande_psd", "titel", for_table="folk1c") to browse origin country codes.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

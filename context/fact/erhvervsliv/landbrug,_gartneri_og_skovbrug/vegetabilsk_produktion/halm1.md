@@ -16,4 +16,4 @@ notes:
 - afgrode has a two-level hierarchy: H90=Alle afgrøder (grand total) = H95 (Korn i alt) + H200 (Raps i alt) + H300 (Bælgsæd i alt). Each IALT code also contains specific sub-crops (H110-H312). Don't sum across levels.
 - anvendelse=1010 (Halm i alt) = sum of 1020 (fyring) + 1030 (foder) + 1040 (strøelse) + 1050 (ikke bjerget). Filter to one level to avoid double-counting.
 - A fully filtered query needs: enhed=X, afgrode=single level, anvendelse=single level, omrade=specific region or INNER JOIN to dim.nuts.
-- Map: context/geo/landsdele.parquet (niveau 2) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

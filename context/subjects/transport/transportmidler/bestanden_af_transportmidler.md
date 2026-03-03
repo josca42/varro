@@ -173,4 +173,4 @@ notes:
 - **Aircraft (flyv):** flyv11 only — aircraft count and seat capacity by aircraft type, from 1990. maengde4 selector: 155=antal fly, 158=pladser.
 - **Shared gotcha (enhed/maengde4):** skib11–skib17, bane52, bil14, and flyv11 all have a unit-selector column. Every dimension combination appears once per unit type. Forgetting to filter silently doubles every value.
 - **Regional joins (dim.nuts):** bil54, bil707, bil710, bil907 all join on omrade. omrade=0 (Hele landet) and omrade=99 (Uoplyst) are aggregate codes not in dim.nuts — use them directly without joining. niveau 1=5 regioner, 2=11 landsdele, 3=99 kommuner.
-- **Map:** bil54, bil707, bil710, bil907 all support choropleth maps — context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode.
+- **Map:** bil54, bil707, bil710, bil907 all support choropleth maps — /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode.

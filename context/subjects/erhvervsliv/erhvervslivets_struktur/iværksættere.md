@@ -68,4 +68,4 @@ notes:
 - demo16 is structurally different: it is a cohort survival table. startaar = founding cohort year, tid = observation year, enhed = NYE (count) or SURV (survival%). Filter to one startaar and one enhed before grouping.
 - Branch dimension gotcha: demo13 uses EU NACE letter codes (A–T) — no dim join, use ColumnValues("demo13", "branchedb0721"). demo11 uses DST's own 127-group codes — no dim join, use ColumnValues("demo11", "branchedb07127"). demo14, demo16, fdemo4 use DB10 groups 1–11 and join dim.db_10 niveau 1 (the fact docs say dim.db for demo14 and demo16 but that is wrong).
 - All tables with a region or kommune column include a code 0 (national total not in the dim). Exclude it when aggregating by geography.
-- Map: demo19 (kommune niveau 3) → context/geo/kommuner.parquet on regi07a=dim_kode. demo14 and fdemo4 (region niveau 1) → context/geo/regioner.parquet on region=dim_kode.
+- Map: demo19 (kommune niveau 3) → /geo/kommuner.parquet on regi07a=dim_kode. demo14 and fdemo4 (region niveau 1) → /geo/regioner.parquet on region=dim_kode.

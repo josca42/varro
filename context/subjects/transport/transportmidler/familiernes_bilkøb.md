@@ -94,4 +94,4 @@ notes:
 - indkomst tables (bil66/67): indkom has THREE parallel grouping schemes simultaneously (absolute kr-bands, deciles 1DC–10DC, quartiles 1KV–4KV). Pick one scheme — summing all triplicates the total.
 - boligforhold tables (bil68/69): bol has TWO parallel schemes (boligtype: 110–610, ejerform: 620–640). Pick one scheme.
 - socioøkonomisk status tables (bil70/71): socio is hierarchical — 110=Selvstændige (parent of 111+112), 130=Lønmodtagere (parent of 131–136), 515=Pensionister (parent of 520+522+525). Don't mix parent and child codes.
-- Map: bil600 and bil611 support choropleth maps at all three NUTS levels — context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Remaining tables have no geographic column.
+- Map: bil600 and bil611 support choropleth maps at all three NUTS levels — /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Remaining tables have no geographic column.

@@ -13,4 +13,4 @@ notes:
 - maengde4 is a measurement selector — 5 different measures appear for the same omrade/afgrode/tid: 10=Areal (1000 ha), 20=Gennemsnitsudbytte (hkg/ha), 30=Produktion (mio. kg), 40=Foderværdi (mio. FE), 45=100 FE pr. hektar. Always filter to one.
 - afgrode has aggregate codes: H100=KORN (KERNE) I ALT, H200=RAPS I ALT, H300=BÆLGSÆD I ALT alongside specific crops. Also H600-H685 are fodder/green mass categories. Don't sum across afgrode levels.
 - A correct query requires: maengde4=single measure, afgrode=single level, and either omrade=0 for national or INNER JOIN dim.nuts for regional breakdown.
-- Map: context/geo/landsdele.parquet (niveau 2) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

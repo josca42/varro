@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts at niveau=3 (99 kommuner). omrade='0' = Denmark total (not in dim.nuts). omrade='950' = unknown area. Exclude these with `JOIN dim.nuts d ON f.omrade = d.kode` (the join naturally excludes them).
 - branchedb0710 values 1–11 join dim.db_10 (niveau=1 only, 10 branches + "Uoplyst"). 'TOT' = all branches total, not in dim — use directly as a filter value.
 - Sample: workplaces by kommune, all branches → `SELECT d.titel, f.indhold FROM fact.erhv2 f JOIN dim.nuts d ON f.omrade = d.kode WHERE f.tal = 'ARBSTED' AND f.branchedb0710 = 'TOT' AND f.tid = '2023-01-01' AND d.niveau = 3`
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

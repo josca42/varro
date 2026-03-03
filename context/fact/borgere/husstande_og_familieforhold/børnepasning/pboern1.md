@@ -12,4 +12,4 @@ notes:
 - overens and uddannelse are cross-classified: use overens='TOT' to analyse by uddannelse, or uddannelse='TOT' to analyse by overens. TOT x TOT = all FTE private institution staff.
 - Short time range only: 2021-2023. For kommunale og selvejende institutions use boern1 (2015-2024).
 - NOTE: overens codes differ from boern1. pboern1 uses 92/93/94/95 (2-digit); boern1 uses 920/930/940/950 (3-digit) for the same categories from 2019. Do not join or compare raw codes directly.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

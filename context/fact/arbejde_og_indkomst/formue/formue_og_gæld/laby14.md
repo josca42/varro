@@ -12,4 +12,4 @@ notes:
 - komgrp joins dim.kommunegrupper at two levels: niveau=1 (5 kommunegrupper) and niveau=2 (98 individual kommuner). komgrp=0 is the national aggregate — not in dim.
 - alder='1802' is the total (18+). Filter to one alder value.
 - Same structure as laby12 but measuring the share in debt rather than the median. Useful for understanding debt prevalence rather than central tendency.
-- Map: context/geo/kommuner.parquet — merge on komgrp=dim_kode when filtered to niveau=2 in dim.kommunegrupper (niveau=2 codes match NUTS niveau=3 kommune codes). Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — merge on komgrp=dim_kode when filtered to niveau=2 in dim.kommunegrupper (niveau=2 codes match NUTS niveau=3 kommune codes). Exclude komgrp=0.

@@ -146,4 +146,4 @@ notes:
 - ligeli2: by occupation (ISCO, 4 levels) + age. From 2010. arbfunk has 601 codes across 4 levels — filter to one level.
 - ligeli3: by full/part-time + fine age bands. From 2009.
 - All ligeli tables: indikator is a measurement-type selector (women's share vs gap pct) — always filter to one value.
-- Map: lons30 supports choropleth at region level (context/geo/regioner.parquet, omrade=dim_kode). ligelb1 supports choropleth at kommune level (context/geo/kommuner.parquet, omrade=dim_kode). Both exclude omrade=0.
+- Map: lons30 supports choropleth at region level (/geo/regioner.parquet, omrade=dim_kode). ligelb1 supports choropleth at kommune level (/geo/kommuner.parquet, omrade=dim_kode). Both exclude omrade=0.

@@ -14,4 +14,4 @@ notes:
 - prisenhed is a measurement selector — the same (omrade, transakt, tid) combination appears 4 times, once per price unit. Always filter to one prisenhed: V_T (løbende priser, mio. kr.) is the most common; LRG_T (2020-priser, kædede værdier) for volume comparisons; V_C/LRG_C for per-capita.
 - transakt codes are distinct national accounts items in a hierarchical identity (e.g. B1GQD=BNP, B1GD=BVT, B1GFD=BFI). Do not sum across transakt — pick the specific transaction needed.
 - Typical regional BNP query: JOIN dim.nuts d ON f.omrade=d.kode WHERE d.niveau=1 AND f.prisenhed='V_T' AND f.transakt='B1GQD'.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).

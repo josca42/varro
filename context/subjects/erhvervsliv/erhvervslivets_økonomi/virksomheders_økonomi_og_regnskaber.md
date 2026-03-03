@@ -109,7 +109,7 @@ notes:
   - Preliminary data for latest year (2023): fregn20 (with size), fregn30 (with legal form) — limited to 8 measures.
   - Financing survey (outdated, ends 2018): atf1 (sector), atf2 (financing form outcomes), atf3 (loan source outcomes).
 
-- Map: regn80 supports choropleth at landsdel level — context/geo/landsdele.parquet, merge on omrade=dim_kode. Only table in this group with a geographic dimension.
+- Map: regn80 supports choropleth at landsdel level — /geo/landsdele.parquet, merge on omrade=dim_kode. Only table in this group with a geographic dimension.
 
 - Naming pattern: suffix "a" = nøgletal i procent (ratio/percentage variant), prefix "f" = foreløbig (preliminary). regn50/regn50a, regn20/regn20a, regn30/regn30a, regn10/regn10a all share this pattern.
 

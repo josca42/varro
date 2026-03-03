@@ -12,4 +12,4 @@ notes:
 - alder: TOT=Alder i alt, 10-year bands (0-9 through 70+), 9999=Uoplyst. Filter to TOT to avoid double-counting.
 - kommunedk at all 3 nuts levels + kommunedk=0. misbrug2 must be filtered to one metric.
 - fstrib2 (to 2025) vs fstrib2a (archive, 2024 only).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.

@@ -12,4 +12,4 @@ notes:
 - komk joins dim.nuts at niveau 3. komk='0' is national total, not in the dim.
 - bnogle is a measurement selector — 3025=Arrangementer (count of events), 3030=Publikum (audience count). These are different metrics with different magnitudes. Always filter to one bnogle value; summing both silently doubles rows.
 - arrangementtype='3000' is the total across all arrangement types. Use to get total events/audience, then filter to e.g. 3005=Koncert for breakdown.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

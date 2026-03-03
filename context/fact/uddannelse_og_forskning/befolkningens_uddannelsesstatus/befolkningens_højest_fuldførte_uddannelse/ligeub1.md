@@ -15,4 +15,4 @@ notes:
 - herkomst does NOT join dim.herkomst — completely different coding. Inline values: 0=I alt, 10=Dansk oprindelse, 21=Indvandrere i alt, 24=Indvandrere vestlige, 25=Indvandrere ikke-vestlige, 31=Efterkommere i alt, 34=Efterkommere vestlige, 35=Efterkommere ikke-vestlige. Hierarchical: 0=10+21+31, 21=24+25, 31=34+35. Filter to one level to avoid double-counting.
 - hfudd does NOT join dim.ddu_udd — inline H10-H90 + TOT (11 codes, no subcodes). Use directly.
 - This table goes back to 2005, the longest count-based series in this subject. Use for herkomst breakdowns not available in other tables.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

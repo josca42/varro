@@ -11,4 +11,4 @@ notes:
 - personkat: 10000=Årsværk i alt (total FTE) — don't sum this with other categories. Always filter to one.
 - Several codes are deprecated after 2015 (marked "-2015"): beskæftigelsesordning variants (10275, 10265, 10291, 10285). Use 10297=Personale i beskæftigelsesordning for the aggregate historical series.
 - For normalized FTE per 1000 inhabitants, use laby42 instead (which already has this calculation by kommunegruppe).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -11,4 +11,4 @@ notes:
 - Over 2000 distinct sogns. 0=Uden placerbar adresse and 9999=Uden fast bopæl are non-geographic catch-all codes — exclude them for geographic analysis.
 - No age or sex breakdown. For age/sex by parish use sogn1 (annual). km1 is the only quarterly parish-level population series.
 - Useful for tracking Folkekirke membership trends over time at fine geographic level (back to Q1 2007).
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).

@@ -13,4 +13,4 @@ notes:
 - rettighed 8 (Søsterselskab), 9 (Arving), and 10 (Uoplyst) only appear under omrade=99 — they have NO regional breakdown. A regional filter (omrade BETWEEN 81 AND 85) will exclude these types entirely.
 - rettighed 6 (Autor) and 7 (Forlag) have both regional and omrade=99 data.
 - For total income by rettighed: SUM across all omrade. For regional breakdown: filter omrade IN (81,82,83,84,85) knowing rettighed 8/9/10 will be absent.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Filter omrade IN (81,82,83,84,85); note rettighed 8/9/10 will be absent from the map.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Filter omrade IN (81,82,83,84,85); note rettighed 8/9/10 will be absent from the map.

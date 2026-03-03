@@ -69,4 +69,4 @@ notes:
 - herkomst gotcha (statusu1): fact codes are 0/10/20/30, not 1/2/3. The dim.herkomst join requires dividing by 10, but since there are only 3 categories the inline codes are usually sufficient — no join needed.
 - uddstat totals: AA_TOTAL is the aggregate of all education statuses. The four status categories (FULDFOERT, IGANG, AFBRUDT, INGENREG) partition the total — summing them equals AA_TOTAL.
 - For a simple "how many completed/dropped out" query: use statusu1 (most dimensions) or any statusu table filtered to uddstat='FULDFOERT', alder='IALT', and all other non-focus columns set to their total values.
-- Map: statusu6 supports choropleth via context/geo/kommuner.parquet — merge on grundbel=dim_kode. Excludes grundbel=0 and grundbel=98. Note: geography is municipality of primary school, not student's home municipality.
+- Map: statusu6 supports choropleth via /geo/kommuner.parquet — merge on grundbel=dim_kode. Excludes grundbel=0 and grundbel=98. Note: geography is municipality of primary school, not student's home municipality.

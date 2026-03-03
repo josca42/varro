@@ -13,4 +13,4 @@ notes:
 - hoofdbopael joins dim.nuts only at niveau 3 (99 kommuner) — no national total or regional level in this table. Code 0 is national total and does not join to dim.nuts. Use WHERE f.hoofdbopael != '0' when joining to dim to exclude it, or include it unjoined for the national figure.
 - Use ColumnValues("nuts", "titel", for_table="paaroe03") to see available kommuner.
 - Sample query — share of population with no close relatives by kommune: SELECT d.titel, SUM(CASE WHEN f.relation='K00' THEN f.indhold ELSE 0 END)::float / SUM(CASE WHEN f.relation='TOT' THEN f.indhold ELSE 0 END) FROM fact.paaroe03 f JOIN dim.nuts d ON f.hoofdbopael = d.kode WHERE f.tid='2024-01-01' GROUP BY d.titel;
-- Map: context/geo/kommuner.parquet — merge on hoofdbopael=dim_kode. Exclude hoofdbopael=0.
+- Map: /geo/kommuner.parquet — merge on hoofdbopael=dim_kode. Exclude hoofdbopael=0.

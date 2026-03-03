@@ -17,4 +17,4 @@ notes:
 - periode has the same overloaded-code issue as ferieh1: periode=1 = both "Hele året" AND "Januar"; periode=2 = both "År til dato" AND "Februar". For unambiguous monthly data use periode >= 3. For annual totals use periode=1 but expect two rows per (omrade, nation1, tal, tid) — the larger value is Hele året.
 - nation1=TOT is the total across nationalities; do not sum across all nation1 values.
 - tid is always Jan 1 of the reporting year (2017–2025).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 12, 13, 14).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 12, 13, 14).

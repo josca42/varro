@@ -12,4 +12,4 @@ notes:
 - Has TOT totals for kon and IALT for alder. Filter: kon='TOT', alder='IALT' for simple postal code population counts.
 - alder is in 5-year groups (0-4, 5-9, ..., 100OV), not individual years.
 - postnr1 has one row per postal code (unique codes). postnr2 has municipality-postal code combos (1465 codes) — use postnr2 when a postal code spans multiple municipalities and you need the municipality split.
-- Map: context/geo/postnumre.parquet — merge on pnr20=dim_kode. Exclude pnr20 IN (1, 9999).
+- Map: /geo/postnumre.parquet — merge on pnr20=dim_kode. Exclude pnr20 IN (1, 9999).

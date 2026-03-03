@@ -14,4 +14,4 @@ notes:
 - ydelsestype overlaps: 100=i alt; 200=all genoptræning recipients (including those who also get vedligeholdelse); 300=all vedligeholdelsestræning recipients (including those in both); 400=persons receiving both. So 200+300 = 100+400 (double-counts those in both). Never sum 200+300. Use 100 for the total, and 400 to identify dual recipients.
 - alder=50 is total; alder=850 is 67+ sub-total — do not mix with individual bands. koen=100 is total.
 - Compare with rehab19 for rehabilitering (a separate intervention from genoptræning/vedligeholdelse).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

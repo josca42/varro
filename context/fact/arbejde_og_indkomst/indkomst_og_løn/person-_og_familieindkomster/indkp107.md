@@ -16,4 +16,4 @@ notes:
 - enhed selector (4 types). Always filter to one.
 - indkomsttype is hierarchical — pick one specific type.
 - Only goes back to 2004 (education data limitation).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

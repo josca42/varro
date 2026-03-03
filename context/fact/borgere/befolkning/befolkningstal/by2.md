@@ -15,4 +15,4 @@ notes:
 - byst is the city-size category within each municipality. Each person in a municipality is in exactly one byst bucket, so summing byst values within a komk gives the municipal total. No byst total code — sum all byst categories.
 - Use this to understand how urban vs rural each municipality is: what fraction lives in areas of various city sizes.
 - ColumnValues("nuts", "titel", for_table="by2") for municipality names.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

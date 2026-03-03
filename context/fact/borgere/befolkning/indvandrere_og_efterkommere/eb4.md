@@ -17,4 +17,4 @@ notes:
 - ieland=0000 is "I alt". Other values are coarse (Danmark / Vestlig / Ikke-vestlig), not individual countries.
 - alder in 5-year bands with IALT as total. No individual-year detail.
 - Filter for overcounting: herkomst='TOT', kon='TOT', alder='IALT', ieland='0000' then group by omrade for regional totals.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. No omrade=0 in this table (all rows are kommuner).
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. No omrade=0 in this table (all rows are kommuner).

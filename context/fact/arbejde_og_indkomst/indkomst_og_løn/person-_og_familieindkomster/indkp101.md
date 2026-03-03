@@ -14,4 +14,4 @@ notes:
 - enhed is a measurement selector (4 types). Always filter to one value.
 - indkomsttype is hierarchical with 35+ types. Never sum across multiple types — pick one.
 - koen='MOK' is the total. Goes back to 1987 — longest regional personal income series in this subject.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

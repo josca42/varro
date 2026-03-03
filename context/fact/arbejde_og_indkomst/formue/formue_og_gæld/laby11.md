@@ -12,4 +12,4 @@ notes:
 - aldersstand must be filtered: 3000=aldersstandardiseret (accounts for different age distributions across groups), 3010=ikke aldersstandardiseret. For fair comparison across kommunegrupper, use aldersstandardiseret. All rows are doubled — one for each value.
 - indhold is always median nettoformue in kr. for adults 18+. No form1/enhed/popu selectors — this table is pre-filtered to a single measure.
 - Simpler than formue11-17: only 3 columns to filter (komgrp, aldersstand, tid).
-- Map: context/geo/kommuner.parquet — merge on komgrp=dim_kode when filtered to niveau=2 in dim.kommunegrupper (niveau=2 codes match NUTS niveau=3 kommune codes). Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — merge on komgrp=dim_kode when filtered to niveau=2 in dim.kommunegrupper (niveau=2 codes match NUTS niveau=3 kommune codes). Exclude komgrp=0.

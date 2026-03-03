@@ -16,4 +16,4 @@ notes:
 - parorendeforhold has 4 mutually exclusive categories with no total. Each row represents a different family-relation group.
 - omrade joins dim.nuts with niveau 1 (5 regioner) and niveau 3 (98 kommuner). omrade=0 is national total (not in dim).
 - Pair with paaroe50 for the share (pct.) receiving home help by parorendeforhold.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

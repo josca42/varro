@@ -14,4 +14,4 @@ notes:
 - The only rate table with akasse breakdown. Useful for comparing unemployment rates across a-kasser.
 - omrade joins dim.nuts at levels 1/2/3. omrade='0'=Hele landet not in dim.
 - Preliminary (foreløbig), from Jul 2017 only.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

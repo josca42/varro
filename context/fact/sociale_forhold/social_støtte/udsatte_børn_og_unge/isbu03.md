@@ -12,4 +12,4 @@ notes:
 - indsatser has only 4 high-level categories (4=I alt, 5=Tidligt forebyggende, 6=SEL/BL, 7=Ungdomskriminalitetsloven). No detail codes — simplest indsatser table.
 - landsdel joins dim.nuts at niveau 2 (11 landsdele). Code 0 = national total.
 - No age or gender breakdown. For those use isbu04 (stock) or isbu01/02 (kommune level).
-- Map: context/geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.
+- Map: /geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.

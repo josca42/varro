@@ -15,4 +15,4 @@ notes:
 - This table has 5 dimension columns (blstkom, aktivitet, kon, alder1, tid). To get a national member count by sport, filter: blstkom='0', kon=10 (i alt), alder1='TOT'. Forgetting any total row will inflate sums.
 - kon 10 = i alt, 1 = mænd, 2 = kvinder. alder1 TOT = i alt.
 - Use ColumnValues("nuts", "titel", for_table="idrakt01") to see which regions are in this fact table (104 codes including the unmatched 0 and 99).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom IN (0, 99).
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom IN (0, 99).

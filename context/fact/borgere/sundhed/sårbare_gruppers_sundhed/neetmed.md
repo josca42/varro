@@ -17,4 +17,4 @@ notes:
 - bop=0 is national total, not in dim.nuts. JOIN dim.nuts ON bop=kode WHERE d.niveau=1 for 5 regions, d.niveau=2 for 11 landsdele.
 - kon=MOK is the both-genders total — never sum all three kon values.
 - ATC category names are long; use ColumnValues("neetmed", "medicintype") to get the full mapping before writing SQL filters.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on bop=dim_kode. Exclude bop=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on bop=dim_kode. Exclude bop=0.

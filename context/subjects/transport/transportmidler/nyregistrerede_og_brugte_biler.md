@@ -81,5 +81,5 @@ notes:
 - For fuel efficiency of newly registered cars: ee1 (average efficiency, multiple metrics, 1997-2024). ee2 (petrol distribution, 1997-2024) and ee3 (diesel distribution, 1997-2024) for distribution analysis.
 - For CO2 and car stock trends indexed to 2000: tema9013. Note the enhed=448 fuel efficiency series is missing from the database — use ee1 instead.
 - Only bil53 has regional breakdown (kommuner/landsdele/regioner via dim.nuts join). All other tables are national-level only.
-- Map: bil53 supports choropleth maps at all three NUTS levels — use context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1), merging on omrade=dim_kode. Exclude omrade IN (0, 99).
+- Map: bil53 supports choropleth maps at all three NUTS levels — use /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1), merging on omrade=dim_kode. Exclude omrade IN (0, 99).
 - Common pitfall across this subject: many tables have measurement-selector columns (enhed in bil6/bil50/bil56, energi in ee1, saeson in bil57, regbil in bil55) where the same dimension combination repeats once per selector value. Always filter to one selector value.

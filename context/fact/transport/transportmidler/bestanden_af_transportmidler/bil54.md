@@ -15,4 +15,4 @@ notes:
 - 4 dimension columns + omrade. For a simple national total, filter all non-target dims to their aggregate codes: omrade=0, brug=1000 (I alt), driv=20200 (Drivmidler i alt), biltype=4000100001 (Køretøjer i alt). Omitting any dimension inflates the sum.
 - biltype=4000100001 is the overall total. biltype=4000101002 is personbiler, 4000102000 varebiler, 4000103000 lastbiler, 4000103030 sættevognstrækkere.
 - tid is monthly (2018–2025-09), not annual. Use MAX(tid) or a specific month for point-in-time counts.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

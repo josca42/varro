@@ -11,4 +11,4 @@ notes:
 - omrade = '0' is "Hele landet" (national total) — not in dim.nuts, handle separately if needed. Only 13 rows (one per year).
 - Annual data, 2012–2024 only. No property-type breakdown — use tvang1/tvang2 for that.
 - Use ColumnValues("nuts", "titel", for_table="tvang3") to see the 115 area codes present in this table.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

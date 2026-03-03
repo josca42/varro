@@ -13,4 +13,4 @@ notes:
 - regnskposter has only 7 measures (vs. 30+ in regn50): XOM_M=Omsætning, XVAMV_M=Vareforbrug mv., XBF_M=Bruttofortjeneste, XINV_M=Investeringer netto, XBA_P=Bruttoavance i pct., ANTAL=Antal arbejdssteder, VAERK=Antal ansatte årsværk. Note XBA_P is a percentage while the others are mio. kr. or counts — MUST filter regnskposter.
 - This is the only regnskab table with regional breakdown. For national totals by sector, regn50 has a fuller set of measures; use regn80 only when you need the geographical dimension.
 - Three-column filter required: regnskposter + omrade + erhverv. Omitting any one multiplies row count.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

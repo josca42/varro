@@ -14,4 +14,4 @@ notes:
 - bopomr joins dim.nuts. bopomr='0' is the national total, not in dim.nuts. Three hierarchy levels via d.niveau: 1=5 regioner, 2=11 landsdele, 3=99 kommuner.
 - alder: IALT=total, plus 9 individual ages (16-24). Filter to alder='IALT' for overall gender gap.
 - Use this table specifically for gender-gap analysis on NEET. For raw NEET counts by gender use neet1 or neet2.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

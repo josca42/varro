@@ -12,4 +12,4 @@ notes:
 - maengde4 is a measurement selector — filter to one: AFU=fuldtidsansatte, NYE=nye firmaer.
 - Finest geographic granularity in this subject. Use ColumnValues("nuts", "titel", for_table="demo19") to browse the 98 kommuner available.
 - To roll up to region level, join via dim.nuts hierarchy: kommune (niveau 3) → landsdel (niveau 2) → region (niveau 1).
-- Map: context/geo/kommuner.parquet — merge on regi07a=dim_kode. Exclude regi07a=0.
+- Map: /geo/kommuner.parquet — merge on regi07a=dim_kode. Exclude regi07a=0.

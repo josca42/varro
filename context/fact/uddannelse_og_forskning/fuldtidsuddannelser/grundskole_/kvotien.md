@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). No niveau 2. Code 0 = national aggregate, not in dim.
 - sktpe: ANTALSUM=total, ANTAL1012=folkeskoler, ANTAL1013=frie grundskoler. Always filter to one to avoid mixing.
 - klasse='0' is the total across all class levels (børnehaveklasse through 10./11. klasse).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

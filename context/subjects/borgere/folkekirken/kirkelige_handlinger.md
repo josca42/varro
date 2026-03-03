@@ -19,4 +19,4 @@ notes:
 - bevaegelsev drives what you're counting. Key groupings: baptisms (1+2+3), weddings (5+6), deaths (9), burials by type (10–15), confirmations (16), births (17). Never sum all 17 — they measure unrelated events.
 - Burial sub-types (10–15) sum to approximately the same total as bevaegelsev=9 (deaths). Do not add 9 and 10–15 together — that double-counts.
 - km4 includes special sogne codes 4001–4007 (civil registry offices for Sønderjylland) and residual codes 0 and 9999 — filter these out for purely ecclesiastical analysis.
-- Map: km4 supports choropleth maps at parish level via context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude 0, 9999, 4001–4007. km44 (provsti) has no matching geo file.
+- Map: km4 supports choropleth maps at parish level via /geo/sogne.parquet — merge on sogn=dim_kode. Exclude 0, 9999, 4001–4007. km44 (provsti) has no matching geo file.

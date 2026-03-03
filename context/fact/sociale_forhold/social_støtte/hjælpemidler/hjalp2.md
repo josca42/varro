@@ -14,4 +14,4 @@ notes:
 - konams and alerams both include totals (konams=0 "I alt", alerams='TOT' "Alder i alt"). Filter both to avoid overcounting when aggregating across dimensions. Example: konams != 0 AND alerams != 'TOT'.
 - indhold counts recipients (modtagere), not loans. For loan counts use hjalp1.
 - Only 2 time points: 2023 and 2024.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk='0'.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk='0'.

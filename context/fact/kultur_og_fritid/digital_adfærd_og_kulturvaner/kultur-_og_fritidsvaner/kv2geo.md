@@ -11,4 +11,4 @@ notes:
 - kommunedk=0 is the national aggregate — it is not in dim.nuts and will be dropped by an inner join. Use a LEFT JOIN and handle NULL d.titel if you need the national row, or filter WHERE f.kommunedk != 0 before joining.
 - Example for kommune level: JOIN dim.nuts d ON f.kommunedk=d.kode WHERE d.niveau=3
 - Only 2024 annual data; no breakdown by kon/alder — each (kultur, kommunedk) cell represents the population-wide rate.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.

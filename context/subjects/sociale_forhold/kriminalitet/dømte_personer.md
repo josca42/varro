@@ -117,4 +117,4 @@ Shared gotchas:
 - herkomst (in strafna9/strfna10/strfna11) is hierarchical — 21=Indvandrere i alt includes 24+25; 31=Efterkommere i alt includes 34+35. Pick one hierarchy level.
 - Most tables have koen=M/K only (no total). strfna12 is the exception with koen=TOT.
 - socio (strfsoc1/strfsoc2) uses a simplified custom coding (not SOCIO13). Treat as inline values, not a dim join.
-- Map: strafna6, strafna7, strafna8 have omrade (dim.nuts niveau 1/3) and support choropleth maps via context/geo/regioner.parquet or context/geo/kommuner.parquet. Kommune-level data can also be aggregated to 12 politikredse via dim.politikredse — use context/geo/politikredse.parquet.
+- Map: strafna6, strafna7, strafna8 have omrade (dim.nuts niveau 1/3) and support choropleth maps via /geo/regioner.parquet or /geo/kommuner.parquet. Kommune-level data can also be aggregated to 12 politikredse via dim.politikredse — use /geo/politikredse.parquet.

@@ -17,4 +17,4 @@ notes:
 - dranst1 key structure mirrors regkc: first digit = dranst, next 5 digits = funktion, last 3 digits = gruppering.
 - art: TOT=netto (UE minus I). Do not sum TOT with UE or I.
 - Budget (budgetter) not actuals, starts from 2019. For actual expenditure use regkc (2018+). For historical budget data before 2019 use budk100 (2017+) or budk32 (2007+).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

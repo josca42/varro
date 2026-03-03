@@ -104,7 +104,7 @@ notes:
 - Two different genre taxonomies: scene01a–09a use 11 specific genres (codes 165, 320–365); scene10a uses 6 broader groups (165,170,175,180,190,192). Cannot be directly compared.
 - For productions + opørelser + tilskuere all in one table with longest series: scene10a (broader genre, from 2015/2016). For granular genre with separate measures: scene01a (produktioner/opørelser), scene01b (tilskuere by ticket type), scene04a (tilskuere by pubgrup + stationær/turné).
 - For publikumsgruppe breakdown (voksne/unge/børn): scene02a (produktioner), scene03a (opørelser), scene04a (tilskuere).
-- For regional breakdown of Danish tours: scene09a (only produktioner, niveau=2 landsdele). Supports choropleth via context/geo/landsdele.parquet — merge on omrade=dim_kode, exclude omrade=0.
+- For regional breakdown of Danish tours: scene09a (only produktioner, niveau=2 landsdele). Supports choropleth via /geo/landsdele.parquet — merge on omrade=dim_kode, exclude omrade=0.
 - For international: scene06a (foreign guests in Denmark, includes audience), scene07a (Danish tours abroad, no audience).
 - For theatre economics (only statsstøttede): scene08a — enhed mixes 1000 kr. and antal teatre, always filter to one enhed.
 - For number of theatres: scene05a.

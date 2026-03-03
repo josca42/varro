@@ -16,4 +16,4 @@ notes:
 - boligartud: TOT/EJ/LEJ. Filter to TOT for overall.
 - famtype column (note: this table uses 'famtype' not 'famtyp' — different column name from indkf111/indkf112).
 - enhed selector (3 types). Always filter to one.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

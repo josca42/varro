@@ -14,4 +14,4 @@ notes:
 - omrade has 12 values but only 10 join to dim.nuts: 5 regioner (81-85, niveau 1) and 5 landsdele (4,7,8,9,10, niveau 2). Code 0=Hele landet and code 15="Landsdelene Byen København, Københavns omegn og Nordsjælland" (a merged aggregate of what dim.nuts has as 3 separate landsdele: 1, 2, 3) are not in dim.nuts. Filter omrade='0' for national total; omrade='15' for the merged Copenhagen-area landsdel.
 - To query by region: JOIN dim.nuts d ON f.omrade=d.kode AND d.niveau=1 (gives 5 regioner). For landsdele: d.niveau=2 (gives 5 landsdele, excluding the merged code 15 area).
 - Typical query: filter enhed, dyr, optionally omrade+tid. Example: number of farms with malkekøer by region = WHERE enhed='ANTAL' AND dyr='MK50' (alle bedrifter med malkekøer) joined to dim.nuts niveau=1.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).

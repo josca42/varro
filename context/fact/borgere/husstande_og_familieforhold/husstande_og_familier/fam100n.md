@@ -18,4 +18,4 @@ notes:
 - famtyp here is family-based (PARF, PARS, RP, SL, SB, M, K) — same 7 types as fam44n minus IHB. Note IHB is absent (this table counts adults in families).
 - This is the family equivalent of fam122n. Use fam100n when you need adult demographics (age/sex) within family types; use fam44n when you just need family counts by size/type without demographic breakdown.
 - Very large table — always filter tid and omrade first. A typical useful query: one kommune, one year, one famtyp, GROUP BY alder or kon.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

@@ -12,4 +12,4 @@ notes:
 - Only niveau 1 (5 regioner: 81–85) is present — no landsdele or kommuner. Join: JOIN dim.nuts d ON f.region = d.kode WHERE d.niveau = 1 (or just ON f.region = d.kode since only niveau 1 codes are used).
 - virktyp1 is a measurement selector: K01=total, K02=aktive virksomheder, K03=nulvirksomheder. K01 = K02 + K03. Always filter to one — confirmed: region=0, virktyp1=K01 in 2024 = 414, which equals the sum of the 5 regions.
 - This is the only konkurser table with regional breakdown. Use ColumnValues("nuts", "titel", for_table="konk8") to see the 5 regions.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

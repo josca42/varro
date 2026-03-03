@@ -16,4 +16,4 @@ notes:
 - omrade joins dim.nuts at niveau 1 (5 regions: 81-85). Code "0" is the national total — not in dim.nuts, filter with WHERE omrade <> '0' or handle separately.
 - afloen and longrp are independent selectors without overlapping aggregates — TIFA includes both TIME and FAST, LTOT includes all longrp groups. Filter to TIFA+LTOT for overall figures.
 - Sample query: WHERE lonmal='FORINKL' AND sektor='1000' AND afloen='TIFA' AND longrp='LTOT' AND kon='MOK' to get all-sector, all-group, combined-sex total hourly earnings per region/year.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

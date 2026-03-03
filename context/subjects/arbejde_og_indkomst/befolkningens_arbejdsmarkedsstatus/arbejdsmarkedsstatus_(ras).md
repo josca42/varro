@@ -170,4 +170,4 @@ notes:
 - ligeai1/ligeai2 `indikator` (LA1=Mænd%, LA2=Kvinder%, LA3=Forskel) — LA3 is a derived gender gap, not summable with LA1/LA2. Always filter to one indikator.
 - flow1/flow2 `bevaegelsev` encodes distinct quarter-transitions (1-2KVT, 2-3KVT, 3-4KVT) — not duplicates.
 - ras202/kas202 use `koen` (not `kon`) for gender. kas202/kas204/kas208 use `tiden` (not `periode`) for the time-granularity selector.
-- Map: ras200, ras201, ras209, ligeab2, ligeai2, kas200, kas201, kas209 (omrade) and ras210, flow2 (bopkom) all support choropleth maps at kommune (niveau 3), landsdel (niveau 2), or region (niveau 1) level via context/geo/kommuner.parquet, landsdele.parquet, or regioner.parquet — merge on omrade/bopkom=dim_kode.
+- Map: ras200, ras201, ras209, ligeab2, ligeai2, kas200, kas201, kas209 (omrade) and ras210, flow2 (bopkom) all support choropleth maps at kommune (niveau 3), landsdel (niveau 2), or region (niveau 1) level via /geo/kommuner.parquet, landsdele.parquet, or regioner.parquet — merge on omrade/bopkom=dim_kode.

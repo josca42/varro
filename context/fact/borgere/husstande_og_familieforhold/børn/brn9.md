@@ -14,4 +14,4 @@ notes:
 - morstat and farstat are independent dimensions, not mutually exclusive. Filter both to target a specific parental status (e.g. morstat='HM' AND farstat='HF' for children with both parents alive).
 - No total rows for any dimension. No alder aggregate — alder covers 0–17 only.
 - Compare with brn10 for finer death-timing detail (DIA=died this year vs DT=died earlier) and extended age range (0–29).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -10,5 +10,5 @@ notes:
 - omrade joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). Code 0 (I alt) is not in the dim. Filter WHERE d.niveau=1 or niveau=3 to pick granularity.
 - overtraed covers ONLY Straffelov — both niveau 1 and 3 appear as separate rows. Filter WHERE d.niveau=3 (or niveau=1) to avoid double-counting across overtraed levels.
 - Both dimensions mix aggregate and detail rows simultaneously, so always specify niveau filters for both omrade and overtraed joins.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
-- Map: kommune data (niveau 3) can be aggregated to politikredse via dim.politikredse (niveau 2 = kommuner, niveau 1 = 12 politikredse). Use context/geo/politikredse.parquet for boundaries.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: kommune data (niveau 3) can be aggregated to politikredse via dim.politikredse (niveau 2 = kommuner, niveau 1 = 12 politikredse). Use /geo/politikredse.parquet for boundaries.

@@ -12,4 +12,4 @@ notes:
 - valres='0' (I alt) is the national total (100%). Do not sum party percentages — they already sum to ~100. Pick one valres value per query.
 - Values are vote-share percentages (Pct.). Summing indhold across parties or across omrade is meaningless.
 - For national-level party vote shares use WHERE omrade='0'. For regional breakdown join dim.nuts and filter WHERE omrade != '0'.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade='0' (national total).
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade='0' (national total).

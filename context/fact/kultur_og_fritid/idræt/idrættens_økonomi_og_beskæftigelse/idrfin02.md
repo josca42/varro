@@ -12,4 +12,4 @@ notes:
 - Measure is Kr. pr. indb. (per capita), not total. Do not sum across kommuner — use the per-capita value per row directly for comparisons.
 - funktion and dranst both have totals (TOT). Filter to TOT in both unless breaking down by function or account type.
 - For comparing municipalities: JOIN dim.nuts WHERE d.niveau=3, filter funktion='TOT' AND dranst='TOT'. This gives one per-capita figure per kommune per year.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on amt=dim_kode. Exclude amt=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on amt=dim_kode. Exclude amt=0.

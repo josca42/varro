@@ -15,4 +15,4 @@ notes:
 - `bopomr=0` is national aggregate (not in dim). Three hierarchy levels in dim.nuts — filter d.niveau.
 - `kulturemne` here uses broad-category codes only (no sub-categories). `kulturemne=0` is the overall total.
 - Parallel to ligeki2 which reports the gender split of disbursement amounts rather than person counts.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

@@ -10,4 +10,4 @@ notes:
 - indhold is a rate (pr. 1.000 indbyggere), not a count. Never SUM across kommuner — the rates are not additive across geographies.
 - omrade joins dim.nuts at niveau=3 (97 kommuner), no national total row.
 - Use this table when comparing municipalities. For absolute counts use hand01 (services) or hand07 (recipients).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

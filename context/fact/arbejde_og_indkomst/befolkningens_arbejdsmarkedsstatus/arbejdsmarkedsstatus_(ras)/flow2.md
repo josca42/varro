@@ -18,4 +18,4 @@ notes:
 - tidsocio/nysocio are simplified to 3 values (0=Beskæftigede, 50=Arbejdsløse, 55=Uden for arbejdsstyrken) unlike flow1's 9 categories. nysocio adds 60=Ikke i befolkningen.
 - kon has NO total row (only M and K).
 - Short time series: only 2020–2023.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode.

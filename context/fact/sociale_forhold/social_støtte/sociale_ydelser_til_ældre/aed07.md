@@ -14,4 +14,4 @@ notes:
 - omrade joins dim.nuts with both niveau 1 (5 regioner) and niveau 3 (98 kommuner). Filter WHERE d.niveau=3 or d.niveau=1. omrade=0 is national total (not in dim).
 - alder=50 is total; alder=850 is the 67+ sub-total. Do not mix sub-totals with individual age bands.
 - No ydelsestype split — all home help in care homes combined. Compare laby20 (servyd=310) for the equivalent percentage of the population.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

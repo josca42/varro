@@ -10,4 +10,4 @@ notes:
 - fui14 has only three exhaustive research-type codes with no aggregate total — sum all three to get combined driftsudgifter.
 - This table covers driftsudgifter only (not capital investments). For total FoU spending including investments, use forsk01 (fui08='10').
 - Udviklingsarbejde (460) dominates: ~57% of driftsudgifter in 2023, followed by anvendt forskning ~37%, grundforskning ~5%.
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

@@ -12,4 +12,4 @@ notes:
 - hfudd2: same ISCED-based education codes as hfudd in ibib3 (TOT, H10–H70, 900=Ingen/uoplyst). Filter to TOT to avoid double-counting.
 - kommunedk at all 3 nuts levels + kommunedk=0. misbrug2 must be filtered to one metric.
 - fstrib3 (to 2025) vs fstrib3a (archive, 2024 only).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.

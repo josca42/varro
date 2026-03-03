@@ -15,4 +15,4 @@ notes:
 - uheld=0 (Personskade i alt) is an aggregate — always filter.
 - alder and koen have no total codes; sum all values to get total.
 - koen: values 1, 2, 9 — no I alt total.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

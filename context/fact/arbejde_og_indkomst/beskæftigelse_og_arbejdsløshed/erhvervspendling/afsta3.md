@@ -14,4 +14,4 @@ notes:
 - socio uses a CUSTOM employment-type encoding that does NOT match dim.socio. Do NOT join dim.socio. Treat socio as inline coded: 5=Selvstændige, 10=Medarbejdende ægtefæller, 15=Lønmodtager med ledelsesarbejde, 20=Lønmodtagere på højeste niveau, 25=Lønmodtagere på mellemniveau, 30=Lønmodtagere på grundniveau, 35=Andre lønmodtagere, 40=Lønmodtagere u.n.a. Use ColumnValues("afsta3", "socio") for the full list.
 - pendafst=0 is the total (I alt). pendafst=80 means 'Ikke beregnet' (distance could not be calculated). Filter pendafst=0 for total counts or filter to specific distance bands (10–70) and exclude 80.
 - koen has TOT, M, K — filter koen='TOT' for totals or koen IN ('M','K') for gender breakdown.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on arbejdssted=dim_kode. Exclude arbejdssted IN (0, 950, 998).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on arbejdssted=dim_kode. Exclude arbejdssted IN (0, 950, 998).

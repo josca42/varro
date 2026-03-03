@@ -12,4 +12,4 @@ notes:
 - komk joins dim.nuts at niveau 3. komk='0' is national total, not in the dim.
 - bnogle is a measurement selector — 3035=Korte projekter (count), 3040=Dage (days), 3045=Deltagere (participants), 3075=Undervisningstimer (teaching hours). These are four distinct metrics. Always filter to one bnogle value.
 - kunstart='TOTK' is the total across art forms.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

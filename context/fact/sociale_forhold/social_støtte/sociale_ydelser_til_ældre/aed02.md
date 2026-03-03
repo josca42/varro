@@ -15,4 +15,4 @@ notes:
 - omrade joins dim.nuts with both niveau 1 (5 regioner) and niveau 3 (98 kommuner). Filter WHERE d.niveau=3 or d.niveau=1. omrade=0 is national total (not in dim).
 - ydelsestype nested hierarchy same as aed01: 50=i alt; never sum across values. Filter ydelsestype=50 for the overall per-person average.
 - alder=50 is overall total; alder=850 is the 67+ sub-total — do not mix with individual bands. koen=100 is total.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -17,4 +17,4 @@ notes:
 - civilstand G=Gift/separeret covers both married and legally separated in one code.
 - omrade=0 (Hele landet) is not in dim.nuts — it exists in the fact table but has no dim row. Use it as a literal filter, not via the dim join.
 - ColumnValues("nuts", "titel", for_table="folk1a") shows the 104 geographic codes present in this table.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

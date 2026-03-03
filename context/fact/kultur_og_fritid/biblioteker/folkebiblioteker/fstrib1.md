@@ -13,4 +13,4 @@ notes:
 - misbrug2 is the metric selector (equivalent to dyrkat in ibib tables): 9015=Udlån, 9020=Lånere, 9025=Personer i befolkningen. Always filter to one.
 - kon: TOT=I alt, M=Mænd, K=Kvinder, 6=Uoplyst. Filter to TOT to avoid overcounting.
 - Only 2024 data (single year). fstrib1 (current, includes 2025 quarters) vs fstrib1a (archive, 2024 only).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. Exclude kommunedk=0.

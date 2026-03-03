@@ -12,4 +12,4 @@ notes:
 - blstkom joins dim.nuts. Code 0 = national total (hele landet), not in dim.nuts. Fact table uses niveau 2 (11 landsdele) and niveau 3 (98 kommuner). Filter d.niveau to pick a single level.
 - indhold is Pct. — the share of the population that are members of a sports organisation. Do not sum across blstkom values.
 - 3 dimension columns (blstkom, kon, alder1). For national totals: blstkom='0', kon=10, alder1='TOT'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom=0.

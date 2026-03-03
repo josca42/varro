@@ -15,4 +15,4 @@ notes:
 - udvland and statsb only use niveau 3 (~211/202 countries). ColumnValues("lande_psd", "titel", for_table="van2kvt") for available countries.
 - kon has no total (1=Mænd, 2=Kvinder). alder is individual ages, no total — aggregate in SQL.
 - Preliminary data (foreløbig). For final annual emigration figures use van2aar.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

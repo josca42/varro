@@ -11,4 +11,4 @@ notes:
 - Only covers a single year (2022).
 - bopreg joins dim.nuts at niveau=1 (5 regioner: 81–85). Code 0 is national total, not in dim. Filter or exclude code 0 when joining.
 - Join: SELECT f.*, d.titel FROM fact.kunst2 f LEFT JOIN dim.nuts d ON f.bopreg::text = d.kode WHERE d.niveau = 1
-- Map: context/geo/regioner.parquet — merge on bopreg=dim_kode. Exclude bopreg=0.
+- Map: /geo/regioner.parquet — merge on bopreg=dim_kode. Exclude bopreg=0.

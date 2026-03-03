@@ -9,4 +9,4 @@ notes:
 - fui01 encodes multiple classification perspectives — pick exactly ONE per query. See forsk01 notes for the full breakdown (industry 1000–1090, technology level, IT, knowledge services, size groups, regions).
 - vidomr has 6 scientific field codes (10–60) with no aggregate total — sum all six to get the combined total.
 - Shortest time series in the forsk* family: starts 2017. For longer industry-by-spending series, use forsk01.
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

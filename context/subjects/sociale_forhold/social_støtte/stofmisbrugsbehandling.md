@@ -40,4 +40,4 @@ notes:
 - For treatment outcomes (stoffri / reduceret forbrug / andet) by responsible municipality: use smdbv005. Also mixes counts and pct in the same column (afslutstatus).
 - Geography pattern shared by smdbv001/002/004/005: omrade or myndighedskom joins dim.nuts (niveau 1=5 regioner, niveau 3=98 kommuner). Code '0' = national total, not in dim.nuts — query directly. Never mix niveau 1 and 3 in the same aggregation.
 - smdbv004 and smdbv005 have mixed-measure columns (counts + percentages). Always filter to either counts OR percentages per query — summing across all values is meaningless and will inflate results.
-- Map: smdbv001, smdbv002, smdbv004 (omrade) and smdbv005 (myndighedskom) support choropleth maps via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1).
+- Map: smdbv001, smdbv002, smdbv004 (omrade) and smdbv005 (myndighedskom) support choropleth maps via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1).

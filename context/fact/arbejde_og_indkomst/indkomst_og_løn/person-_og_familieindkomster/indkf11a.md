@@ -12,4 +12,4 @@ notes:
 - indhold = Antal (count of families). No enhed selector — simpler than most family tables.
 - famtyp totals: FAIA=familier i alt. Includes gender-specific singles (EKIA=enlige kvinder, EMIA=enlige mænd).
 - Goes back to 1987. Longest family count series with full geographic detail.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

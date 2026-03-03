@@ -15,4 +15,4 @@ notes:
 - brutnetudg is a measurement selector that doubles rows: NET=nettoudgifter, BRUT=bruttoudgifter. Always filter to one.
 - prisenhed is a second measurement selector: AARPRIS=løbende priser, 08PRIS=faste 2008-priser. Always filter to one.
 - Correct query requires four filters: bnogle, prisenhed, brutnetudg, and omrade level. Example — DRI by kommune 2023: SELECT omrade, indhold FROM fact.nglk JOIN dim.nuts ON omrade=kode AND niveau=3 WHERE bnogle='DRI' AND prisenhed='AARPRIS' AND brutnetudg='NET' AND tid='2023-01-01'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

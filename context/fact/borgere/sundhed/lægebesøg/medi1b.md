@@ -15,4 +15,4 @@ notes:
 - medicintype has two-level hierarchy: letter codes = major ATC groups, letter+2-digit = sub-groups. TOT=grand total. Do not sum across hierarchy levels.
 - agebygroup uses 10-year groups (0009, 1019, ... 9000=90+) plus TOT. cf. medi1a for single-year ages (region-only).
 - kon uses 0=køn i alt, 1=mænd, 2=kvinder. Data only through 2021.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

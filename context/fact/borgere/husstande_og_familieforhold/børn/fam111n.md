@@ -15,4 +15,4 @@ notes:
 - No total rows exist for any dimension (no IALT/TOT). There is no shortcut to get all children in a region; you must either group by or sum across all alder/kon/famtyp/antpf/antbrnf values.
 - famtyp=IHB ("Ikke hjemmeboende børn under 18 år") covers children in institutions, foster care, etc. Not included in any other famtyp category. Exclude IHB when counting children living in family homes.
 - alder covers 0–24 (older than most other børn tables which stop at 17). kon is D/P only — no gender total.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. No national total row exists in this table.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. No national total row exists in this table.

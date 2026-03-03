@@ -17,4 +17,4 @@ notes:
 - `morudd` and `farudd` totals are both `'TOT'`. Education codes CC1–CC5 sum to TOT and are mutually exclusive for each parent.
 - `omrade` joins dim.nuts. Code `0` = national total (not in dim). niveau 2 only (11 landsdele) — no kommune data in this table.
 - This is a population count table (how many parent pairs exist), not a leave-days table. Pair it with ligefi1 for the leave-day averages.
-- Map: context/geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.

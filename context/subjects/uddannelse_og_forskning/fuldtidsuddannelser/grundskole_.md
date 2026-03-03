@@ -63,6 +63,6 @@ notes:
 - For school proximity (share of children within 2 km of school): use laby47 (2008–2021, kommunegrupper only, ends 2021).
 - For gender gap in specialundervisning rates: use ligeui4 (2011–2024). Values are percentages/percentage-points — never sum. Covers only public schools.
 - fstatus='B' (elever pr. 1. oktober) is the standard headcount. fstatus='F' and 'T' are completions and new entrants. Most questions want fstatus='B'.
-- Map: uddakt20 (bopomr) and kvotien (omrade) support choropleth maps via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1). Merge on column=dim_kode. Exclude code 0.
+- Map: uddakt20 (bopomr) and kvotien (omrade) support choropleth maps via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1). Merge on column=dim_kode. Exclude code 0.
 - herkomst coding is inconsistent across tables: uddakt20/special1/2 use 5=dansk, 4=indvandrere, 3=efterkommere; ligeui4 uses 10/20/30. Check before joining or comparing.
 - Totals for grundskol use different codes: '0' in uddakt20/kvotien, 'TOT' in laby23/laby23a. Check the column values before filtering.

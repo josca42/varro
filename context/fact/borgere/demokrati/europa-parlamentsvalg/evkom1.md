@@ -12,4 +12,4 @@ notes:
 - valres mixes aggregate rows with party-level rows. GYLD_IALT = sum of all individual party votes exactly. Never select GYLD_IALT alongside individual party rows — it double-counts. Similarly UGYLD_IALT = UGYLD_AO + UGYLD_BREV. Filter valres to one category (e.g. individual parties OR GYLD_IALT, not both).
 - VAELG (antal vælgere) and PERS_IALT are independent counts, not part of the GYLD/UGYLD hierarchy.
 - No national total in omrade — this table only has kommuner (niveau 3). For national totals use evbpct.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode.

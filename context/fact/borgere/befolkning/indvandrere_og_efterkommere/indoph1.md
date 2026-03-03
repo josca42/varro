@@ -13,4 +13,4 @@ notes:
 - ophgr1 and ophgr2 (in indoph3) differ: ophgr1 is the first/original permit, ophgr2 is the current permit. Nordiske statsborgere (999) and Ukraine særlov (52) are specific categories.
 - Compare with indoph3 (nuværende opholdsgrundlag) to see how permit statuses have changed.
 - This table covers immigrants only (indvandrere) — not descendants or persons of Danish origin.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -14,4 +14,4 @@ notes:
 - socio is a measurement selector with 4 mutually exclusive measure types — pick one. EMPM_DC=headcount (antal beskæftigede), SALM_DC=lønmodtagere headcount, EMPH_DC=total timer (1000 timer), SALH_DC=lønmodtagere timer. Do not sum across socio values.
 - branche=V is the "I alt" total across all sectors. Filter branche='V' for economy-wide figures, or filter to specific branches. Do not sum branche='V' together with individual branches.
 - Typical query: SELECT d.titel, f.tid, f.indhold FROM fact.nrbb10 f JOIN dim.nuts d ON f.omrade=d.kode WHERE d.niveau=1 AND f.socio='EMPM_DC' AND f.branche='V'.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).

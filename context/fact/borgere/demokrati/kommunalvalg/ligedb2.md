@@ -13,6 +13,6 @@ notes:
 - Five dimension columns (kandidat, kon, alder, komk, tid). To get a simple count, filter all non-target dims to their total: kon='TOT', alder='TOT', komk by niveau. Forgetting any one inflates the sum.
 - komk joins dim.nuts at three levels: niveau 1 (5 regioner), niveau 2 (11 landsdele), niveau 3 (98 kommuner), plus '0' = national aggregate not in dim. Filter to one niveau at a time to avoid double-counting.
 - kandidat distinguishes OK (nominated) vs VK (elected). These are separate counts — never sum OK+VK together.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on komk=dim_kode. Exclude komk=0.
 - Sample — female share of elected candidates by municipality 2021:
   SELECT d.titel, SUM(CASE WHEN f.kon='K' THEN f.indhold ELSE 0 END) * 100.0 / SUM(CASE WHEN f.kon='TOT' THEN f.indhold ELSE NULL END) as pct_women FROM fact.ligedb2 f JOIN dim.nuts d ON f.komk=d.kode WHERE f.kandidat='VK' AND f.alder='TOT' AND f.tid='2021-01-01' AND d.niveau=3 GROUP BY d.titel ORDER BY pct_women;

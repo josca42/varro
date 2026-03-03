@@ -31,4 +31,4 @@ notes:
 - The category dimension in each table (neetsund / medicintype / ktype / diagnosehoved) counts persons who are NOT mutually exclusive across categories. TOTAL/TOTAL2/TOTAL3/TOTH gives the deduplicated person count; never sum across individual categories when using the "persons" metric.
 - Geography: bop joins dim.nuts at niveau=1 (5 regioner) and niveau=2 (11 landsdele). bop=0 is the national total and is not in dim.nuts — use a LEFT JOIN or exclude it with WHERE bop != 0 when joining.
 - These are experimental statistics (eksperimentel statistik) — limited time range (2019–2023) and no municipality-level breakdown.
-- Map: all four tables support choropleth at region (niveau 1) and landsdel (niveau 2) level via context/geo/regioner.parquet and context/geo/landsdele.parquet — merge on bop=dim_kode. No kommune-level breakdown available.
+- Map: all four tables support choropleth at region (niveau 1) and landsdel (niveau 2) level via /geo/regioner.parquet and /geo/landsdele.parquet — merge on bop=dim_kode. No kommune-level breakdown available.

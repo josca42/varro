@@ -14,4 +14,4 @@ notes:
 - `virktyp2=TOT1` and `virkstr=TOT1` are aggregate totals. Filter to these for an overall count of recipient workplaces.
 - `kulturemne=0` is all topics aggregate. Broad category codes (uppercase) include sub-codes, so don't sum across levels.
 - Parallel to kubs08 which measures disbursement amounts (1.000 kr.) rather than workplace count.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kubsbeli=dim_kode. Exclude kubsbeli=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kubsbeli=dim_kode. Exclude kubsbeli=0.

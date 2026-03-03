@@ -178,4 +178,4 @@ notes:
 - **laby51**: Only table with a regional dimension (kommunegrupper). Filter dim niveau to 1 (5 groups) or 2 (98 kommuner) to avoid double-counting. National total is komgrp=0 (not in dim table).
 - **dis129 trap**: `antalandel` is a measurement selector (Antal vs Markedsandel). Never mix or sum across these two values.
 - **kv2sm1 SQL note**: The column `some` is a reserved word in PostgreSQL — always quote it: SELECT f."some" FROM fact.kv2sm1 f.
-- Map: laby51 supports choropleth at kommune level — context/geo/kommuner.parquet, merge on komgrp=dim_kode (filter dim.kommunegrupper niveau=2). Exclude komgrp=0. No other tables in this subject have geographic columns.
+- Map: laby51 supports choropleth at kommune level — /geo/kommuner.parquet, merge on komgrp=dim_kode (filter dim.kommunegrupper niveau=2). Exclude komgrp=0. No other tables in this subject have geographic columns.

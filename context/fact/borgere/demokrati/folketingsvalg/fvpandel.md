@@ -12,4 +12,4 @@ notes:
 - valres=0 ("I alt") is a total row representing 100% of valid votes per municipality. Individual party codes are shares summing to 100%. Summing valres across all values doubles the count (you get 200%). Always filter to either valres=0 for the total, or specific party codes for party breakdowns.
 - Party codes are numeric DST IDs. Use ColumnValues("fvpandel", "valres") to see the full list.
 - Example: party share in København 2022: WHERE omrade=101 AND tid='2022-01-01' AND valres != '0'
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

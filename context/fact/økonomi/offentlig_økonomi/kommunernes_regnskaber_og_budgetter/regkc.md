@@ -17,4 +17,4 @@ notes:
 - dranst1 key structure: first digit = dranst (1=drift, 3=anlæg, 7=finansiering, 8=balance, 9=aktiver), next 5 digits = funktion code (same as regk31), last 3 digits = gruppering (001–999).
 - art has the same aggregate/detail structure as regk11 (art='TOT' for net totals).
 - Covers same granularity as regk100 but with the composite key instead of separate columns. Useful when you want to search by label text. Starts from 2018 only vs regk100 from 2007 — prefer regk100 for historical data.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

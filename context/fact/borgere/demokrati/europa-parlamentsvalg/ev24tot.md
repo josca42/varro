@@ -11,4 +11,4 @@ notes:
 - valres mixes aggregate and party-level rows exactly like evkom1. GYLD_IALT = sum of all party votes. Do not mix aggregate and party rows in the same query.
 - Includes detailed invalid postal ballot reason codes (B1–B9) in valres, useful for analysing specifc rejection reasons.
 - For commune-level breakdown use evkom1 instead (NUTS kommuner). For polling-station-level data use ev24tota.
-- Map: storkredse (omrade 10–19) → context/geo/storkredse.parquet, merge on (omrade - 9)=dim_kode. Valgkredse (omrade 20–111) → context/geo/valgkredse.parquet, merge on (omrade - 19)=dim_kode. Exclude omrade ≤ 9 (totals/sub-regional groups).
+- Map: storkredse (omrade 10–19) → /geo/storkredse.parquet, merge on (omrade - 9)=dim_kode. Valgkredse (omrade 20–111) → /geo/valgkredse.parquet, merge on (omrade - 19)=dim_kode. Exclude omrade ≤ 9 (totals/sub-regional groups).

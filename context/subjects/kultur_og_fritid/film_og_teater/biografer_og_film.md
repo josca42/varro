@@ -89,7 +89,7 @@ notes:
 **Cinema infrastructure and activity (bio1, bio2, bio9)**
 - bio1: counts of cinemas, screens, and seats by size category — 1980–2024. No geographic breakdown.
 - bio2: ticket sales, revenue, and film counts by film nationality — 1980–2024. No geographic breakdown. Longest activity time series.
-- bio9: same metrics as bio1/bio2 but broken down by geography and cinema size — 2014–2024 only. The omrade column mixes 4 geographic schemes (regioner, landsdele, specific large cities, city-size bands); pick one scheme per query. Supports choropleth maps: context/geo/regioner.parquet (omrade 81–85) or context/geo/landsdele.parquet (omrade 1–11) — merge on omrade=dim_kode.
+- bio9: same metrics as bio1/bio2 but broken down by geography and cinema size — 2014–2024 only. The omrade column mixes 4 geographic schemes (regioner, landsdele, specific large cities, city-size bands); pick one scheme per query. Supports choropleth maps: /geo/regioner.parquet (omrade 81–85) or /geo/landsdele.parquet (omrade 1–11) — merge on omrade=dim_kode.
 - All three tables have measurement selector columns (sader/bio/bnogle) — always filter to a single metric before aggregating.
 
 **Film statistics by type, nationality, and age rating (bio4ta, bio5, bio6)**

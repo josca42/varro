@@ -14,4 +14,4 @@ notes:
 - Join: SELECT f.*, d.titel FROM fact.kubesk55 f JOIN dim.nuts d ON f.arbreg::text = d.kode WHERE d.niveau = 1 AND f.arbreg != 0
 - uddannelse=49, uddinst=IALT, koen=0 are totals; filter unused dimensions.
 - Same institution list as other kubesk tables (14 cultural higher-education institutions).
-- Map: context/geo/regioner.parquet — merge on arbreg=dim_kode. Exclude arbreg=0.
+- Map: /geo/regioner.parquet — merge on arbreg=dim_kode. Exclude arbreg=0.

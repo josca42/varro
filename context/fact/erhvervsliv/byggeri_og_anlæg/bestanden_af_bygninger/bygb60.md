@@ -16,4 +16,4 @@ notes:
 - anvend joins dim.byganv. Always filter WHERE d.niveau = 2. anvend=592 unmatched (dropped by INNER JOIN).
 - ydremat has 13 values (no total code). Mutually exclusive wall cladding materials — safe to sum. Category 54=Uoplyst eller ukendt can be large.
 - opforelsesar: century-wrapping 5-year codes. Use ColumnValues("bygb60", "opforelsesar") for labels.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

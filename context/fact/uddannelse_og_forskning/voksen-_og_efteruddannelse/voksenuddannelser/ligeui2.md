@@ -18,4 +18,4 @@ notes:
 - bopomr joins dim.nuts. Same join as veu20: niveau 1=regioner, 2=landsdele, 3=kommuner. bopomr='0' is the national total (not in dim.nuts). Use ColumnValues("nuts", "titel", for_table="ligeui2") to browse available areas.
 - fuddomr here is simpler than veu20 — only top-level H-codes (H10, H15, H20, ..., H80) plus TOT. No deep sub-levels in this table.
 - Sample query for gender gap in course participation by region (2023, all ages, kursister, kalenderår): SELECT d.titel, f.indhold FROM fact.ligeui2 f JOIN dim.nuts d ON f.bopomr=d.kode WHERE f.indikator1='LA3' AND f.alder='0000' AND f.overnat1='11' AND f.tidspunkter='11' AND f.fuddomr='TOT' AND f.tid='2023-01-01' AND d.niveau=1;
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

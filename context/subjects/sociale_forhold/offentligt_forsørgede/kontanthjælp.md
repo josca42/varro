@@ -129,4 +129,4 @@ notes:
 
 - All tables with a regional (omrade) column: omrade=0=Hele landet and omrade=997=Udlandet are not in dim.nuts. Exclude these rows when joining dim.nuts or handle as special aggregates.
 
-- Map: Tables ky04, ky16, ky034, ky035, ky038, ky051 support choropleth maps at kommune (niveau 3), landsdel (niveau 2), or region (niveau 1) level via context/geo/ parquet files — merge on omrade=dim_kode.
+- Map: Tables ky04, ky16, ky034, ky035, ky038, ky051 support choropleth maps at kommune (niveau 3), landsdel (niveau 2), or region (niveau 1) level via /geo/ parquet files — merge on omrade=dim_kode.

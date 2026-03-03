@@ -12,4 +12,4 @@ notes:
 - enhed is a measurement selector with 3 values: ANTAL (bedrifter count), AK (kvæg count for those farms), AS (svin count for those farms). Always filter to one. AK/AS return 0 for farm types that don't hold that animal (e.g. type=KS20 (svin only) has AK=0).
 - type has 8 overlapping categories. KS10 (kvæg only) + KS20 (svin only) + KS30 (both) are mutually exclusive and add up to KS70. KS40=KS10+KS30 (all with kvæg), KS50=KS20+KS30 (all with svin), KS70=KS10+KS20+KS30+others, KS80=all bedrifter. Never sum KS40+KS10 or KS50+KS20 — that double-counts. Use KS10/KS20/KS30/KS60 for non-overlapping breakdown.
 - omrade has 12 values but only 10 join to dim.nuts: 5 regioner (81-85, niveau 1) and 5 landsdele (4,7,8,9,10, niveau 2). Code 0=Hele landet and code 15=merged Copenhagen-area landsdel are not in dim.nuts. Same pattern as hdyr07.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).

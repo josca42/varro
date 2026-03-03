@@ -231,6 +231,6 @@ notes:
 - fohoj04: Geographic breakdown by landsdel (codes 1–11 = dim.nuts niveau=2) and institution type (folkehøjskoler/ungdomshøjskoler/seniorhøjskoler).
 
 ## Map support
-- Regioner (niveau 1): kunst2 (bopreg), kubesk55 (arbreg) — context/geo/regioner.parquet
-- Landsdele (niveau 2): kuiv2 (omr20), fohoj04 (bopland) — context/geo/landsdele.parquet
-- Regioner + Kommuner (niveau 1+3): kuerh2 (omrade) — context/geo/regioner.parquet or context/geo/kommuner.parquet
+- Regioner (niveau 1): kunst2 (bopreg), kubesk55 (arbreg) — /geo/regioner.parquet
+- Landsdele (niveau 2): kuiv2 (omr20), fohoj04 (bopland) — /geo/landsdele.parquet
+- Regioner + Kommuner (niveau 1+3): kuerh2 (omrade) — /geo/regioner.parquet or /geo/kommuner.parquet

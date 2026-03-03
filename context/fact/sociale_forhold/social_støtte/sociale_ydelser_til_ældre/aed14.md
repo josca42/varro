@@ -14,4 +14,4 @@ notes:
 - omrade joins dim.nuts with both niveau 1 (5 regioner) and niveau 3 (98 kommuner). Filter WHERE d.niveau=3 for kommuner, d.niveau=1 for regioner. omrade=0 is national total (not in dim).
 - ydelsestype: 100=i alt; 200/300/400 are mutually exclusive care types. Filter ydelsestype=100 for total switchers. 450 (madservice) only from 2023.
 - alder=50 is total; alder bands 100-800 are non-overlapping. koen=100 is total.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

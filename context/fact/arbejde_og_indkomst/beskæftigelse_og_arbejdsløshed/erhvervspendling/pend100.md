@@ -14,4 +14,4 @@ notes:
 - arbejdssted=950 means 'Uden for Danmark' (abroad) — not in dim.nuts. Appears as a workplace for residents commuting internationally.
 - kon has only M and K (no TOT). Sum both to get total.
 - Use ColumnValues("nuts", "titel", for_table="pend100") to see all 116 area codes (including 950) available on the arbejdssted side.
-- Map: bopkom and arbejdssted both support choropleths — context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode or arbejdssted=dim_kode after filtering to a single niveau. Exclude codes 0 and 950.
+- Map: bopkom and arbejdssted both support choropleths — /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode or arbejdssted=dim_kode after filtering to a single niveau. Exclude codes 0 and 950.

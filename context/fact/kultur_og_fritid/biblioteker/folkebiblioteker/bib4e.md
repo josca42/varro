@@ -12,4 +12,4 @@ notes:
 - opgoer1 is a measurement type selector: 111=Bestand, 180=Visninger, 181=Søgninger (-2017). Always filter to one — Søgninger is historical only.
 - matypelek: 4 electronic material types (e-journals, e-books, e-video, databases). 184=E-bøger og lydbøger is the largest category.
 - No aggregate across matypelek — each type is an independent count.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

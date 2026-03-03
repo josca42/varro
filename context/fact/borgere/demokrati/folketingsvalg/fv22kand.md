@@ -13,4 +13,4 @@ notes:
 - valres=1 means the candidate was elected; valres=0 means not elected. To get total personal votes for a candidate, SUM(indhold) across omrade — but note a candidate only stands in one storkreds, so there's at most one omrade per candidate.
 - opkandidat uses numeric IDs. Filter by parti to browse candidates for a given party.
 - 2022 only. For historical aggregate candidate counts (opstillede/valgte by gender), use fvkand (1990–2022).
-- Map: context/geo/storkredse.parquet — merge on (omrade - 9)=dim_kode.
+- Map: /geo/storkredse.parquet — merge on (omrade - 9)=dim_kode.

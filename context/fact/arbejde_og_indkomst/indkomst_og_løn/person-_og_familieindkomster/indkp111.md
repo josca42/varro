@@ -15,4 +15,4 @@ notes:
 - enhed selector (4 types). Always filter to one.
 - indkomsttype is hierarchical — pick one specific type.
 - koen='MOK' is total. Goes back to 1992. Use this (not indkp109) when you need both region/landsdel and detailed age breakdown.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on regland=dim_kode. Exclude regland=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on regland=dim_kode. Exclude regland=0.

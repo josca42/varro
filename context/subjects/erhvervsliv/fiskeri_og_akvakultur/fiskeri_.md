@@ -45,4 +45,4 @@ notes:
 - farlaengd in firegn1/firegn2/nfisk has two tiers: size-class aggregates (codes 9/10/12/14/16/18/20, UPPERCASE labels) and gear-type subcategories within each size class (codes 40-86, mixed-case labels). Never sum across both tiers.
 - firegn1 has 204 regnskposter accounting line items; nfisk has just 4 summary ratios. Start with nfisk for a quick sector health check, then drill into firegn1/firegn2 for detail.
 - All three financial tables (firegn1, firegn2, nfisk) use the same farlaengd dimension — ColumnValues("firegn1", "farlaengd") shows the full code list with labels.
-- Map: fisk1 supports choropleth maps at region level (niveau 1) via context/geo/regioner.parquet — merge on omrade=dim_kode, exclude omrade=0. fisk2/fisk3 use hardcoded string region codes (R84, R82…) that do not join to geo files directly.
+- Map: fisk1 supports choropleth maps at region level (niveau 1) via /geo/regioner.parquet — merge on omrade=dim_kode, exclude omrade=0. fisk2/fisk3 use hardcoded string region codes (R84, R82…) that do not join to geo files directly.

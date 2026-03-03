@@ -46,4 +46,4 @@ notes:
 - For rental capacity (number of houses available): ferieh5 (2012–2024). 13 rows total, one per year — trivially simple.
 - Common pitfall in ferieh1 and ferieh6: periode=1 and periode=2 are overloaded codes that each map to TWO different rows per combination (annual total + monthly value). Filtering to periode=1 gives 14 rows instead of 12 per group. Use periode >= 3 for unambiguous months, or handle periods 1–2 carefully.
 - All tables with a tal or enhed column treat it as a measurement selector — always filter to one value to avoid inflated counts.
-- Map: ferieh6 supports kommune/landsdel/region choropleths (context/geo/kommuner.parquet, landsdele.parquet, regioner.parquet); ferieh3 supports region/landsdel only. Merge on omrade=dim_kode.
+- Map: ferieh6 supports kommune/landsdel/region choropleths (/geo/kommuner.parquet, landsdele.parquet, regioner.parquet); ferieh3 supports region/landsdel only. Merge on omrade=dim_kode.

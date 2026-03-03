@@ -11,4 +11,4 @@ dim docs: /dim/nuts.md
 notes:
 - Archive version of ibib1 — same structure but only up to 2024. Use ibib1 for current analysis; this table is retained for stability in dashboards referencing a fixed year range.
 - See ibib1.md for full notes on omrade, udlanssted, dyrkat, and kon filters.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

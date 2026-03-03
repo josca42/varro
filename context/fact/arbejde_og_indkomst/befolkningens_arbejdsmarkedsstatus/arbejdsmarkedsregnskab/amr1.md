@@ -15,4 +15,4 @@ notes:
 - The 26 socio codes are mutually exclusive and exhaustive — summing all codes for a given omrade/koen/alder1/tid gives the full population count for that cell (~5.94M nationally in 2023). socio=21 ("Ordinær beskæftigede i alt") is the single largest category (~2.4M) but is just one leaf. The "i alt" refers to all types of ordinary employment, not a population total.
 - No aggregate rows for koen, alder1, or socio. koen has only M and K; alder1 has 13 age bands (-15 through 67-). Always sum all categories you don't filter on.
 - Sample: total employed (socio='21') nationally in 2023: SELECT sum(indhold) FROM fact.amr1 WHERE omrade='0' AND socio='21' AND tid='2023-01-01' — result ~2.39M (M+K already covers all genders since there's no TOT row).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade='0'.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade='0'.

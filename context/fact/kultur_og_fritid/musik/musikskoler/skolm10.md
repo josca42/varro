@@ -15,4 +15,4 @@ notes:
 - bnogle is a measurement selector — 3050=Forløb, 3070=Deltagende elever, 3075=Undervisningstimer. Always filter to one bnogle value.
 - klasse='KLTOT' and undkat='3080' are the totals for their dimensions. This table has 5 dimension columns (komk, kunstart, klasse, undkat, bnogle) — filter all non-target dimensions to totals to avoid overcounting.
 - Most granular collaboration table: breaks down by school grade (klasse) and teaching category (obligatorisk, kulturklasse, valgfag).
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

@@ -20,4 +20,4 @@ notes:
 - gruppering=999 = sum of non-authorised groupings. No total-gruppering code exists.
 - Budget (budgetter) not actuals, starts from 2017. For historical budget data before 2017 or at function level without ownership use budk32. For actuals use regk100.
 - budkc is the "with text" version using the composite dranst1 key, starting from 2019.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

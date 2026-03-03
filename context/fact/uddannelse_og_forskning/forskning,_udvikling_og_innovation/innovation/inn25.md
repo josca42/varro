@@ -13,4 +13,4 @@ notes:
 - region joins dim.nuts at niveau=1 (codes 81-85, the 5 regions). Code 0 = national total, not in dim.nuts.
 - innsam has 3 collaboration topic categories: 540=FoU, 550=Andre innovationsaktiviteter ekskl. FoU, 560=Øvrige forretningsaktiviteter. These are independent rates (firms can collaborate on multiple topics), each row showing % of firms with collaboration on that topic.
 - All indhold values are percentages. Never sum across innsam or innbranche categories.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

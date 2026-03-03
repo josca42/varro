@@ -13,4 +13,4 @@ notes:
   Never SUM across tal values.
 - omrade joins dim.nuts at niveau=3. omrade=0 is a national total not in dim.nuts.
 - Pair with handbil1 to compare approvals vs rejections: use tal=5 in both tables for case counts.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

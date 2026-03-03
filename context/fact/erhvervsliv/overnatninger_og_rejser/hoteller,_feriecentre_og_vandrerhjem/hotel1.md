@@ -16,4 +16,4 @@ notes:
 - For annual totals: filter WHERE periode=1 and use MAX(indhold) per group (the larger value is "Hele året", the smaller is "Januar"). For monthly breakdown: periode 3–12 are unambiguous (one row per combo); periode 1 and 2 require picking the smaller indhold for the monthly value.
 - nation1 has 54 values including aggregate codes: TOT (all), DAN (Danish), UDLAN (all foreign). Use ColumnValues("hotel1", "nation1") to browse all nationalities. For total overnights regardless of origin, filter nation1='TOT'.
 - Typical query for annual overnights by region: WHERE tal='1030' AND nation1='TOT' AND periode=1, then JOIN dim.nuts and take MAX(indhold) per omrade to get "Hele året" rows only.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

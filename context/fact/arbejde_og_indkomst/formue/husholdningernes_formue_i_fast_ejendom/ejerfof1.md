@@ -15,4 +15,4 @@ notes:
 - famtype is hierarchical: A0=alle familier, A1=enlige total (=A11+A12+A13+A14), A2=par total (=A21+A22+A23+A24). Filter to one level. Summing A0+A1+A2 triples counts.
 - bopkom joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). niveau 2 NOT present. bopkom='0' = national aggregate, not in dim.nuts.
 - Use ColumnValues("nuts", "titel", for_table="ejerfof1") to see available regions/kommuner.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.

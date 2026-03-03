@@ -13,4 +13,4 @@ notes:
 - H90='Uoplyst mv.' captures those with unknown/unregistered education — include or exclude depending on analysis intent.
 - fkmed: F=Medlem, U=Ikke-Medlem. Both rows present for each combination. Filter to one or sum both.
 - Available 2015–2024. For membership by education analysis, compare H70 (LVU) vs H10 (Grundskole) membership rates.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

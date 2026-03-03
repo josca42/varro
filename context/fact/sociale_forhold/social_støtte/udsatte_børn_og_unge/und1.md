@@ -16,4 +16,4 @@ notes:
 - underretere: code 0 = I alt. Note that codes 7 (Familie/barn/bekendtskab) split into 12 (barnet selv) and 13 (familie/bekendtskab) from 2024 — break in series for those categories.
 - kon has an extra value U=Uoplyst køn (ufødt) for unborn children (alder1='U0').
 - For total notifications by kommune: WHERE underretere='0' AND alder1='00' AND kon='0'.
-- Map: context/geo/kommuner.parquet — merge on admkom=dim_kode. Exclude admkom=0 and admkom=998.
+- Map: /geo/kommuner.parquet — merge on admkom=dim_kode. Exclude admkom=0 and admkom=998.

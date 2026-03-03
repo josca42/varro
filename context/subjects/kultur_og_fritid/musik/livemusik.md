@@ -57,4 +57,4 @@ notes:
 - In livmus03/04: sektor='TOT' is the total across sectors. In livmus03 also branchekult='TOT'. Always filter totals to avoid double-counting.
 - kv2mk6/kv2mk7/kv2mk8 all have NON-mutually-exclusive category columns. Do not sum across spilplac, ledsag, or aarsag. In kv2mk5, frequency (hyp) IS mutually exclusive within a genre, but the two genres are not.
 - All kv2mk tables have kon='10' (total) and alder='TOT' as aggregate rows — filter these when breaking down by gender or age.
-- Map: livmus04 supports choropleth at landsdel level (niveau 2, 11 regions) via context/geo/landsdele.parquet. All other tables are national-only.
+- Map: livmus04 supports choropleth at landsdel level (niveau 2, 11 regions) via /geo/landsdele.parquet. All other tables are national-only.

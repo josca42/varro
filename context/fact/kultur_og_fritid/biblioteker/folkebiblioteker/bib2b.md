@@ -11,4 +11,4 @@ notes:
 - aktivi mixes different units: population counts (10340/10320/10330) are in 1.000 (thousands), while service location and subscriber counts are in Antal. Never sum across aktivi values.
 - 10310=Alle betjeningssteder is the total service location count; 10198=Hovedbiblioteker and 10200=Filialer are subtypes — don't add them to the total.
 - For folketal (population), use aktivi='10340' for total population in thousands.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

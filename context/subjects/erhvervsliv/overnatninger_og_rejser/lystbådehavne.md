@@ -45,4 +45,4 @@ notes:
 - For marina capacity/infrastructure (not overnight stays): use lyst12 (by marina size) or lyst13 (by region/landsdel). Both use kapacitet as a measure selector — always filter to one kapacitet value. lyst13 splits guest boat nights into paid vs. free harbour scheme; lyst12 does not.
 - lyst12 is the only table with marina size breakdown (storrelse). lyst13 is the only capacity table with regional geography.
 - tid is annual for all tables (Jan 1 of each year). lyst1/lyst2 run to 2025; lyst10–lyst13 only to 2024.
-- Map: lyst1 and lyst10 support choropleth at regioner (niveau 1) or landsdele (niveau 2) via context/geo/regioner.parquet / context/geo/landsdele.parquet. lyst13 supports landsdele (niveau 2) only. Merge on omrade=dim_kode, exclude omrade=0. lyst2/lyst11 (farvand) and lyst12 (storrelse) have no geo join.
+- Map: lyst1 and lyst10 support choropleth at regioner (niveau 1) or landsdele (niveau 2) via /geo/regioner.parquet / /geo/landsdele.parquet. lyst13 supports landsdele (niveau 2) only. Merge on omrade=dim_kode, exclude omrade=0. lyst2/lyst11 (farvand) and lyst12 (storrelse) have no geo join.

@@ -14,4 +14,4 @@ notes:
 - To avoid hfudd2 double-counting: filter WHERE LENGTH(hfudd2) = 3 to get the 10 top-level categories (H10-H90) that match other tables, plus TOT. The sub-codes (H1001, H3010, etc.) are subcategories of these.
 - Use ColumnValues("laby19", "hfudd2") to browse all 92 education codes. The naming pattern: H10=Grundskole, H1001/H1010/H1020/H1030 are its subcategories.
 - This table has individual municipality detail (unlike laby19a which has only the 5 kommunegrupper).
-- Map: context/geo/kommuner.parquet — filter komgrp > 100 for individual municipalities, merge on komgrp=dim_kode. Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — filter komgrp > 100 for individual municipalities, merge on komgrp=dim_kode. Exclude komgrp=0.

@@ -16,4 +16,4 @@ notes:
 - kon: TOT=total, M=mænd, K=kvinder.
 - neet2 differs from neet1: it has individual ages but no socioøkonomisk breakdown. Use neet2 when you need age granularity; use neet1 when you need socioøkonomisk status.
 - Clean NEET count by age: filter statusneet='10', kon='TOT', bopomr='0' (national), group by alder (exclude IALT or individual ages depending on desired aggregation).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

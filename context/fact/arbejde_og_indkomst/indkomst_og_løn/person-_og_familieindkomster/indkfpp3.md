@@ -14,4 +14,4 @@ notes:
 - enhed selector (3 types). Always filter to one.
 - Covers disponibel indkomst (after-tax). For indkomst i alt by region use indkp102.
 - koen='MOK' is total.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.

@@ -15,4 +15,4 @@ notes:
 - tal is a measurement selector (3 values: 1270=Overnatninger, 1280=Udlejede hus-uger, 1290=Kontrakter — note: no 1300=Disponible husuger here unlike ferieh1/ferieh6). Always filter to one tal value.
 - nation1=TOT is the national total; do not sum across all nation1 values.
 - tid is always Jan 1 of the reporting year (1992–2024 annual data).
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

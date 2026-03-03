@@ -13,4 +13,4 @@ notes:
 - bygtyp='0' means "Ejendomme i alt" (all building types), opforelsesar='0' means "Alle opførelsesår". Both must be filtered to avoid overcounting. To get simple regional totals: WHERE bygtyp='0' AND opforelsesar='0'.
 - opforelsesar codes are 50-year bands (e.g. '1850' = 1850–1899). Code '0' also appears separately meaning "Uoplyst" per the values list, but in the data '0' serves as the all-years total — confirm with the actual value distribution before filtering by era.
 - Sample: total protected buildings per region in 2024: SELECT d.titel, f.indhold FROM fact.kfred1 f JOIN dim.nuts d ON f.omrade=d.kode WHERE f.bygtyp='0' AND f.opforelsesar='0' AND f.tid='2024-01-01'
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

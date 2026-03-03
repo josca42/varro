@@ -13,4 +13,4 @@ notes:
 - Same structure as kubs07 but measures disbursements (1.000 kr.) rather than workplace count (Antal). See kubs07 notes for join and filter guidance.
 - `kubsbeli=0` is national aggregate (not in dim). Filter `d.niveau` for geographic granularity.
 - `virktyp2=TOT1` and `virkstr=TOT1` are aggregate totals.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kubsbeli=dim_kode. Exclude kubsbeli=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kubsbeli=dim_kode. Exclude kubsbeli=0.

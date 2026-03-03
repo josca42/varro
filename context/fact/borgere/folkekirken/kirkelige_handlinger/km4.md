@@ -14,4 +14,4 @@ notes:
 - bevaegelsev=17 (Fødte) counts all births registered in the parish, not just baptisms. bevaegelsev=16 (Konfirmerede) counts confirmations.
 - 2,302 distinct sogne. Codes 4001–4007 are "Personregisterfører" (civil registry) entries covering Sønderjylland, not actual parishes — consider excluding them for purely ecclesiastical questions. Codes 0000 and 9999 are residual (unknown/no fixed address). Use ColumnValues("km4", "sogn") to browse all sogne with their labels.
 - To aggregate to a higher geographic level (provsti or stift), use km44 instead — km4 has no provsti column.
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999, 4001, 4002, 4003, 4004, 4005, 4006, 4007).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999, 4001, 4002, 4003, 4004, 4005, 4006, 4007).

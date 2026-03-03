@@ -14,4 +14,4 @@ notes:
 - rastoftype TOTHAV = aggregate total across all types. Filter `WHERE rastoftype != 'TOTHAV'` when summing across types. The 7 individual sea types are: SAND1, RAL, GRUS, FYLD, GRABSØ, SKALLER, ANDET.
 - Use `ColumnValues("nuts", "titel", for_table="rst04")` to see the 104 dim-matched omrade codes (filters out the unmapped 990-997 sea districts).
 - indhold unit is 1.000 m³.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 99) and omrade codes 990–997 (unmapped sea districts).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 99) and omrade codes 990–997 (unmapped sea districts).

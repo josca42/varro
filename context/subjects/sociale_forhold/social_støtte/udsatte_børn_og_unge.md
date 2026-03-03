@@ -153,4 +153,4 @@ notes:
 - Gender encoding differs: bu04a uses M/K/TOT; all anbaar/isbu/und tables use D (drenge) / P (piger) / 0 (I alt).
 - All tables with multiple dimension columns require filtering on ALL non-target dimensions to avoid overcounting.
 - anbaar10 causes are non-mutually exclusive — never sum across anbringaarsag codes.
-- Map: kommune-level tables (bu43, anbaar9/12/13/14, isbu01/02, und1/2) support choropleth via context/geo/kommuner.parquet; landsdel-level tables (bu04a, anbaar8/10/16/17, isbu03/04) via context/geo/landsdele.parquet.
+- Map: kommune-level tables (bu43, anbaar9/12/13/14, isbu01/02, und1/2) support choropleth via /geo/kommuner.parquet; landsdel-level tables (bu04a, anbaar8/10/16/17, isbu03/04) via /geo/landsdele.parquet.

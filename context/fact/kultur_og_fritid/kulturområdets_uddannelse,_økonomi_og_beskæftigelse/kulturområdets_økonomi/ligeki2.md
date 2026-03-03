@@ -13,4 +13,4 @@ notes:
 - Same structure and same `indikator` rate-only semantics as ligeki1. NEVER sum across LA1/LA2/LA3 — filter to exactly one.
 - Difference from ligeki1: this table covers disbursement amounts (kr.); ligeki1 covers recipient counts. Use ligeki2 for "what share of cultural funding goes to men/women", use ligeki1 for "what share of recipients are men/women".
 - `bopomr=0` is national aggregate (not in dim). Filter d.niveau for geographic granularity.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

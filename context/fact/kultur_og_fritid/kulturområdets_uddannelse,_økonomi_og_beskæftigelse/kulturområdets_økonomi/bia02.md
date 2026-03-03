@@ -12,4 +12,4 @@ notes:
 - Same structure as bia01 but measures disbursements (1.000 kr.) rather than person count (Antal). See bia01 notes for join and filter guidance.
 - `bopomr=0` is national aggregate (not in dim). Filter `d.niveau` for geographic granularity.
 - `kon=TOT` and `alder=TOT` are aggregate totals — filter both for a simple total.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

@@ -12,4 +12,4 @@ notes:
 - maengde6 controls what is measured: 0=antal personer, 5=fuldtidspersoner, 10=antal dage, 15=beløb (tusind kr.), 20/25=delvist genoptaget arbejde variants. Always filter to one value — omitting it multiplies results by 6.
 - Geography is at landsdel (niveau 2) or kommune (niveau 3) — no regional (niveau 1) breakdown. dffekom='0' is a national total not in dim.nuts.
 - ydelsesmodtager distinguishes lønmodtagere (LR/LD), selvstændige, and ledige. TOT and LTOT are aggregates — don't sum across all values.
-- Map: sygedp01 supports choropleth maps at kommune (niveau 3) via context/geo/kommuner.parquet or landsdel (niveau 2) via context/geo/landsdele.parquet — merge on dffekom=dim_kode.
+- Map: sygedp01 supports choropleth maps at kommune (niveau 3) via /geo/kommuner.parquet or landsdel (niveau 2) via /geo/landsdele.parquet — merge on dffekom=dim_kode.

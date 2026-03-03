@@ -16,4 +16,4 @@ notes:
 - `morud` total is `'2'`, `farud` total is `'4'`. Filter both to their totals when not analysing education.
 - `omrade` joins dim.nuts via `f.omrade = d.kode`. Code `0` = landstal/national total (not in dim). niveau 2 = 11 landsdele, niveau 3 = 98 kommuner. Filter `d.niveau = 2` or `d.niveau = 3` to pick one granularity — mixing levels double-counts.
 - For a simple national time series: `WHERE tal='200' AND beret='3' AND morud='2' AND farud='4' AND omrade='0'`.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

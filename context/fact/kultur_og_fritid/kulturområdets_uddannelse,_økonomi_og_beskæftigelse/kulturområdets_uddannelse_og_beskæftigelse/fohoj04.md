@@ -15,4 +15,4 @@ notes:
 - bopland uses the same numeric landsdel codes as dim.nuts niveau=2, but with no leading zeros (1–11). Join: f.bopland::text = d.kode WHERE d.niveau = 2 AND f.bopland NOT IN (0, 99).
 - insti=0 is total across all institution types; filter when comparing ungdomshøjskoler vs seniorhøjskoler vs folkehøjskoler.
 - kursus=TOT and kon=TOT are totals.
-- Map: context/geo/landsdele.parquet — merge on bopland=dim_kode. Exclude bopland IN (0, 99).
+- Map: /geo/landsdele.parquet — merge on bopland=dim_kode. Exclude bopland IN (0, 99).

@@ -12,4 +12,4 @@ notes:
 - arbejdslands is inline (no dim join). Contains both regioner (81–85) and landsdele (1–11) plus 0=Hele landet, 950=Uden for Danmark, 99=Uoplyst. Filter by range: regioner WHERE arbejdslands::int BETWEEN 81 AND 85; landsdele WHERE arbejdslands::int BETWEEN 1 AND 11.
 - arbejdssteds (workplace) dimension — workers counted where they work, not where they live. Use lbesk44 for bopælslandsdel (residence region).
 - Filter kon and alder (TOT codes are aggregate rows — exclude when summing individual categories).
-- Map: context/geo/regioner.parquet (codes 81–85) or context/geo/landsdele.parquet (codes 1–11) — merge on arbejdslands::int=dim_kode. Exclude 0, 950, 99.
+- Map: /geo/regioner.parquet (codes 81–85) or /geo/landsdele.parquet (codes 1–11) — merge on arbejdslands::int=dim_kode. Exclude 0, 950, 99.

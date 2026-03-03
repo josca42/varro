@@ -13,4 +13,4 @@ notes:
 - branchedb0710 joins dim.db_10 niveau 1; TOT = national total, not in dim.
 - enhed is a measurement selector (AFI, AFU, OMS). Always filter to one value.
 - Only covers 2023. For time-series with regional breakdown use gf14 (2019–2023, but no branche).
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.

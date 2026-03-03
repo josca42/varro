@@ -14,4 +14,4 @@ notes:
 - bebostat=35 and bebostat=38 are zero for 2017–2023 and only contain data from 2024.
 - kmdr=TOT is the national aggregate across all duration bands; the 6 duration bands (000001 through 365000) sum exactly to TOT. kmdr=999999 (Uoplyst) listed in the column spec does not actually appear in the data.
 - To get total stays by region for a given year: filter kmdr='TOT', bebostat='1', exclude bopreg IN ('0','996'). To include unknown region, add bopreg='996'. bopreg='0' is always redundant when summing regions.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on bopreg=dim_kode. Exclude bopreg IN ('0', '996').
+- Map: /geo/regioner.parquet (niveau 1) — merge on bopreg=dim_kode. Exclude bopreg IN ('0', '996').

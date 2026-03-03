@@ -9,4 +9,4 @@ notes:
 - fui01 encodes multiple classification perspectives — pick exactly ONE per query. See forsk01 notes for the full breakdown (industry 1000–1090, technology level, IT, knowledge services, size groups, regions).
 - finanskilde='10' = Finansiering af FoU i alt (grand total). The hierarchy: 10 = 20 (private erhverv) + 60 (private nonprofit) + 70 (offentlige) + 120 (udlandet). Under 20: 30+40+50. Under 70: 80+90+100+110. Under 120: 130+140+150+160+170. Never sum sub-codes with their parent totals.
 - Covers financing of own R&D (intern). For financing of purchased R&D, use forsk111.
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

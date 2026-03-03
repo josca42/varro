@@ -19,4 +19,4 @@ notes:
 - Neither table has pre-aggregated total rows for any dimension. Always sum the categories you don't filter on.
 - The 26 socio codes are mutually exclusive and exhaustive — they partition the full population. Summing all codes gives total population (~5.94M in 2023). Common filters: socio='21' for ordinarily employed (~2.4M), socio='50' for unemployed, socio='150' for folkepension recipients.
 - amr1 gotcha: omrade='0' (Hele landet) is not in dim.nuts and is dropped on a direct join. Filter omrade='0' without joining dim.nuts for national queries.
-- Map: amr1 supports choropleth at kommune level — context/geo/kommuner.parquet, merge on omrade=dim_kode, exclude omrade='0'.
+- Map: amr1 supports choropleth at kommune level — /geo/kommuner.parquet, merge on omrade=dim_kode, exclude omrade='0'.

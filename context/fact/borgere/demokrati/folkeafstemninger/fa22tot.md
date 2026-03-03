@@ -11,4 +11,4 @@ notes:
 - omrade uses election geography (not NUTS): 0=national, 7-9=regions (Hovedstaden/Midtjylland/etc.), 10-19=storkredse (10 total), 20+=opstillingskredse. 106 distinct omrade values total. No dim table — use ColumnValues("fa22tot", "omrade") to browse all codes and labels.
 - valres has the same hierarchical structure as fakom: 434284=Ja, 434285=Nej, GYLD_IALT=Ja+Nej, UGYLD_IALT=UGYLD_AO+UGYLD_BREV, BREV_IALT=brevstemmer, VAELG=vælgere. Additionally has B1-B9 mail ballot invalidity subcategories and BREV_EJ. Always filter to a specific valres to avoid summing aggregates.
 - For national totals filter omrade='0'. For storkreds breakdown filter omrade BETWEEN '10' AND '19'.
-- Map: storkreds-level data (omrade 10-19) can use context/geo/storkredse.parquet — merge on (omrade::integer - 9)=dim_kode. Filter omrade BETWEEN '10' AND '19'.
+- Map: storkreds-level data (omrade 10-19) can use /geo/storkredse.parquet — merge on (omrade::integer - 9)=dim_kode. Filter omrade BETWEEN '10' AND '19'.

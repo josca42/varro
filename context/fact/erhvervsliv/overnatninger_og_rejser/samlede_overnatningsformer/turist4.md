@@ -15,4 +15,4 @@ notes:
 - No periode column and no saeson column — simplest structure of the four tables. Each tid is a direct monthly observation with no sub-period ambiguity.
 - Counts overnatninger (overnight stays), same measure as turist.
 - Limited time range: 2016–2024. Ends at 2024 — may not have the latest data.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

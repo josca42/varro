@@ -15,4 +15,4 @@ notes:
 - Income brackets here are coarser at the bottom (lowest is "under 100.000 kr.") but very detailed at the top (up to 10M+). Use indkp105/indkp106 for finer 25k-step brackets.
 - enhed selector (3 types): always filter to one.
 - Covers indkomst i alt (total income before tax). For disponibel by region use indkfpp3.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.

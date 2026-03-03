@@ -17,4 +17,4 @@ notes:
 - periode has the same encoding collision as hotel1: codes 1 and 2 each return 2 rows per combination (Hele-året + Januar; År-til-dato + Februar). For annual totals, filter periode=1 and take MAX(indhold) per group. Never SUM all periode 1–12.
 - nation1 has 54 values including TOT, DAN, UDLAN. Use ColumnValues("hotel2", "nation1") to browse.
 - This table adds the type breakdown vs hotel1, but sacrifices the landsdele granularity (only regioner here).
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

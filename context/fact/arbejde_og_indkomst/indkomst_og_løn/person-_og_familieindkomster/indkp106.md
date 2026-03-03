@@ -16,4 +16,4 @@ notes:
 - alder1='00' is the total. 5-year age groups from 15-19 to 74-00.
 - enhed selector (3 types). Always filter to one.
 - Covers disponibel indkomst (after-tax). For indkomst i alt with the same structure use indkp105.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -63,4 +63,4 @@ notes:
 - fu19 is an income and expenditure accounting table (25 line items). Use it to put consumption in context of household income, taxes, and savings. Code 600 (Forbrug) links to the total in fu12-fu18.
 - prisenhed doubles all rows in fu12-fu18 (AARPRIS=løbende priser, 08PRIS=faste 2008-priser). Always filter to one value — this is the most common overcounting trap in this subject.
 - konsumgrp in fu12-fu18 uses ECOICOP dotted decimal notation ("01", "01.1", "01.1.1.1"), NOT the integer kode in dim.ecoicop. The dim join requires: `REPLACE(konsumgrp, '.', '')::integer = d.kode AND d.niveau = (LENGTH(konsumgrp) - LENGTH(REPLACE(konsumgrp, '.', ''))) + 1`. Category "00" = total; category "13.x" = DST-specific (forsikring/finansielle tjenester), not in standard ECOICOP.
-- Map: fu17 supports regional choropleth via context/geo/regioner.parquet. Region codes 6010–6050 map to NUTS dim_kode 84, 85, 83, 82, 81 respectively. Exclude region=2001 (national average).
+- Map: fu17 supports regional choropleth via /geo/regioner.parquet. Region codes 6010–6050 map to NUTS dim_kode 84, 85, 83, 82, 81 respectively. Exclude region=2001 (national average).

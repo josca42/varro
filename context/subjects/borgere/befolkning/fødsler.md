@@ -88,4 +88,4 @@ notes:
 - Common pitfall: most tables have no aggregate total rows. fod/fodpm/fodpf/foraeld-antborn all use individual ages/birth-orders only — sum all rows explicitly rather than filtering to a "total" code.
 - foraeld has kon='TOT' but no IALT for alder or antborn. barnlos has no TOT for either dimension.
 - bev3a and km3 cover both births (B02) and deaths (B03) — always filter bevaegelsev.
-- Map: fodie and fod111 support choropleth at kommune (niveau 3) or region (niveau 1) via context/geo/kommuner.parquet or context/geo/regioner.parquet. km3 supports parish-level maps via context/geo/sogne.parquet.
+- Map: fodie and fod111 support choropleth at kommune (niveau 3) or region (niveau 1) via /geo/kommuner.parquet or /geo/regioner.parquet. km3 supports parish-level maps via /geo/sogne.parquet.

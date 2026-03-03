@@ -16,4 +16,4 @@ notes:
 - transakt codes are distinct national accounts items (B1GD=BVT, B1GFD=BFI, D1D=aflønning af ansatte etc.). Do not sum across transakt — pick the specific transaction needed.
 - branche=V is the "I alt" total. Filter branche='V' for aggregate figures. Do not include branche='V' when also summing individual branches.
 - This table lacks B1GQD (BNP) — use nrhp for BNP. nrbp10 provides BVT (B1GD) broken down by branche, which nrhp does not.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).

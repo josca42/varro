@@ -14,4 +14,4 @@ notes:
 - branche0710 values 1–11 join dim.db_10 (niveau=1). 'TOT' = all branches total, not in dim.
 - arbstrdk is the same 7-category size-class as erhv3 (no Fiktive enheder). Do NOT sum across categories.
 - No `tal` selector — indhold is always ARBSTED (workplaces). Use ColumnValues("nuts", "titel", for_table="erhv6") to see the 115 matched regions.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

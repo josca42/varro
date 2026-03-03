@@ -14,4 +14,4 @@ notes:
 - hoofdbopael joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). Code 0 is the national total and does not join. Filter WHERE d.niveau = 1 or d.niveau = 3 to pick granularity; mixing both double-counts.
 - Only one year of data (2024). No time-series analysis is possible.
 - Sample query — average distance to nearest grandparent by region (kommuner): SELECT d.titel, AVG(f.indhold) FROM fact.paaroe01 f JOIN dim.nuts d ON f.hoofdbopael = d.kode WHERE f.relationtyp = 'TAET' AND d.niveau = 3 AND f.hoald = 9924 GROUP BY d.titel;
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on hoofdbopael=dim_kode. Exclude hoofdbopael=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on hoofdbopael=dim_kode. Exclude hoofdbopael=0.

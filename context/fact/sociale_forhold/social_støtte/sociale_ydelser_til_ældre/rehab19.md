@@ -13,4 +13,4 @@ notes:
 - Age column is named alder1 (not alder). alder1=50 is total; bands 100/375/400-800 are non-overlapping. Note: 65-69 år uses code 375 (not 6569 as in other tables).
 - koen=100 is total. For total rehabilitering persons per kommune: filter alder1=50 and koen=100.
 - Data from 2019 only. Rehabilitering is distinct from genoptræning/vedligeholdelsestræning (see aed08).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

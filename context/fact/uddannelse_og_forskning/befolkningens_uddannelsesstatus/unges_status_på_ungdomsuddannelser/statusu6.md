@@ -13,4 +13,4 @@ notes:
 - Two codes are not in dim.nuts: grundbel=0 (I alt, national total) and grundbel=98 (not a municipality — likely "Uoplyst"/abroad, ~60k persons in 2024). A plain INNER JOIN will automatically exclude both; an OUTER JOIN will carry them as NULL. When mapping by kommune, use JOIN and you get clean results.
 - 3 dimension columns (uddstat, uddannelse, grundbel). To get completion rates by municipality: filter uddstat='FULDFOERT', uddannelse='TOT', join dim.nuts on grundbel=kode WHERE niveau=3.
 - This is the only statusu table with geographic breakdown (by municipality of primary school). Note: geography is the school's location, not the student's home municipality.
-- Map: context/geo/kommuner.parquet — merge on grundbel=dim_kode. Exclude grundbel=0 (national total) and grundbel=98 (Uoplyst/abroad).
+- Map: /geo/kommuner.parquet — merge on grundbel=dim_kode. Exclude grundbel=0 (national total) and grundbel=98 (Uoplyst/abroad).

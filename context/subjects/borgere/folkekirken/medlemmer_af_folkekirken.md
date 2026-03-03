@@ -136,4 +136,4 @@ notes:
 - kmst007a/008a use 1. oktober as reference date (not 1. januar). tid is stored as yyyy-01-01 but represents October snapshot.
 - All tables with fkmed (F/U) have BOTH rows for every combination — always filter or explicitly sum both. No implicit total rows.
 - Exclude sogns 0='Uden placerbar adresse' and 9999='Uden fast bopæl' for geographic analysis.
-- Map: All sogns-level tables (km1, km5, km2, km3, kmsta001, kmsta003, kmsta005, kmsta009, kmst007a, sogns1) support choropleth maps via context/geo/sogne.parquet (merge on sogns=dim_kode). km6 supports kommune-level maps via context/geo/kommuner.parquet (merge on komk=dim_kode). Provsti tables have no geo file.
+- Map: All sogns-level tables (km1, km5, km2, km3, kmsta001, kmsta003, kmsta005, kmsta009, kmst007a, sogns1) support choropleth maps via /geo/sogne.parquet (merge on sogns=dim_kode). km6 supports kommune-level maps via /geo/kommuner.parquet (merge on komk=dim_kode). Provsti tables have no geo file.

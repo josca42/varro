@@ -12,4 +12,4 @@ notes:
 - ieland does NOT join dim.lande_uhv. Same custom 39-code classification as aul03/aulk03/rasie11. Use ColumnValues("rasie22", "ieland").
 - omrade joins dim.nuts at niveau=2 only (11 landsdele). Extra code 0=Hele landet not in dim.
 - No alder or kon breakdown here (use rasie11 for age/gender detail). Regional workforce denominator for origin-country unemployment rates. Annual snapshots, stopped 2023.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

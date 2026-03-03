@@ -14,4 +14,4 @@ notes:
 - kon has no total row (only 1=Mænd, 2=Kvinder). Safe to sum both for total.
 - alder has no total row — 7 age groups (9920, 2029, 3039, 4049, 5059, 6069, 7099) are exhaustive. Safe to sum all for a total across ages.
 - All 4 dimension columns (kon, alder, omrade, tid) must be grouped/filtered explicitly — forgetting omrade=99 in a SUM will undercount national totals.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Filter omrade IN (81,82,83,84,85) before merging; exclude omrade=99.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Filter omrade IN (81,82,83,84,85) before merging; exclude omrade=99.

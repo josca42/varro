@@ -46,4 +46,4 @@ notes:
 - For authors with new works by gender and age: use musik6 (2021–2024 only, very short series). Both kon and alder include total rows — filter carefully to avoid double-counting.
 - musik2 and musik3 cover complementary sides of the same market: musik2 = who buys rights (licensees, by industry), musik3 = who receives money (rights-holders, by type).
 - musik4 and musik6 both cover authors but measure different things: musik4 = income in Kr. (2012–), musik6 = number of active authors with new registered works (2021– only).
-- Map: musik2, musik3, musik4 have regional breakdown (5 regioner) via omrade=dim_kode → context/geo/regioner.parquet. Filter omrade IN (81,82,83,84,85) before merging.
+- Map: musik2, musik3, musik4 have regional breakdown (5 regioner) via omrade=dim_kode → /geo/regioner.parquet. Filter omrade IN (81,82,83,84,85) before merging.

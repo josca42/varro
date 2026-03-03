@@ -252,6 +252,6 @@ This subject has several parallel families covering fuldtidsledige (full-time eq
 
 ## Map support
 
-Tables with `omrade` support choropleth maps via context/geo/. Merge on omrade=dim_kode; exclude omrade=0.
+Tables with `omrade` support choropleth maps via /geo/. Merge on omrade=dim_kode; exclude omrade=0.
 - niveau 1 (5 regioner) and niveau 3 (98 kommuner): auf01, auf02, aup01, aup02, aup03, aulk01, aulk04, aulkp01, aulp01, aul01, aua01, ras400, aus08, ligeai9a, ligeai10
 - niveau 2 (11 landsdele) only: aulk03, aul03, aul08, aulp03, rasie22

@@ -245,5 +245,5 @@ laby29a, laby29b, laby30a = shares in percent. ligeai3, ligeai4, ligeai5, ligeai
 - All sectors by municipality group: laby29, laby29a, laby29b
 
 **Map support:**
-- Tables with regional breakdown (ras301, ras302, ras310, kas301, ligeab4) support choropleth maps via omrade=dim_kode using context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1).
+- Tables with regional breakdown (ras301, ras302, ras310, kas301, ligeab4) support choropleth maps via omrade=dim_kode using /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1).
 - Tables with workplace area breakdown (ras305, kas305) support the same geo files via arbejdssted=dim_kode.

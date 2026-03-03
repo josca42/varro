@@ -13,4 +13,4 @@ notes:
 - funktion codes are 5–6 digit integers for balance sheet items in the 9.xx.xx format. No aggregate total funktion exists in this table; sum across the detail codes you need.
 - Asset items (likvide aktiver 9.22.xx, tilgodehavender 9.25/9.28/9.32) are positive; liability items (kortfristet gæld 9.50–9.52, langfristet gæld 9.55.xx) are negative in the data.
 - This is the only regnskab table with regional balance sheet breakdown. regk63 covers the same data at national level only but includes explicit AKTIV/PASSIV aggregate codes. Use regk4 when you need a regional balance breakdown.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

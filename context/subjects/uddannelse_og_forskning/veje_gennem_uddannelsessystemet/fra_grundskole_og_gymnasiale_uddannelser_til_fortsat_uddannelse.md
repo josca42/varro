@@ -20,4 +20,4 @@ notes:
 - Both tables share the same uddstat categories (1=i gang, 2=fuldført, 3=afbrudt, 4=ej påbegyndt) and uddannelse types (TOT, H15–H90). There is no uddstat total row — sum all 4 values to get cohort size.
 - Regional breakdown is limited to niveau=1 (5 regioner, afgreg 81–85). afgreg=0 is the national total and does not join dim.nuts.
 - Minimum filters to avoid overcounting: tid='2024-01-01', plus one statustid, plus afgklas='TOT', uddannelse='TOT' (or specific value), koen='10', herkomst='0'. Forgetting any of these inflates results.
-- Map: both tables support choropleth at région level via context/geo/regioner.parquet — merge on afgreg=dim_kode. Exclude afgreg=0.
+- Map: both tables support choropleth at région level via /geo/regioner.parquet — merge on afgreg=dim_kode. Exclude afgreg=0.

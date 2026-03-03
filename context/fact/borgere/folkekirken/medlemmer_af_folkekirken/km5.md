@@ -14,4 +14,4 @@ notes:
 - kon: 1=Mænd, 2=Kvinder. No TOT row — sum both for combined total.
 - fkmed: F=Medlem, U=Ikke-Medlem. Both rows present for each combination — filter to one or sum both explicitly.
 - 2292 distinct sogns including 0='Uden placerbar adresse' and 9999='Uden fast bopæl'. Exclude for geographic analysis.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

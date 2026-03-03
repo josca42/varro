@@ -10,4 +10,4 @@ notes:
 - Codes '0' (Uden placerbar adresse) and '9999' (Uden fast bopæl) represent ~7 births per year that cannot be placed geographically. Include them for a complete national total; exclude for a spatial analysis. In 2024: excluding gave 13,810 vs 13,817 including.
 - bevaegelsev: same as bev3a — filter to B02 for births, B03 for deaths.
 - To aggregate to municipality level, strip the last digits from the 4-digit Sogn code (they embed the municipality code prefix) or join via an external parish→municipality crosswalk.
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).

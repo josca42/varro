@@ -59,4 +59,4 @@ notes:
 - For socioeconomic context (education level, income): fohoj02a (family education, lange+mellemlange), fohoj02b (family income, lange+mellemlange), fohoj03a (own education, korte), fohoj03b (personal income, korte).
 - 2024 data: for fohoj01 and fohoj04, only Skoleår (tidspunkter=22) is available in 2024. For Kalenderår, use 2023 or earlier.
 - veuhoj11/21 alder total is `'0'`; fohoj01 alder total is `'0000'`; fohoj02a/02b/03a/03b alder total is `'TOT'`. Each table has its own alder coding scheme.
-- Map: fohoj04 supports landsdel choropleth via context/geo/landsdele.parquet — merge on bopland=dim_kode (bopland 1–11, exclude 0 and 99). No other table has geographic breakdown.
+- Map: fohoj04 supports landsdel choropleth via /geo/landsdele.parquet — merge on bopland=dim_kode (bopland 1–11, exclude 0 and 99). No other table has geographic breakdown.

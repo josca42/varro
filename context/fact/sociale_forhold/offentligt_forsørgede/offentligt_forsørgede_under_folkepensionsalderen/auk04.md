@@ -14,4 +14,4 @@ notes:
 - No alder column in this table. For age breakdown by origin use auk01 (no origin breakdown) — these cannot be combined in a single table.
 - ydelsestype has 11 broad group codes (TOT, SU, TOTLE, FD, TOTVO, TOTSB, TOTAN, FP, EL, AYD, SY) — fewer and more aggregated than auk01.
 - Quarterly data to 2025-04-01. For annual data use auh04.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

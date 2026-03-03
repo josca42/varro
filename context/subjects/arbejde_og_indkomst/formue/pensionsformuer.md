@@ -57,4 +57,4 @@ notes:
 - For macro-level national accounts pension liabilities: pensoc — husholdningssektorens samlede pensionsrettigheder i Mio. kr., with accounting flow/stock breakdown (konto). 2015-2023. No individual/geographic breakdown.
 - enhed/prisenhed measurement selector pitfall: tjen01, tjen02, penfor11, penfor20, and penindb1 all have a measurement selector column (enhed) that repeats every dimension combination for each stat type. Always filter to exactly one value or results will be inflated 3-5x.
 - tjen01 faggrp gotcha: the column mixes two classification schemes (A-prefix=aldersgrupper, B-prefix=faggrupper). Always filter to one scheme; never sum A and B rows together.
-- Map: penindb1 supports choropleth maps via context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. No other tables in this subject have geographic breakdowns.
+- Map: penindb1 supports choropleth maps via /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. No other tables in this subject have geographic breakdowns.

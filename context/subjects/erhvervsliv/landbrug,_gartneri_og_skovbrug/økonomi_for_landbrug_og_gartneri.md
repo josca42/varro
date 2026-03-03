@@ -213,4 +213,4 @@ notes:
 
 - **Suffix pattern**: lpris tables use a numeric suffix that does NOT encode time granularity consistently (unlike folk1a/folk1am pattern). lpris10=monthly sale prices, lpris22=quarterly index, lpris28=annual index, lpris32=annual sale prices, lpris37=annual land prices, lpris38=annual input prices. Read the description carefully.
 
-- **Map**: joek2 and lpris37 support choropleth maps at region level (5 Danish regions) via context/geo/regioner.parquet — merge on region=dim_kode, exclude region=0.
+- **Map**: joek2 and lpris37 support choropleth maps at region level (5 Danish regions) via /geo/regioner.parquet — merge on region=dim_kode, exclude region=0.

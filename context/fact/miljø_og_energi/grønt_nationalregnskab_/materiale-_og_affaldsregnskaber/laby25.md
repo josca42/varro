@@ -11,4 +11,4 @@ notes:
 - bnogle has 2 values with different units: GENPCT=recycling rate (%), AFFALDIND=waste per capita (kg/person). Always filter to one — they cannot be summed.
 - This is a rate/key-figure table. Do not sum indhold across kommuner — use weighted average or compare individual kommuner.
 - Useful for comparing municipalities on recycling performance. Pair with laby24 for absolute tonnage.
-- Map: context/geo/kommuner.parquet — filter dim.kommunegrupper to niveau=2, then merge on komgrp=dim_kode. Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — filter dim.kommunegrupper to niveau=2, then merge on komgrp=dim_kode. Exclude komgrp=0.

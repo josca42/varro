@@ -39,4 +39,4 @@ notes:
 - Færdselslov (traffic offenses, kode=2) is absent from all tables in this subject — only Straffelov and Særlov are covered.
 - In regional tables (straf11, straf22): omrade=0 is the national total, omrade=998 is unknown location — exclude both when doing geographic analysis.
 - anmsigt in straf20/straf22: ANM=reported crimes, SIG=charges. Always filter to one — never sum across both.
-- Map: straf11 and straf22 support choropleth maps at kommune (niveau 3) and region (niveau 1) level via context/geo/kommuner.parquet and context/geo/regioner.parquet. Kommune data can also be aggregated to 12 politikredse via dim.politikredse (parent_kode) and mapped with context/geo/politikredse.parquet.
+- Map: straf11 and straf22 support choropleth maps at kommune (niveau 3) and region (niveau 1) level via /geo/kommuner.parquet and /geo/regioner.parquet. Kommune data can also be aggregated to 12 politikredse via dim.politikredse (parent_kode) and mapped with /geo/politikredse.parquet.

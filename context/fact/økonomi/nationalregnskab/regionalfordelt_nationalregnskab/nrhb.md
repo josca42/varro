@@ -12,4 +12,4 @@ notes:
 - omrade uses levels 1 (5 regioner: 81–85) and 2 (11 landsdele: 1–11). Filter WHERE d.niveau=1 or d.niveau=2 to avoid double-counting.
 - socio has only one value (POP=Gennemsnitsbefolkning), so no filter is needed on that column. This table is essentially regional average population by year.
 - Simplest table in the subject — no measurement selector to worry about: SELECT d.titel, f.tid, f.indhold FROM fact.nrhb f JOIN dim.nuts d ON f.omrade=d.kode WHERE d.niveau=1.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

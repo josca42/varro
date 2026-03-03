@@ -14,4 +14,4 @@ notes:
 - These 4 socio codes are exhaustive within the 15+ population — sum all for 15+ total.
 - fkmed: F=Medlem, U=Ikke-Medlem. Both rows present for each combination.
 - Available 2016–2024 only (shorter range than most other km-tables).
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

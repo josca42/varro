@@ -14,4 +14,4 @@ notes:
 - To get "how many days of care" use dage=252. To get "how long does a typical recipient receive care" use dage=353.
 - omrade joins dim.nuts at niveau 3 only (98 kommuner), same as hjemsyg. koen and alder1 include totals (koen=100, alder1=50) — filter both to avoid overcounting.
 - A full unfiltered query has 4 overcounting axes: koen, alder1, dage, and the hierarchical totals in omrade (though omrade has no aggregates here). Minimal correct query: WHERE koen=100 AND alder1=50 AND dage=252 (or 353).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

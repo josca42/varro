@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts niveau 1 only (5 regioner, kode 81-85). omrade=0 is "Hele landet" and omrade=86 is uoplyst — exclude both when joining.
 - alerams has single-year ages (0, 1, 2, ... 99-=99+) plus IALT. More granular than sygks1, but no commune breakdown.
 - Use when you need individual specialty breakdown with single-year ages at regional level.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

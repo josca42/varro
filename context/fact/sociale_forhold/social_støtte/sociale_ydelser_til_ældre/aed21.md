@@ -11,4 +11,4 @@ notes:
 - omrade joins dim.nuts niveau 3 only (98 kommuner). omrade=0 is the national total — use it directly without a JOIN. ColumnValues("nuts", "titel", for_table="aed21") lists the 98 kommuner.
 - servyd contains 5 independent service indicators, each a separate percentage of the 67+ population. Never sum across servyd — each is its own metric. Pick the one relevant to the question and filter to it.
 - Simple 2-column table (omrade × servyd): for a single indicator over all kommuner, just filter servyd and tid. No alder/koen/ydelsestype to manage.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

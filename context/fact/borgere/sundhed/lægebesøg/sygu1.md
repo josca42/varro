@@ -13,4 +13,4 @@ notes:
 - omrade has niveau 1 (5 regioner) and niveau 3 (98 kommuner). omrade=0 is "Hele landet" and omrade=98 is uoplyst — exclude both when joining.
 - ydelsesart is hierarchical: 120=I ALT is the grand total, 130=ALMEN LÆGE I ALT is GP sub-total. Do not sum all ydelsesart values. Note: sygu1 includes ydelsesart 310=LABORATORIER which is absent from sygk1.
 - alerams uses 5-year groups plus IALT.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

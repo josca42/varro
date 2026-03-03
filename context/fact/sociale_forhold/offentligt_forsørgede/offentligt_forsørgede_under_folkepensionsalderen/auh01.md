@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts: niveau 1 = 5 regioner, niveau 2 = 11 landsdele, niveau 3 = 98 kommuner. omrade='0' = Hele landet, omrade='997' = Uoplyst — neither is in dim.nuts. Filter WHERE d.niveau = N for a single level.
 - ydelsestype has 41 codes with hierarchical subtotals (TOT, TOTUSU, TOTLE, TOTAN, TOTSB, TOTTB, TOTVO, TOTYD are aggregates). Never sum all values.
 - For national total: omrade='0', kon='TOT', alder='TOT', ydelsestype='TOT'.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).

@@ -14,4 +14,4 @@ notes:
 - hjembesoeg: 380=persons who received >=1 visit, 381=visits conducted. These measure different things (a person can receive multiple visits). Always filter to one value.
 - alder=50 is the overall total. 450=under 75, 900=75+ are sub-totals. 550/575/600/700/800 are individual bands inside the 75+ sub-total. Do not sum sub-totals with individual bands. Use alder=50 for all-age totals.
 - koen=100 is the total; 200=mænd, 300=kvinder. Filter koen=100 for gender-neutral totals.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

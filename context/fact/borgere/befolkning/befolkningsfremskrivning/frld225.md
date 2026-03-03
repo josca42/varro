@@ -8,4 +8,4 @@ columns:
 dim docs: /dim/nuts.md
 
 notes:
-- Map: context/geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.
+- Map: /geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.

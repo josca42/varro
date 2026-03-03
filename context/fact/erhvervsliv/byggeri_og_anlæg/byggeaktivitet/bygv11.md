@@ -14,4 +14,4 @@ notes:
 - anvend joins dim.byganv at niveauer 2 and 3 only. Code 'UOPL' is not in the dim — filter or use LEFT JOIN. Use `ColumnValues("byganv", "titel", for_table="bygv11")` to see available codes.
 - bygherre joins dim.bygherre at niveau 2 only (kode 10, 20, 30, 40, 41, 50, 60, 70, 80, 90). Code 'UOPL' is not in dim. Niveau 1 codes (1, 2, 3) are absent from this table.
 - bygfase has 4 mutually exclusive phases — always filter to one when aggregating.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

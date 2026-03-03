@@ -64,4 +64,4 @@ notes:
 - For home care (elderly 65–84): paaroe50 = share receiving home care (pct.), paaroe51 = hours per week per person. Query together for full picture. indikator is a gender measurement selector in both — always filter.
 - The parorendeforhold codes used in paaroe31/50/51 are the same four adult categories (PR810–PR840). This allows direct comparison of GP contact and home care uptake by family structure.
 - All tables with koen/alerams/hoald include total-row codes (10/IALT/9817/9924/TOT). Always filter these to avoid double-counting across dimensions.
-- Map: paaroe01 (distance to grandparents), paaroe03 (population by family structure), paaroe50 (home care share), paaroe51 (home care hours) all support choropleth maps via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1).
+- Map: paaroe01 (distance to grandparents), paaroe03 (population by family structure), paaroe50 (home care share), paaroe51 (home care hours) all support choropleth maps via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1).

@@ -11,4 +11,4 @@ notes:
 - bnogle is a metric selector, not a category to sum across. Each bnogle code is a separate KPI (loans, holdings, expenses). Always filter to a single bnogle value.
 - Code 15260 (Materialeudgifter) is in 1.000 kr., not Antal — the unit header is misleading for this one code.
 - Typical query: SELECT tid, d.titel, f.indhold FROM fact.bib1 f JOIN dim.nuts d ON f.omrade=d.kode WHERE f.bnogle='15110' AND d.niveau=1 ORDER BY tid.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

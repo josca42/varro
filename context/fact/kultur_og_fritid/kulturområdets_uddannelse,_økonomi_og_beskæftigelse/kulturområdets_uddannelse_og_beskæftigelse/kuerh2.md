@@ -14,4 +14,4 @@ notes:
 - Code 0 = national total (not in dim). Codes 86 and 998 are also unmatched (likely special territories/unspecified) — exclude when joining.
 - For regional analysis: WHERE d.niveau = 1. For municipal: WHERE d.niveau = 3.
 - aktivi=TOT is the aggregate total; filter when comparing kerneaktivitet vs støtteaktivitet.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 86, 998).
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 86, 998).

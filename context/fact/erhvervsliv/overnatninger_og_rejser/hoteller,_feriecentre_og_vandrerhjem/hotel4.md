@@ -12,4 +12,4 @@ notes:
 - omrade joins dim.nuts. Code 0 = Hele landet (not in dim). Levels 1 and 2: 5 regioner (81–85) and 11 landsdele (1–11).
 - kapacitet is a measurement selector — always filter to one value. This table has max/min capacity ranges (seasonal variability) plus utilization pct: 1130=hoteller max, 1140=hoteller min, 1150=værelser max, 1160=værelser min, 1170=senge max, 1180=senge min, 1110=værelsesbel. pct., 1120=sengebel. pct. The max/min values capture peak vs. off-season capacity differences across the year. Never SUM across kapacitet.
 - Use hotel3 for monthly capacity trends; use hotel4 for annual min/max seasonal ranges.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

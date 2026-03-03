@@ -15,4 +15,4 @@ notes:
 - `omrade` joins dim.nuts at niveau 1 (5 regioner, kode 81-85) and niveau 2 (11 landsdele, kode 1-11). Code 0 = "Hele landet" (national total, not in dim). Filter `d.niveau` to avoid mixing levels. Use ColumnValues("nuts", "titel", for_table="ejen77") to see available regions.
 - `ejendomskate` joins dim.ejendom at both niveau 1 and 2 (full coverage). Code 9999 = "Samlet salg" (grand total across all property types, not in dim) — exclude when doing per-category breakdowns. Use `WHERE f.ejendomskate != '9999'` or filter dim join.
 - Most comprehensive sales table: covers all property types, all transfer types, regions and landsdele, quarterly from 1992 (current to 2025). For annual, use ejen88. For definitive/final revision, use ej131.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

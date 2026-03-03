@@ -13,4 +13,4 @@ notes:
 - komk joins dim.nuts at niveau 3. komk='0' is national total, not in the dim.
 - bnogle is a measurement selector — 3050=Forløb (sessions/courses), 3055=Deltagende børn (participating children), 3075=Undervisningstimer (teaching hours). Always filter to one bnogle value.
 - agebygroup='TOT' is total across age groups. V02=vuggestue (0-2 yr), B36=børnehave (3-6 yr). These are non-overlapping; summing V02+B36 = TOT.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

@@ -15,4 +15,4 @@ notes:
 - `overdrag`: 1=Almindelig fri handel, 2=Familieoverdragelse, 3=Andre salg. Filter to `overdrag='1'` for market-price analysis.
 - `omrade` joins dim.nuts niveau 1 (regioner) and niveau 2 (landsdele). Code 0 = "Hele landet" (not in dim). Filter `d.niveau` to avoid mixing levels.
 - `ejendomskate` joins dim.ejendom at both niveaus. Code 9999 = "Samlet salg" (aggregate total, not in dim) — exclude for per-category analysis.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

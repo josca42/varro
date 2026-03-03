@@ -11,4 +11,4 @@ notes:
 - omrade only has niveau=3 (kommuner). omrade='0.0' is a national total (not in dim.nuts).
 - skatter=1 (Ejendomsskatter i alt) = skatter=2+3+4+5 (verified). For total ejendomsskat by kommune: WHERE skatter='1'. For breakdown: filter to individual skatter values.
 - Note: Grundskyld (skatter=2) dominates. Dækningsafgifter (3–5) are only levied in some kommuner; many will be zero.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.0.

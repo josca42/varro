@@ -15,4 +15,4 @@ notes:
 - To avoid overcounting in ydelsestype, pick either AKTOT, or the two main branches (AKD + AKK), or individual sub-types — not a mix of levels.
 - Filter kon='TOT', alder='TOT', and pick one omrade niveau for a clean aggregate.
 - Quarterly data to 2025-04-01. For annual data use auh03.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).

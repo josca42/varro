@@ -16,4 +16,4 @@ notes:
 - famtyp: TOT=all, EUHB=single no kids, EMHB=single with kids, PUHB=couple no kids, PMHB=couple with kids. Filter to TOT for overall.
 - kon: TOT=all, M=men, K=women.
 - To get average pay by municipality: WHERE arbbop='AK' AND alder='TOT' AND kon='TOT' AND famtyp='TOT', GROUP BY omrade + join dim.nuts.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

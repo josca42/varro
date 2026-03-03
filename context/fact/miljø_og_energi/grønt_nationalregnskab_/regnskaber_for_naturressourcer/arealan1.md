@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts. Codes 81-85 = niveau 1 (5 regioner), codes 1-11 = niveau 2 (11 landsdele). Code 0 = national total (not in dim.nuts — left join returns NULL). Use ColumnValues("nuts", "titel", for_table="arealan1") to see the 16 joinable regions.
 - enhed is a measurement selector (km2, m2/person, pct). Filter to one value — e.g. WHERE enhed='120' — to avoid tripling the count.
 - br19a2 includes TOTAREAL (grand total) plus many branch codes. Do not sum TOTAREAL together with individual branches — double counting. Either use TOTAREAL alone or sum leaf codes.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

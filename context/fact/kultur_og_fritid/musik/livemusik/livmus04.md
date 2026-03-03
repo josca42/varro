@@ -14,4 +14,4 @@ notes:
 - sektor='TOT' is the total across sectors (Statslig/Kommunal/Privat/Uoplyst). Filter it out when breaking down by sector.
 - arrangeor has no total code — all 9 values are individual organizer types.
 - Typical query: organizer counts by region for a given year — JOIN dim.nuts ON niveau=2, filter sektor='TOT', exclude landsdel IN ('0','99').
-- Map: context/geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel IN ('0','99').
+- Map: /geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel IN ('0','99').

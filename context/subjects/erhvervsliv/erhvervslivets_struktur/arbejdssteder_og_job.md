@@ -52,4 +52,4 @@ notes:
 - **For public vs private sector breakdown**: erhv5 is the only table with `sektor` (7 categories). Kommune-level geography, workplaces only.
 - **For kommunegruppe comparison** (urban vs rural municipality types): laby43, but only for 3 sectors (C=industri, G=handel, I=overnatning/restauranter).
 - omrade='0' appears in several tables as a Denmark-total row. It is NOT in dim.nuts, so a JOIN naturally excludes it. Use it as a literal filter (`WHERE omrade = '0'`) to get national totals without aggregating.
-- Map: erhv2 and erhv5 support kommune-level choropleth (context/geo/kommuner.parquet). erhv6 supports all three NUTS levels (kommuner, landsdele, regioner). Merge on omrade=dim_kode; exclude omrade=0.
+- Map: erhv2 and erhv5 support kommune-level choropleth (/geo/kommuner.parquet). erhv6 supports all three NUTS levels (kommuner, landsdele, regioner). Merge on omrade=dim_kode; exclude omrade=0.

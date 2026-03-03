@@ -13,4 +13,4 @@ notes:
 - For langtidsledige (long-term unemployed ≥26 weeks), not all fuldtidsledige. Monthly, from 2009.
 - omrade joins dim.nuts at levels 1/2/3. omrade='0'=Hele landet not in dim.
 - Companion to ligeai9a (same indicator structure, but for long-term unemployed).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

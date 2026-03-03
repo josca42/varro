@@ -16,4 +16,4 @@ notes:
 - anvend joins dim.byganv. Always filter WHERE d.niveau = 2. anvend=592 unmatched (dropped by INNER JOIN).
 - tagmat has 14 values (no total code). These are mutually exclusive roofing materials — safe to sum across all. Note: category 28=Uoplyst eller ukendt can be significant.
 - opforelsesar: century-wrapping 5-year codes. Use ColumnValues("bygb50", "opforelsesar") for labels.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

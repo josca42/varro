@@ -11,4 +11,4 @@ notes:
 - omrade joins dim.nuts. The table has niveau 2 (11 landsdele) and niveau 3 (98 kommuner). omrade='0' is the national aggregate — not in dim.nuts. Use ColumnValues("nuts", "titel", for_table="idrfin01") to browse available areas.
 - To get a total for Denmark, filter omrade='0'. To get kommuner, JOIN dim.nuts and filter WHERE d.niveau=3. Mixing niveaus in the same query risks double-counting.
 - funktion and dranst both have totals (TOT). Filter to TOT in both unless you specifically want breakdown by function or account type. Forgetting either multiplies rows.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

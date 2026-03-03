@@ -38,4 +38,4 @@ notes:
 - The `land` (country of owner) column is shared across all tables and has a non-additive hierarchy: land=12 (EU) includes Denmark (land=15), so never sum land=12 and land=15. The safe partition is: land='15' (Danish) + land='10' (foreign known) + land='55' (unknown) = land='0' (total). For foreign-EU-only ownership, subtract: land=12 indhold − land=15 indhold.
 - ejjord4 and ejjord5 each have a large "ikke personligt ejerskab" category (ejalder='9988', kon='UP') representing ~16% of all ownerships — these are corporate/institutional owners with no personal age or gender. When profiling individual owners, exclude or report this category separately.
 - For questions about who owns the land (individuals vs. companies): ejjord2. For geographic spread: ejjord1. For farm-size distribution: ejjord3. For demographic owner profile: ejjord4 (age) or ejjord5 (gender).
-- Map: ejjord1 supports choropleth at region level via context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: ejjord1 supports choropleth at region level via /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

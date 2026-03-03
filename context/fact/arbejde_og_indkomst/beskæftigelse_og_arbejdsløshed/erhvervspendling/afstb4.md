@@ -14,4 +14,4 @@ notes:
 - socio uses the same CUSTOM encoding as afsta4 — do NOT join dim.socio. Code 2='Beskæftigede i alt' (total), 5–40 are subcategories. Use ColumnValues("afstb4", "socio").
 - bopomr contains all 3 nuts levels plus 0=Hele landet. Filter to one niveau when joining dim.nuts. Code 0 is not in dim.nuts.
 - kon has TOT, M, K.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

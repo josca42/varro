@@ -13,4 +13,4 @@ notes:
 - No total row for herkomst — SUM across herkomst groups for all-herkomst counts. No total for fkmed (F/U only).
 - søgn codes include 0 ("Uden placerbar adresse") and 9999 ("Uden fast bopæl") as special categories, not geographic units.
 - This is the only table in the subject with parish-level (søgn) geography — use for very fine-grained geographic analysis of church membership by herkomst.
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).

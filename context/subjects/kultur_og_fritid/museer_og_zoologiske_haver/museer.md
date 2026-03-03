@@ -93,4 +93,4 @@ notes:
 - All kv2 percentage tables: every category column (museer, ledsag, tjen, aarsag, udstil, kunsttype etc.) contains independent options — sums exceed 100%. Never aggregate across these columns.
 - kv2mus5 and kv2bk5 share identical aarsag codes, enabling direct comparison of barriers to museum-going vs. visual art consumption.
 - For kon totals in kv2 tables: kon=10. For alder totals: alder='TOT'. kv2mus5 and kv2bk5 have no alder column.
-- Map: mus3 supports choropleth maps at region (niveau 1) and landsdel (niveau 2) via context/geo/regioner.parquet and context/geo/landsdele.parquet — merge on omrade=dim_kode, exclude omrade=0.
+- Map: mus3 supports choropleth maps at region (niveau 1) and landsdel (niveau 2) via /geo/regioner.parquet and /geo/landsdele.parquet — merge on omrade=dim_kode, exclude omrade=0.

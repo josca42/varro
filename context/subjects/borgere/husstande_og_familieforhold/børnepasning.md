@@ -83,4 +83,4 @@ notes:
 - For state pool staff: boern11 (2023-2024 snapshot). For early-promotion tracking: boern10 (2023-2024 snapshot). Both are narrow specialist tables.
 - All tables share a common pattern: geographic kode 0 = national total, not in dim.nuts. When joining to dim.nuts, kode 0 will not match — use LEFT JOIN or filter WHERE d.niveau IS NOT NULL to exclude it.
 - Tables with geographic levels [1, 3] have both region (niveau 1, kode 81-85) and kommunal (niveau 3) data in the same column. Tables with only [3] have kommunal data only (no regional rollup in the fact table).
-- Map: All 12 tables support choropleth maps at kommune level via context/geo/kommuner.parquet. boern8, boern2, boern1, pboern2, pboern1, boern11, boern10 also support region level via context/geo/regioner.parquet.
+- Map: All 12 tables support choropleth maps at kommune level via /geo/kommuner.parquet. boern8, boern2, boern1, pboern2, pboern1, boern11, boern10 also support region level via /geo/regioner.parquet.

@@ -15,4 +15,4 @@ notes:
 - B01K=start-of-quarter population, B20K=end-of-quarter population; their difference equals B11.
 - Preliminary figures — for final annual data use bev107.
 - ColumnValues("nuts", "titel", for_table="bev22") for municipality names.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

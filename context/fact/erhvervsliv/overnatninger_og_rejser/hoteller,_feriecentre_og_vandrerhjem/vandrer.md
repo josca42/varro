@@ -14,4 +14,4 @@ notes:
 - nation1 has 54 values including TOT, DAN, UDLAN aggregates. Same set as hotel1/hotel2. Filter nation1='TOT' for all guests combined.
 - No tal selector here (unlike hotel1) — indhold always means overnights (antal). Simpler to query than hotel1.
 - Data starts 1998 (vs. 1992 for hotel1). Only covers youth hostels (vandrerhjem) — not hotels or holiday centers.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -14,4 +14,4 @@ notes:
 - Covers all education levels (H10–H80), unlike ligeui6 which is STEM higher-ed only.
 - bopomr joins dim.nuts (niveau=1 for 5 regioner, niveau=3 for 99 kommuner). Unmatched: '0'=national total (use directly without join), '998' and '999'=special/unknown (~8,060 each, same gap pattern as uddakt10).
 - alder='TOT' for all ages. No fstatus or kon column — rates already represent gender balance across all students.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

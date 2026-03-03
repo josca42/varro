@@ -14,4 +14,4 @@ notes:
 - ophold_pa_sygehus is a category selector with overlapping semantics. 200100 = full population (i alt); 200110 = persons with any hospital stay (unique persons); 200220/200230 = patient contacts (admissions, not unique persons — a person can appear in both); 200240 = persons WITHOUT a stay. Never sum across these codes. To count persons hospitalised: use 200110. To split by duration: 200220 (<12h) and 200230 (≥12h) are admission counts, not person counts.
 - alder uses text codes (TOT, 0, 1-4, 5-9, ..., 85-) and kon uses 00/M/K. Filter alder='TOT' and kon='00' when you want national totals.
 - To count hospitalised persons by municipality for a given year: WHERE ophold_pa_sygehus='200110' AND alder='TOT' AND kon='00' AND tid='2023-01-01', then JOIN dim.nuts d ON f.kommunedk=d.kode WHERE d.niveau=3.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

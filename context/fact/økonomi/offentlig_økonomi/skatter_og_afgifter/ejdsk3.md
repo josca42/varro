@@ -11,4 +11,4 @@ notes:
 - omrade only has niveau=3 (kommuner). omrade='0.0' is a national total (not in dim.nuts).
 - ejentyp=1 (Grundskyld i alt) = sum of ejentyp=2 through 10 (verified). For total grundskyld by kommune: WHERE ejentyp='1'. For breakdown by property type: filter individual ejentyp values.
 - Only covers grundskyld (land tax), not dækningsafgifter. For full ejendomsskat picture use ejdsk1.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.0.

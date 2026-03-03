@@ -15,4 +15,4 @@ notes:
 - kon: 1=Mænd, 2=Kvinder. No TOT — sum both for combined total.
 - fkmed: F=Medlem, U=Ikke-Medlem. Filter or sum both explicitly.
 - Starts from 2011 (later than km5/km55 which go back to 2007). The only folkekirke table with a dim-linked geographic column (vs. sogns/provsti inline codes).
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode.

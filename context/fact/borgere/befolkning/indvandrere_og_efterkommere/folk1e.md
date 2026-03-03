@@ -15,4 +15,4 @@ notes:
 - alder has individual years (0–125) with IALT as total. No aggregate age bands.
 - 4 dimension columns (omrade, kon, alder, herkomst). Filter non-target dims: omrade=0, kon='TOT', alder='IALT', herkomst='TOT'.
 - To get total indvandrere: filter herkomst IN (24, 25) or use herkomst='TOT' and subtract 1 and 34+35.  Simpler: use folk1c herkomst=4 (but note folk1c ends 2020).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

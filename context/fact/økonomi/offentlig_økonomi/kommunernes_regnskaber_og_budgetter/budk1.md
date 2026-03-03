@@ -17,4 +17,4 @@ notes:
 - art: TOT=netto (UE minus I). Do not sum TOT with UE or I.
 - Budget table (budgetter), not actuals. For actual expenditure use regk11. tid goes to 2025-01-01 (one year ahead of regk11 which ends 2024).
 - Budget tables (budk1/budk32) use regi07a; regnskab tables (regk11/regk31) use omrade. The two column names refer to the same dim.nuts join.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on regi07a=dim_kode. Exclude regi07a=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on regi07a=dim_kode. Exclude regi07a=0.

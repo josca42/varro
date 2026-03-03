@@ -17,4 +17,4 @@ notes:
 - fstatus is a measurement selector — always filter to exactly one value: B=enrolled Oct 1, F=completed, T=new entrants.
 - uddannelse is hierarchical (same as uddakt10): TOT → H10…H80 (top level) → sub-codes. Don't mix levels.
 - Minimal filter for a national student count: WHERE fstatus='B' AND omrade1='0' AND uddannelse='TOT' AND alder='TOT' AND kon='10'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade1=dim_kode. Exclude omrade1=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade1=dim_kode. Exclude omrade1=0.

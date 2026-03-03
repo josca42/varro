@@ -15,4 +15,4 @@ notes:
 - overnat1 is a measurement selector — 1030=Overnatninger (total overnights), 1190=Heraf på faste standpladser (thereof on permanent pitches). Always filter to one value; never sum both.
 - nation1 is a rich nationality breakdown (50+ codes). TOT=I alt is the all-nationalities total; DAN=Danmark, UDLAN=Verden udenfor Danmark. Use ColumnValues("camp1", "nation1") to browse codes. Filter nation1='TOT' for totals and don't sum TOT with individual countries.
 - A clean annual total query: WHERE omrade=0 AND nation1='TOT' AND overnat1=1030 AND periode=1 — gives one row per year.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

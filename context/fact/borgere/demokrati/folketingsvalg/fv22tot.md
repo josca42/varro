@@ -10,4 +10,4 @@ notes:
 - 2022 election only. omrade has a 4-level hierarchy using its own fixed coding (NOT dim.nuts): 0=Hele landet, 7–9=Valglandsdele (3 codes), 10–19=Storkredse (10 codes), 20–111=Afstemningskredse (92 codes). Filter to one level; mixing levels double-counts.
 - valres structure is identical to fvkom (50 values): aggregate codes (GYLD_IALT, VAELG, etc.), party codes (numeric), and detailed invalid-ballot sub-codes (1–32, B1–B9). Never sum all valres. Use GYLD_IALT for total valid votes, or filter to a specific party.
 - For individual polling station breakdown, use fv22tota (1453 omrade codes). For candidate-level personal votes, use fv22kand (storkredse only).
-- Map: storkreds-level data (omrade 10–19) → context/geo/storkredse.parquet — merge on (omrade - 9)=dim_kode. Valgkreds-level data (omrade 20–111) → context/geo/valgkredse.parquet — merge on (omrade - 19)=dim_kode.
+- Map: storkreds-level data (omrade 10–19) → /geo/storkredse.parquet — merge on (omrade - 9)=dim_kode. Valgkreds-level data (omrade 20–111) → /geo/valgkredse.parquet — merge on (omrade - 19)=dim_kode.

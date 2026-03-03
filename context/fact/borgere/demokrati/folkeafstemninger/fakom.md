@@ -12,4 +12,4 @@ notes:
 - omrade joins dim.nuts at niveau=3 only (99 kommuner). Use ColumnValues("nuts", "titel", for_table="fakom") to see all 99.
 - valres has hierarchical aggregate codes — always filter to avoid double-counting. Key codes: 434284=Ja, 434285=Nej, VAELG=antal vælgere, GYLD_IALT=gyldige stemmer i alt (=Ja+Nej), UGYLD_IALT=ugyldige stemmer i alt (=UGYLD_AO+UGYLD_BREV), BREV_IALT=brevstemmer i betragtning. Codes 1-11 are UGYLD_AO subcategories; 21-33 are UGYLD_BREV subcategories.
 - For a simple Ja/Nej by kommune: filter valres IN ('434284', '434285') and pick a single tid. Example: SELECT d.titel, f.valres, f.indhold FROM fact.fakom f JOIN dim.nuts d ON f.omrade=d.kode WHERE f.tid='2022-01-01' AND f.valres IN ('434284', '434285').
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

@@ -28,4 +28,4 @@ notes:
 - For historical sea data before 2007, only rst3 is available.
 - All three tables include aggregate rows: omrade '0' = national total; rastoftype TOTLAND (rst01) or TOTHAV (rst04/rst3) = total across material types. Always filter these out when summing to avoid double-counting.
 - rst01 and rst04 both have NUTS-linked omrade at multiple hierarchy levels (niveau 1 = regioner, niveau 3 = kommuner). Filter to one niveau before aggregating or you will double-count.
-- Map: rst01 and rst04 support choropleth maps via context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1). rst04 also has niveau 2 → context/geo/landsdele.parquet. rst3 uses inline sea area names with no geo file match.
+- Map: rst01 and rst04 support choropleth maps via /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1). rst04 also has niveau 2 → /geo/landsdele.parquet. rst3 uses inline sea area names with no geo file match.

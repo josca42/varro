@@ -108,4 +108,4 @@ notes:
 - ligeib5/ligeib6/ligeii5/ligeii6 are annual, use broad age groups (16-29, 30-49, 50+), and only 9 ydelsestype group codes (no leaf benefit codes).
 - All tables share the same overcounting risk: ydelsestype, kon, alder, omrade, and ieland/herkomst all include aggregate total rows. Always filter non-target dimensions to their total code (TOT/IALT/0) to avoid inflated sums.
 - omrade='0' = Hele landet (national total, not in dim.nuts), omrade='997' = Uoplyst (in auk01/03/auh01/03 only). Use these codes directly for national aggregates rather than joining dim.nuts.
-- Map: auk01/auk03/auh01/auh03 support choropleth at alle 3 NUTS niveauer (kommuner, landsdele, regioner) via context/geo/. auk04/auh04 support landsdele only. Merge on omrade=dim_kode; exclude omrade IN (0, 997).
+- Map: auk01/auk03/auh01/auh03 support choropleth at alle 3 NUTS niveauer (kommuner, landsdele, regioner) via /geo/. auk04/auh04 support landsdele only. Merge on omrade=dim_kode; exclude omrade IN (0, 997).

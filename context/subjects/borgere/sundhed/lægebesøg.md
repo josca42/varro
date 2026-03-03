@@ -201,5 +201,5 @@ notes:
 - medicin4 contains rates (per 100.000), not counts — do not sum
 
 **Map availability:**
-- Kommune-level choropleth (niveau 3): sygk1, sygks1, sygp1, sygps1, sygu1, sygus1, ligehb6, ligehi6, medi1b, sygsik — use context/geo/kommuner.parquet, merge on omrade=dim_kode.
-- Region-level choropleth (niveau 1): all of the above plus sygk2, sygks2, sygp2, sygps2, sygu2, sygus2, medi1a — use context/geo/regioner.parquet.
+- Kommune-level choropleth (niveau 3): sygk1, sygks1, sygp1, sygps1, sygu1, sygus1, ligehb6, ligehi6, medi1b, sygsik — use /geo/kommuner.parquet, merge on omrade=dim_kode.
+- Region-level choropleth (niveau 1): all of the above plus sygk2, sygks2, sygp2, sygps2, sygu2, sygus2, medi1a — use /geo/regioner.parquet.

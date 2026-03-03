@@ -12,4 +12,4 @@ notes:
 - indikator selects between pre-computed values: LA1=unemployment rate for men (pct), LA2=for women (pct), LA3=gender gap (LA1-LA2, procentpoint). Never sum across indikator values.
 - omrade joins dim.nuts at levels 1/2/3. omrade='0'=Hele landet not in dim.
 - Annual data (ultimo november). For seasonally adjusted monthly gender indicators use ligeai9b (no region/age). For long-term unemployed gender indicators use ligeai10.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

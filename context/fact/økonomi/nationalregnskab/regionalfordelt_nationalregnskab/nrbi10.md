@@ -14,4 +14,4 @@ notes:
 - prisenhed is a measurement selector — the same (omrade, branche, tid) combination appears 4 times. Always filter to one prisenhed: V_T (løbende priser, mio. kr.) or LRG_T (2020-priser, kædede værdier).
 - branche=V is the "I alt" total. Do not sum branche='V' together with individual branches.
 - Shortest time range in the subject (2000–2023) and coarsest geography (region only, no landsdele).
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade IN (0, 999).
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade IN (0, 999).

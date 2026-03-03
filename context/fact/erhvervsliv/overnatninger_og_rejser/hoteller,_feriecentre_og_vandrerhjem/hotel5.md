@@ -14,4 +14,4 @@ notes:
 - type is a structural dimension: 110=Hoteller og Feriecentre i alt (total), 120=Hoteller, 130=Feriecentre. Always filter to one value; type=110 for combined totals.
 - kapacitet is a measurement selector: 1080=antal hoteller/feriecentre, 1090=antal værelser, 1100=antal senge, 1110=værelsesbel. pct., 1120=sengebel. pct. Never SUM across kapacitet values.
 - Use hotel5 when you need monthly capacity broken down by hotel vs. feriecenter type. Use hotel3 for the same monthly data with landsdele granularity but without type split.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -13,4 +13,4 @@ notes:
 - WARNING: dim.db join is incorrect. branche0710 uses numeric codes 1–11 (10-gruppe) — use dim.db_10 instead. Join: JOIN dim.db_10 d ON f.branche0710 = d.kode::text AND d.niveau = 1. TOT = alle brancher (filter out for branch-level analysis).
 - arbejdslands is inline: 0=Hele landet, 81–85=regioner, 1–11=landsdele, 950=Uden for Danmark, 99=Uoplyst. Contains both regioner and landsdele — filter by range to pick one level.
 - Use this table to compare the industrial structure (branch mix) across regions, not for absolute headcounts.
-- Map: context/geo/regioner.parquet (codes 81–85) or context/geo/landsdele.parquet (codes 1–11) — merge on arbejdslands::int=dim_kode. Exclude 0, 950, 99.
+- Map: /geo/regioner.parquet (codes 81–85) or /geo/landsdele.parquet (codes 1–11) — merge on arbejdslands::int=dim_kode. Exclude 0, 950, 99.

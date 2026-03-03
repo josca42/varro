@@ -12,4 +12,4 @@ notes:
 - omrade joins dim.nuts at niveau=3 (99 kommuner). omrade='0' = Denmark total, '950' = unknown area — these are not in dim.nuts and are excluded by the join.
 - sektor is a 7-value inline column with no total/aggregate code. Values are mutually exclusive public/private ownership categories. Sum across all sektor values to get total workplaces (or filter to one).
 - Sample: workplaces by sektor nationally → filter omrade='0' to get Danish total without joining dim.nuts.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

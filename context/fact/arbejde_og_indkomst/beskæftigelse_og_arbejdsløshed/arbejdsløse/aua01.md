@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts at levels 1/2/3. Extra codes not in dim: 0=Hele landet, 997=Udlandet, 998=Uoplyst. Hele landet (0) = sum of 5 regioner + 997 (Udlandet). Use WHERE f.omrade = '0' for national total.
 - Denominator table for unemployment rate calculations. Pairs with auf01/aup03 for pct. af forsikrede.
 - Longest series in subject from 2000-04. Includes '45=Ikke forsikrede' in akasse — filter this out when computing rates for insured members only.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

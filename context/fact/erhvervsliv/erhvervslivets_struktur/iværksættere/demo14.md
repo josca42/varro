@@ -13,4 +13,4 @@ notes:
 - region: code 0 = national total (not in dim.nuts); codes 81–85 = the 5 regions (dim.nuts niveau 1). Filter region != 0 when summing by region to avoid double-counting with the national total.
 - maengde4 is a measurement selector — filter to one value per query: AFU=fuldtidsansatte, NYE=nye firmaer, OPH=ophørte firmaer, OMS=omsætning (mio kr.).
 - Only table in this subject with simultaneous region + branch breakdown. Use it for regional comparisons by industry.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.

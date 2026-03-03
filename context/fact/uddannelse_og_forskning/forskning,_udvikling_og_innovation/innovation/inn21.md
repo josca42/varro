@@ -13,4 +13,4 @@ notes:
 - region joins dim.nuts at niveau=1 only (the 5 regions: 81=Nordjylland, 82=Midtjylland, 83=Syddanmark, 84=Hovedstaden, 85=Sjælland). Code 0 = national total, not in dim.nuts — use WHERE f.region = '0' for national totals or LEFT JOIN and handle NULLs.
 - udgtyp has no total code — the 6 cost categories (380-430) are additive components of total innovation expenditure. SUM across all udgtyp values to get the full expenditure figure.
 - indhold is in 1.000 kr. (thousands DKK). Multiply by 1000 for absolute figures.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

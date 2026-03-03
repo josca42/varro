@@ -65,4 +65,4 @@ notes:
 - omrade=0 is the national total in all regional tables, not in dim.nuts. For regional joins always filter dim.nuts by niveau (1=regioner, 3=kommuner).
 - None of these tables have total/aggregate rows in kon or alder — those columns only contain individual values. Aggregate in SQL.
 - indvan/udvan use kon=M/K; all van1/van2/van8 tables use kon or koen=1/2.
-- Map: van1kvt, van1uge, van1aar (immigration) and van2kvt, van2aar (emigration) support choropleth maps at kommune (niveau 3) or region (niveau 1) level via context/geo/kommuner.parquet or context/geo/regioner.parquet — merge on omrade=dim_kode, exclude omrade=0. indvan, udvan, van8k, van8a have no geographic column.
+- Map: van1kvt, van1uge, van1aar (immigration) and van2kvt, van2aar (emigration) support choropleth maps at kommune (niveau 3) or region (niveau 1) level via /geo/kommuner.parquet or /geo/regioner.parquet — merge on omrade=dim_kode, exclude omrade=0. indvan, udvan, van8k, van8a have no geographic column.

@@ -12,4 +12,4 @@ notes:
 - enhed is a measurement selector: 320=Løbende priser, 315=Ændring ift. året før (pct.). Always filter to ONE enhed.
 - produkt only has 2 values: 1695=Forpagtningsafgift (kr. pr. ha), 1705=Landbrugsjord købspris (kr. pr. ha). These are different metrics — don't sum them.
 - Annual frequency (2015–2024). The only table in this subject with regional land price breakdown.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode (niveau 1, codes 81–85). Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode (niveau 1, codes 81–85). Exclude region=0.

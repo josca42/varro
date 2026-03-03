@@ -12,4 +12,4 @@ notes:
 - ieland does NOT join dim.lande_uhv. Uses same custom 39-code origin-country classification as aulk03/aul03. Use ColumnValues("aulp03", "ieland") for the full list.
 - indhold is a percentage (pct. of workforce). Do not sum rates.
 - omrade at niveau=2 only (11 landsdele). Stopped at 2023-01 — no active replacement.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

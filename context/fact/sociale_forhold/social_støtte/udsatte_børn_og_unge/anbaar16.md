@@ -17,4 +17,4 @@ notes:
 - kon: total is code 0 (not 'TOT'). Drenge=D, Piger=P.
 - foran and anbringelse both have code 0 = I alt. To get total placed children by landsdel: WHERE foran=0 AND anbringelse=0 AND alder1='IALT' AND kon='0'.
 - ColumnValues("nuts", "titel", for_table="anbaar16") returns the 11 landsdele.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.

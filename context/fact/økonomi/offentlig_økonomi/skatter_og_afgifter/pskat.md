@@ -12,4 +12,4 @@ notes:
 - skatpct has 3 completely different rate types: KOM=kommunal udskrivningsprocent (~25%), KIRKE=kirkeskatteprocent (~0.87%), GRUND=grundskyldspromille (~26‰). Not additive. Always filter to exactly one skatpct per query.
 - indhold is a rate, not an amount. Do not sum across omrade — compute weighted averages if needed.
 - GRUND (grundskyldspromille) is only available up to 2023; KOM and KIRKE continue to 2025. For 2024–2025 grundskyld rate data, use ejdsk2 instead.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

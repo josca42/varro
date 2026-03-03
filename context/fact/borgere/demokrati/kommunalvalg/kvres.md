@@ -13,4 +13,4 @@ notes:
 - To get voter turnout from this table: indhold WHERE valres='AS' / indhold WHERE valres='V'. For the national-level rate already computed, use kvpct instead.
 - Sample query — valid votes for Socialdemokratiet by region in 2021:
   SELECT d.titel, f.indhold FROM fact.kvres f JOIN dim.nuts d ON f.omrade=d.kode WHERE f.valres='GSA' AND f.tid='2021-01-01' AND d.niveau=1;
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

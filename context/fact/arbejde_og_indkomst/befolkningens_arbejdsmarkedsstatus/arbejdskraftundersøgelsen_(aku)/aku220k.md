@@ -14,4 +14,4 @@ notes:
 - kon has TOT — filter kon='TOT' for the gender total to avoid overcounting.
 - For a cross-tab of industry × region, filter branche0710 != 'TOT' AND omrade != '0'. Some industry/region combinations may be suppressed (small sample) and absent from the result.
 - Join syntax: LEFT JOIN dim.db_10 d ON f.branche0710 = d.kode::text (kode is int in dim, string in fact).
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade='0'.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade='0'.

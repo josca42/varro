@@ -53,4 +53,4 @@ notes:
 - For deaths by day/month of year (seasonality): use doddag (2007–2024).
 - kon coding is inconsistent across tables: dod/fod207 use M/K (no total); doda1/dodb1 use 1/2 with TOT; dod2 uses D/P; ligehi5a has no kon column (indikator handles sex).
 - doda1 and dodb1 both cover 2007–2022 cause-of-death data. They share the same arsag A-level taxonomy. Use doda1 when you need age breakdown; use dodb1 when you need fine B-level disease detail.
-- Map: fod207 supports choropleth maps — context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) via omrade=dim_kode. Exclude omrade=0.
+- Map: fod207 supports choropleth maps — /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) via omrade=dim_kode. Exclude omrade=0.

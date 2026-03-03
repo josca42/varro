@@ -51,4 +51,4 @@ notes:
 - For dangerous goods only: bane5 (2004+). Note column is named maengde4, not enhed — same values though (75/76).
 - For intermodal loading units (containers, TEU, semi-trailers): bane6 (2004+). maengde4 has 6 incomparable measurement types including unit counts, TEU, and weight — always filter to one.
 - Universal gotcha: every table has a measurement selector (enhed or maengde4) with at least values 75 and 76. Never sum across both — always filter to one unit. Similarly, transport always includes aggregate code 1000 alongside its sub-codes — pick one level of the hierarchy.
-- Map: bane401 supports choropleth at region level (niveau 1) via context/geo/regioner.parquet — merge on paregion or afregion. All other tables in this subject have no geographic dimension.
+- Map: bane401 supports choropleth at region level (niveau 1) via /geo/regioner.parquet — merge on paregion or afregion. All other tables in this subject have no geographic dimension.

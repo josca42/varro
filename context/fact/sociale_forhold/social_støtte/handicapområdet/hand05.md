@@ -10,4 +10,4 @@ notes:
 - Largely superseded by hand01. hand05 ends 2024-01-01 and covers only 17 ydelsestype — the 4 "hastigt fremskridende sygdom" types (32001–32004, added 2024K3) are absent. Use hand01 for current or complete data.
 - omrade joins dim.nuts at niveau=3 (97 kommuner), no national total (no omrade=0).
 - Same decimal-value semantics as hand01: quarterly service averages, not headcounts.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

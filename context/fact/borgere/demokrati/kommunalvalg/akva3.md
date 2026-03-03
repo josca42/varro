@@ -12,4 +12,4 @@ notes:
 - Same structure as valgk3 but for regionsråd elections. omrade only at niveau 1 (5 regioner) + '0' national aggregate — no kommune-level breakdown.
 - stemmer is a measurement-selector: always filter to one value (1=valid votes, PERSONLIGE=personal votes, 4/5=candidates by gender, 6/7=elected by gender). Every omrade/parti row repeats 6 times, so forgetting to filter inflates all sums 6x.
 - Use ColumnValues("nuts", "titel", for_table="akva3") to confirm the 5 regions available.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

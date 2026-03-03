@@ -17,4 +17,4 @@ notes:
 - socio: 27 values total — TOT plus 26 mutually exclusive socioøkonomisk categories. TOT equals the sum of all individual codes. Filter to socio='TOT' for overall counts, or a specific code for a breakdown.
 - To get a clean NEET count: filter statusneet='10', kon='TOT' (or specific gender), socio='TOT' (or specific category), and a single bopomr or d.niveau. Forgetting any total filter inflates the result.
 - Sample: NEET by region 2023 → JOIN dim.nuts WHERE d.niveau=1 AND statusneet='10' AND kon='TOT' AND socio='TOT' AND tid='2023-01-01'.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

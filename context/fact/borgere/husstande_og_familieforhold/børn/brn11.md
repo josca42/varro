@@ -14,4 +14,4 @@ notes:
 - famskift: use famskift='JA_SKIFT' to isolate children who changed family structure during the year; famskift='EJ_SKIFT' is the large majority who did not change.
 - famtypsaa = family type at start of year (sidste år), famtypaa = family type at end of year (i år). Cross-tabulate these to see transition flows, e.g. how many went from "Begge forældre" (1) to "Enlig mor" (2).
 - famtype 0="Udeboende" in both before/after columns covers children moving in or out of institutional care.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

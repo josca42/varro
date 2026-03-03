@@ -19,4 +19,4 @@ notes:
 - Both tables cover only 2023 and 2024 — very short series.
 - Both tables have kommunedk='0' as a national aggregate not in dim.nuts. Use it directly for national totals or exclude it when joining to dim.nuts.
 - When using hjalp2, always filter out the total rows to avoid overcounting: konams != 0 AND alerams != 'TOT'.
-- Map: both tables support kommune-level choropleth via context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk='0'.
+- Map: both tables support kommune-level choropleth via /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk='0'.

@@ -104,4 +104,4 @@ notes:
 
 - **enhed vs. gods vs. ret**: Several tables use `enhed` as a measurement-type selector (skib41, skib421, skib481, skib49) where every data cell is repeated for each measurement type. Always filter enhed to one value. Tables with `ret` (direction: inbound/outbound) also require filtering — ret always has a total code plus breakdowns.
 
-- **Map**: skib461 and skib481 support landsdele-level choropleth maps via context/geo/landsdele.parquet. See individual fact docs for merge details.
+- **Map**: skib461 and skib481 support landsdele-level choropleth maps via /geo/landsdele.parquet. See individual fact docs for merge details.

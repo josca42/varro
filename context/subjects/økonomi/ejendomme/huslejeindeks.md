@@ -26,4 +26,4 @@ notes:
 - For commercial property rent (Kontor, Butik, Industri): use **erhejd1**. National level only, no regional breakdown. Experimental statistics — treat as indicative.
 - All tables cover 2021–2025 (quarterly). No table has longer historical coverage or finer time granularity.
 - All tables include a national total as code `0` (not in the relevant dim table). Filter out or handle separately when joining dims.
-- Map: **hus1** supports choropleth at region level — context/geo/regioner.parquet, merge on region=dim_kode. **laby32** and **erhejd1** have no geographic join (kommunegrupper and national-only).
+- Map: **hus1** supports choropleth at region level — /geo/regioner.parquet, merge on region=dim_kode. **laby32** and **erhejd1** have no geographic join (kommunegrupper and national-only).

@@ -44,4 +44,4 @@ notes:
 - uddannelse hierarchy is the same across uddakt10/11/12: TOT → top-level (H10=Grundskole, H15=Forberedende, H20=Gymnasiale, H29=Erhvervsfaglige grundforløb, H30=Erhvervsfaglige, H35=Adgangsgivende, H40=KVU, H50=MVU, H60=Bachelor, H70=LVU, H80=Ph.d.) → sub-codes. Don't mix levels when summing.
 - For STEM enrollment counts (higher ed only, with STEM/non-STEM split): ligeub6. For gender balance rates in STEM (higher ed only): ligeui6. For gender balance rates across all education types with age and regional breakdown: ligeui3.
 - ligeui6 and ligeui3 hold rates/percentages — never sum indhold across rows. Use for gender analysis only, not enrollment counts.
-- Map: uddakt10 (bopomr=student residence), uddakt11 (omrade1=school location), and ligeui3 (bopomr) all support choropleth maps at kommune (niveau 3) or region (niveau 1) level via context/geo/kommuner.parquet or context/geo/regioner.parquet.
+- Map: uddakt10 (bopomr=student residence), uddakt11 (omrade1=school location), and ligeui3 (bopomr) all support choropleth maps at kommune (niveau 3) or region (niveau 1) level via /geo/kommuner.parquet or /geo/regioner.parquet.

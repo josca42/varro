@@ -15,4 +15,4 @@ notes:
 - medicintype has a two-level hierarchy: letter codes (A, B, C...) are major ATC groups; letter+2-digit codes (A01, A02...) are sub-groups. TOT=grand total. Pick one level — do not sum both.
 - alder has single-year ages (1-99-) plus IALT. cf. medi1b which has 10-year groups but also commune breakdown.
 - kon uses 0=køn i alt, 1=mænd, 2=kvinder (not TOT/M/K). Data only through 2021.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.

@@ -13,4 +13,4 @@ notes:
 - omrade has niveau 1 (5 regioner) and niveau 3 (98 kommuner). omrade=0 is "Hele landet" (total, not in dim) — exclude when joining. Join clean otherwise (no uoplyst code).
 - famtype hierarchy: TOT=total, F1/F2=families with/without children, E1=all singles, P1=all couples. EUHB/EMHB and PUHB/PMHB are sub-categories. Do not sum F1+F2+E1+P1 — they sum to the total. EUHB+EMHB=E1 and PUHB+PMHB=P1.
 - alder uses 10-year groups (0009, 1019, ... 9000=90+) plus TOT. Note: code format is XXYY (e.g., 0009, not 0-9).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -16,4 +16,4 @@ notes:
 - `uger` same caveats as barlov2.
 - `beret` has no "all parents" total — only took-leave codes. Do not sum across beret.
 - Coverage: Aug–Dec birth cohorts 2019–2023 only.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omr20=dim_kode. Exclude omr20=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omr20=dim_kode. Exclude omr20=0.

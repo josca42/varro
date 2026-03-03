@@ -12,4 +12,4 @@ notes:
 - indhold is årsværk (FTE), not a headcount of individuals. Use skolm04b for individual employee counts.
 - komk joins dim.kommunegrupper at niveau 2. komk='0' is the national total, not in the dim.
 - arbfunk and fagomr both have total rows (TOT/TOTA). Filter both to avoid overcounting. Code 10490 appears in both columns (Ledelse og administration) — when arbfunk='10490', use fagomr='TOTA' to get the total for that function; fagomr breakdown is only meaningful when arbfunk='10500' (Fastansat underviser).
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

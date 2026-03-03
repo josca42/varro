@@ -20,4 +20,4 @@ notes:
 - gruppering (001–200 plus 999) is the finest-granularity breakdown — specific expenditure sub-groups within each funktion. gruppering=999 = sum of non-authorised groupings.
 - This is the most granular expenditure table (funktion × dranst × ejer × gruppering × art × prisenhed). Use only when you need ownership breakdown or specific gruppering detail. For standard expenditure questions use regk31 (by function) or regk11 (by main account).
 - regkc covers the same granularity but encodes dranst+funktion+gruppering as a single composite key (dranst1) with human-readable labels. regkc starts from 2018 only.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

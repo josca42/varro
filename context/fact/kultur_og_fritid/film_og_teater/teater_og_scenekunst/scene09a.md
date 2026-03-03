@@ -15,4 +15,4 @@ notes:
 - aktivitet only has 300=Produktioner — no opørelser or tilskuere. This is the only table with regional breakdown of turné productions.
 - teattyp is hierarchical: 100=alle teatre, 105=alle statsstøttede (aggregate of 115–144). Filter to a single code.
 - genre: 160=Genrer i alt is the aggregate. Never mix with specific genre codes in a sum.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

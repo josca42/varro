@@ -14,4 +14,4 @@ notes:
 - br19a2 has a two-level hierarchy: TOTAREAL is the grand total; top-level codes (VA, VB, VC, ... VX, EHUSHOLD, VREKREA) sum to TOTAREAL; sub-codes (V01000, V02000, V03000 under VA, etc.) are sub-categories. Summing parent and child codes double-counts. The top-level letters map to NACE sections (VA=Landbrug/skovbrug/fiskeri, VB=Råstofindvinding, etc.).
 - omrade joins dim.nuts at niveau 1 (5 regioner) and niveau 2 (11 landsdele) — no municipality breakdown. Filter d.niveau to pick one level. omrade='0' is "Hele landet" (not in dim.nuts).
 - Use ColumnValues("arealan1", "br19a2") to see all industry land-use codes with their labels.
-- Map: context/geo/landsdele.parquet (niveau 2) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

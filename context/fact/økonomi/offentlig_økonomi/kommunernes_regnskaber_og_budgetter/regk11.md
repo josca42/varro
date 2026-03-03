@@ -17,4 +17,4 @@ notes:
 - art includes aggregates: TOT=netto (= UE minus I), UE=bruttoudgifter, I=indtægter, then S0–S9 subtotals and 00–97 detail codes. Use art='TOT' for net expenditure. Do not sum TOT with UE or I.
 - dranst has no aggregate code — each value (1=drift, 2=statsrefusion, 3=anlæg, 4=renter, 5=finansforskydninger, 6=afdrag, 7=finansiering) is a separate category. Sum across dranst values to combine.
 - Minimal correct query — driftsudgifter (netto) by region 2023: SELECT d.titel, SUM(f.indhold) FROM fact.regk11 f JOIN dim.nuts d ON f.omrade=d.kode AND d.niveau=1 WHERE f.funk1='X' AND f.dranst='1' AND f.art='TOT' AND f.prisenhed='LOBM' AND f.tid='2023-01-01' GROUP BY d.titel;
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -15,4 +15,4 @@ notes:
 - fkategori has TOT (I alt), HF=Heltidsforsikrede, DF=Deltidsforsikrede, 980=Ikke forsikrede. Filter to TOT for all together.
 - alder has TOT and ranges from 16-17 to 60-64 (only age 16-64 covered per the table description).
 - kon has TOT, M, K.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

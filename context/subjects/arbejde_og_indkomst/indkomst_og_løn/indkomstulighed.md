@@ -127,4 +127,4 @@ notes:
 - Shared pitfall — kommunedk aggregate: code 0 = Danmark i alt, not in dim.nuts. Use WHERE kommunedk = 0 for national totals, kommunedk != 0 for individual kommuner.
 - Shared pitfall — socio aggregates: codes 100 (total) and 130 (Lønmodtagere i alt) are NOT in dim.socio. Use JOIN dim.socio d ON f.socio = d.kode WHERE d.niveau = 3 to get only the 15 detailed socio categories.
 - Time coverage varies significantly: ifor32/ifor22/ifor41 back to 1987; ifor11a/11p/12a/12p/ifor33/34/31/30/21/20 from 2000; laby07/ifor51 from 2015 only.
-- Map: ifor32, ifor35, ifor22, ifor25, ifor41, ifor12a, ifor12p all have kommunedk at niveau 3 — use context/geo/kommuner.parquet for choropleth maps (merge on kommunedk=dim_kode, exclude kommunedk=0). Remaining tables (ifor10/11a/11p/31/30/33/34/51, laby06/07) have no geographic column.
+- Map: ifor32, ifor35, ifor22, ifor25, ifor41, ifor12a, ifor12p all have kommunedk at niveau 3 — use /geo/kommuner.parquet for choropleth maps (merge on kommunedk=dim_kode, exclude kommunedk=0). Remaining tables (ifor10/11a/11p/31/30/33/34/51, laby06/07) have no geographic column.

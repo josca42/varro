@@ -15,4 +15,4 @@ notes:
 - WARNING: dim.db join for branchedb0738 is broken (0% match). branchedb0738 uses letter codes only (A–S, X, TOT) — NOT in dim.db. Treat as inline. Use ColumnValues("lbesk68", "branchedb0738") for labels.
 - alder uses 10-year bands (1524, 2534, 3544, 4554, 5564, 6574, 75OV). TOT=sum of all ages.
 - Data ends 2025-01. Very detailed cross (region × branch × gender × age) — useful for regional occupational structure analysis.
-- Map: context/geo/regioner.parquet (codes 81–85) or context/geo/landsdele.parquet (codes 1–11) — merge on boplandk::int=dim_kode. Exclude 0, 950.
+- Map: /geo/regioner.parquet (codes 81–85) or /geo/landsdele.parquet (codes 1–11) — merge on boplandk::int=dim_kode. Exclude 0, 950.

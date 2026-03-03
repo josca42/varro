@@ -16,4 +16,4 @@ notes:
 - voksbofam=0 means "Udeboende" — the child is not registered as living with any family (e.g., in care). voksamfam=99 / samfamtyp=99 means no custody family at all.
 - bofamtyp describes the couple type of the home family; samfamtyp describes the couple type of the custody family. These are independent of voksbofam/voksamfam (which describe the adult arrangement).
 - alder covers only 0–17.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omr20=dim_kode. Exclude omr20=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omr20=dim_kode. Exclude omr20=0.

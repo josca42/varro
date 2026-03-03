@@ -17,4 +17,4 @@ notes:
 - `uddkomb` encodes mother's and father's education jointly (codes like 120=Mor uden ungdomsuddannelse regardless of far, 511=Mor KVU + Far MVU, etc.). Total is `'0'`. This is not cross-joinable to morud/farud separately.
 - `omrade` joins dim.nuts via `f.omrade = d.kode`. Code `0` = national total. niveau 2 only (11 landsdele) — no kommune-level data in this table.
 - Coverage: non-cohabiting parents only. For cohabiting parents use barsel04/barsel25/barlov1.
-- Map: context/geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.

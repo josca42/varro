@@ -13,4 +13,4 @@ notes:
 - CODING DISCONTINUITY in 2019: overens code 8A was split into 920 (pædagogmedhjælper), 930 (pædagogisk assistent), 940 (assistentstuderende), 950 (pædagogstuderende). uddannelse codes 50-58 were replaced by 460-495. Cross-year comparison at the sub-total level requires mapping old to new codes.
 - overens=25 (Dagpleje) only appears with uddannelse sub-codes, not uddannelse=TOT — it has its own TOT row.
 - Covers kommunale og selvejende institutions. For private institutions use pboern1 (2021-2023, different overens codes: 92/93/94/95 vs 920/930/940/950).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

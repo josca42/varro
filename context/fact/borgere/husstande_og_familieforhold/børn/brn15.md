@@ -15,4 +15,4 @@ notes:
 - This table counts only siblings the child lives together with ("bor sammen med"). Compare with brn16 which counts ALL siblings regardless of cohabitation.
 - antsos and kombsos are independent dimensions — filter both to get a specific sibling situation.
 - famtype=0 means "Udeboende" (child not living with any family).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

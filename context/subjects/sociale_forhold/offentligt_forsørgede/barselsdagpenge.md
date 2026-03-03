@@ -73,4 +73,4 @@ notes:
 - **Equality indicators**: **ligefb1** (count of parent pairs by family + education + region) and **ligefi1** (avg leave days with mother/father/gap indicator). ligefi1 values are averages — never SUM.
 - **Regional coverage**: barsel04, barsel25, barlov1, barlov3 have both landsdele (niveau 2) and kommuner (niveau 3). barsel06, ligefb1, ligefi1 have landsdele only. omrade/omr20 code `0` = national total, not joinable to dim.nuts.
 - **beret totals**: barsel04/barsel25/barlov1 use `beret='3'` for all parents. barsel11/barsel14/barlov2/barlov3 have no "all parents" total in beret.
-- **Map**: barsel04, barsel25, barlov1, barlov3 support kommune (niveau 3) and landsdele (niveau 2) choropleths via context/geo/kommuner.parquet and context/geo/landsdele.parquet. barsel06, ligefb1, ligefi1 support landsdele only. barsel11 and barsel14 have no geographic column.
+- **Map**: barsel04, barsel25, barlov1, barlov3 support kommune (niveau 3) and landsdele (niveau 2) choropleths via /geo/kommuner.parquet and /geo/landsdele.parquet. barsel06, ligefb1, ligefi1 support landsdele only. barsel11 and barsel14 have no geographic column.

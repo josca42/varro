@@ -13,4 +13,4 @@ notes:
 - Within species groups: Løvtræ subcodes are 00050=Bøg, 00060=Eg, 00070=Andet løvtræ. Nåletræ subcodes are 00082–00088. Species×product detail codes (BOGGAVN, BOGBRAEND, NALGAVN, NALBRAEND, etc.) are the most granular level.
 - Summing all traesort codes together massively overcounts because aggregate and detail codes all coexist in the table. Always pick exactly one level: 00010 (total), or one of the two product/species breakdowns, or individual species codes.
 - skov55 has more traesort codes than skov55a (which lacks energitræ breakdowns). For trend analysis combining both tables, use the common codes: 00010, 00020, 00030, 00050, 00060, 00070, 00080.
-- Map: context/geo/landsdele.parquet (niveau 2) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).
+- Map: /geo/landsdele.parquet (niveau 2) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 15).

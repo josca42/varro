@@ -13,4 +13,4 @@ dim docs: /dim/nuts.md
 notes:
 - Same structure as kubs02b but scoped to uddannelse-targeted disbursements. See kubs02b notes for `enhed` selector, `statsinstituition` selector, and `omrade` int-cast join guidance.
 - `omrade='00'` is national aggregate (not in dim). Use `f.omrade::int = d.kode` for join.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade::int=dim_kode. Exclude omrade='00'.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade::int=dim_kode. Exclude omrade='00'.

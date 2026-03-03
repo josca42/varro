@@ -13,4 +13,4 @@ notes:
 - komk joins dim.kommunegrupper at niveau 2 (98 kommuner). komk='0' is the national total, not in the dim.
 - This table counts aktiviteter (subject enrollments), not unique students. A student enrolled in 3 subjects counts 3 times. Use skolm02b for unique student headcounts.
 - TOT rows present for faget, alder, and kon. Filter all three to avoid overcounting: use faget='TOT', alder='TOT', kon='TOT' for simple totals, or pick one dimension and filter the others to their TOT.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

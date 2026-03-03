@@ -10,4 +10,4 @@ notes:
 - kommunedk code 0 = Danmark i alt (national aggregate), not in dim.nuts. Use WHERE kommunedk = 0 for national totals or WHERE kommunedk != 0 to get all 98 kommuner. All other codes join dim.nuts at niveau=3 (kommuner only — no regioner/landsdele in this table).
 - decilgen has no aggregate/total code — all 10 decils are independent. To get a full distribution, select all 10DC values.
 - Sample query (average income by decil, national): SELECT decilgen, indhold FROM fact.ifor32 WHERE kommunedk = 0 AND tid = '2023-01-01' ORDER BY decilgen;
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

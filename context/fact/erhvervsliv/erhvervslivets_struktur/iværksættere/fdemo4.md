@@ -13,4 +13,4 @@ notes:
 - branchedb0710 joins dim.db_10 at niveau 1 (koder 1–11). TOT is a national aggregate not in the dim — exclude it when joining. JOIN dim.db_10 d ON f.branchedb0710 = d.kode::text AND d.niveau = 1.
 - region: code 0 = national total (not in dim.nuts); codes 81–85 = 5 regioner (dim.nuts niveau 1). Exclude region = 0 when aggregating by region.
 - maengde4 has only AFU and NYE (no OPH or OMS unlike demo14) — filter to one per query.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region=0.

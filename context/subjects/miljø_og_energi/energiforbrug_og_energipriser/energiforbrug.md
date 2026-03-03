@@ -74,4 +74,4 @@ notes:
 - For wood/pellet heating in homes: brande01 gives a national time series (odd years 2013-2023) of counts and consumption. brande02/brande03 and pille02/pille03 give 2023-only cross-sections by primary heat source and housing type respectively.
 - For gas storage and weekly consumption: gaslager (storage level, TJ) and gasbrug (weekly consumption, TJ), both 2019-2025, experimental statistics. Time is indexed by tid (year) + uger (week U01-U53) together.
 - The brande/pille tables all have enhed selectors using numeric codes (1300-1450). boltyp and pvarmekilde include total rows (1140/1045). Enfamilieshuse (1160) splits into sub-codes 1162 and 1164 — don't sum parent + children.
-- Map: enegeo supports choropleth maps — kommune-level (niveau 3) via context/geo/kommuner.parquet or region-level (niveau 1) via context/geo/regioner.parquet, merge on komk=dim_kode.
+- Map: enegeo supports choropleth maps — kommune-level (niveau 3) via /geo/kommuner.parquet or region-level (niveau 1) via /geo/regioner.parquet, merge on komk=dim_kode.

@@ -12,4 +12,4 @@ notes:
 - balpost mixes stock and flow types: FS1 (primo) and FS8 (ultimo) are area stocks in km2; FS10 (skovrejsning) and FS11 (afskovning) are annual flows; SK3 (ændring netto) = FS10 - FS11. Never sum stocks and flows together.
 - FS1/FS8 rows exist for almost all years; FS10/FS11/SK3 only appear for years where changes were recorded (fewer rows). Safe to query primo/ultimo across the full 1990–2024 range.
 - Covers Kyoto-definition forest only. No breakdown below region level.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on regi07=dim_kode. Exclude regi07=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on regi07=dim_kode. Exclude regi07=0.

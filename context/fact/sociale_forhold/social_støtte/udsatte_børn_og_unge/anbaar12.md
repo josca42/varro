@@ -12,4 +12,4 @@ notes:
 - Use ColumnValues("nuts", "titel", for_table="anbaar12") to see the ~94 kommuner with data.
 - anbringelse code 0 = I alt. Filter to anbringelse=0 for total placed children per kommune.
 - No age or gender breakdown — for those, use anbaar16 (landsdele) or anbaar9 (age by kommune).
-- Map: context/geo/kommuner.parquet — merge on admkom=dim_kode. Exclude admkom=0 and admkom=998.
+- Map: /geo/kommuner.parquet — merge on admkom=dim_kode. Exclude admkom=0 and admkom=998.

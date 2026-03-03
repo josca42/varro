@@ -208,6 +208,6 @@ notes:
 - Labour reserve: aku550k (counts, filter enhed!) and aku560k (rates, filter enhed!) — broadest measure of underemployment.
 - Outside labour force: aku610a (annual, by self-reported reason: pensioner/student/sick/etc.).
 - aku100k vs aku110k: aku100k is seasonally adjusted but has no demographic breakdown. aku110k adds age and gender but is not seasonally adjusted.
-- Map: aku120k, aku121k, aku220k, aku230k all have region-level omrade (niveau 1, 5 regioner) — choropleth via context/geo/regioner.parquet, merge on omrade=dim_kode.
+- Map: aku120k, aku121k, aku220k, aku230k all have region-level omrade (niveau 1, 5 regioner) — choropleth via /geo/regioner.parquet, merge on omrade=dim_kode.
 - All tables with alder, kon/koen, uddniv include TOT rows — always filter to avoid overcounting.
 - aku550k/aku560k require filtering enhed (unit) before querying — mixing persons and FTEs, or different % denominators, gives wrong results.

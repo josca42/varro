@@ -15,4 +15,4 @@ notes:
 - WARNING: dim.esr_sekt join for sektor is broken (0% match). Use ColumnValues("lbesk67", "sektor") — values match lbesk61/lbesk33 pattern: 1000=total, 1032=Offentlig, 1035=Offentlige virksomheder, 1040=Private, 1045=Private nonprofit, 1050=Uoplyst.
 - alder here uses 10-year bands (1524, 2534, 3544, 4554, 5564, 6574, 75OV) — coarser than lbesk44 (5-year bands). TOT=sum of all ages.
 - Data ends 2025-01.
-- Map: context/geo/regioner.parquet (codes 81–85) or context/geo/landsdele.parquet (codes 1–11) — merge on boplandk::int=dim_kode. Exclude 0, 950.
+- Map: /geo/regioner.parquet (codes 81–85) or /geo/landsdele.parquet (codes 1–11) — merge on boplandk::int=dim_kode. Exclude 0, 950.

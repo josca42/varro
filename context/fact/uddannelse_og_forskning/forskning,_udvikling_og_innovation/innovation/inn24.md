@@ -13,4 +13,4 @@ notes:
 - region joins dim.nuts at niveau=1 (codes 81-85, the 5 regions). Code 0 = national total, not in dim.nuts.
 - innproces has 7 process innovation categories (470-530). These cover different types of process innovation — check whether they're mutually exclusive or multi-select before summing. Each row is a share of procesinnovative firms. This table covers only procesinnovative firms; for the share of all firms that are procesinnovative, use inn22.
 - All indhold values are percentages. Never sum across innbranche categories.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

@@ -12,4 +12,4 @@ notes:
 - `bopomr=0` is national aggregate (not in dim). Three hierarchy levels in dim.nuts: niveau 1=regioner, 2=landsdele, 3=kommuner. Filter d.niveau to pick one level.
 - `kon=TOT` and `alder=TOT` are aggregate totals. Filter both to totals for a simple national count of biblioteksafgift recipients.
 - Parallel to bia02 which measures disbursement amounts (1.000 kr.) rather than person count.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

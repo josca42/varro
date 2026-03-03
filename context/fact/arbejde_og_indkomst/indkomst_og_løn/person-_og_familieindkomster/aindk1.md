@@ -15,4 +15,4 @@ notes:
 - enhed selector (4 types). Always filter to one.
 - koen='MOK' is total. Only from 2012 — covers only A-indkomst (employer-reported income to SKAT), not all income types.
 - aindk3 covers udbetalt A-indkomst (after A-skat and arbejdsmarkedsbidrag) — same structure as aindk1.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

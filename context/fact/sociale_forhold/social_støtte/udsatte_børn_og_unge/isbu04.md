@@ -15,4 +15,4 @@ notes:
 - landsdel joins dim.nuts at niveau 2 (11 landsdele). Code 0 = national total.
 - alder: IALT + 4 age groups + 999. kon: 0=I alt, D/P.
 - For totals: WHERE indsatser=3 AND alder='IALT' AND kon='0'.
-- Map: context/geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.
+- Map: /geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.

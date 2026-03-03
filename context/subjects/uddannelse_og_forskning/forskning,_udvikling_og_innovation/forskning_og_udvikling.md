@@ -201,4 +201,4 @@ notes:
 - rdce* and rdcp0129 all have sektor='10' as the grand total — include it or exclude it deliberately.
 - fouoff07 drift1 mixes units — see fouoff07 notes.
 - rdcp0129 aarvaerk mixes FTE and headcount in one column — always filter aarvaerk to one value.
-- Map: All forsk* tables support region-level choropleth maps via context/geo/regioner.parquet. Filter fui01 IN (81,82,83,84,85) for the region perspective and merge on fui01=dim_kode. fouoff*, rdce*, foubud*, cfabnp, and rdcp0129 have no geographic breakdown.
+- Map: All forsk* tables support region-level choropleth maps via /geo/regioner.parquet. Filter fui01 IN (81,82,83,84,85) for the region perspective and merge on fui01=dim_kode. fouoff*, rdce*, foubud*, cfabnp, and rdcp0129 have no geographic breakdown.

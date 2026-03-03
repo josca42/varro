@@ -14,4 +14,4 @@ notes:
 - komk joins dim.nuts at niveau 1 (5 regioner), 2 (11 landsdele), 3 (98 kommuner), plus '0' = national aggregate not in dim. Filter to one niveau.
 - kandidat distinguishes OK (nominated) vs VK (elected). Pick one per query.
 - For raw counts rather than derived indicators, use ligedb2 instead.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on komk=dim_kode. Exclude komk=0.

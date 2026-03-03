@@ -14,4 +14,4 @@ notes:
 - ydelsesart is hierarchical: 120=I ALT contains everything. 130=ALMEN LÆGE I ALT is a sub-total of codes 140-180. Summing all ydelsesart values will massively overcount. Pick one level: 120 for grand total, 130 for GP total only, or individual codes for specific visit types.
 - alerams uses 5-year age groups (0-4, 5-9, ... 9099=90+) plus IALT=total. Cf. sygk2 which has single-year ages.
 - To get national total: filter omrade=0, ydelsesart=120, alerams='IALT', kon='TOT'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

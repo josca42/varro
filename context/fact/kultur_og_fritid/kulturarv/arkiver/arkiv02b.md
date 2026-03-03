@@ -13,4 +13,4 @@ notes:
 - Bornholm (kode=4, Landsdel Bornholm) is absent from this table — either merged into another landsdel or not separately reported for local archives.
 - aktp is the measurement selector — one row per (blstkom, tid) per aktp. Never sum across aktp values. Always filter to one aktp at a time.
 - This table covers stads- og lokalarkiver only (municipal/local archives). Use arkiv01 or arkiv03 for Rigsarkivet (national state archives).
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on blstkom=dim_kode. Exclude blstkom=0.

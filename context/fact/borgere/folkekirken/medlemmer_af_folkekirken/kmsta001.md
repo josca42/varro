@@ -14,4 +14,4 @@ notes:
 - These 5 codes are exhaustive (no IALT total) — sum all 5 for total population of a sogns.
 - fkmed: F=Medlem, U=Ikke-Medlem. Both present for each combination.
 - 2292 distinct sogns including 0='Uden placerbar adresse' and 9999='Uden fast bopæl'. Exclude for geographic analysis.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

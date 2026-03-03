@@ -14,4 +14,4 @@ notes:
 - flyttetype has `0` = total. Filter to `IN (101, 102, 103, 104)` for move-type breakdown.
 - All three non-tid columns have aggregates — failing to filter any one of them inflates counts. For totals by frakommune: filter `tilflytomr = 'TOT'` and `flyttetype = '0'`.
 - Covers only young people aged 15–29.
-- Map: context/geo/kommuner.parquet — merge on frakommune::int=dim_kode. Exclude frakommune='TOTFK' before casting.
+- Map: /geo/kommuner.parquet — merge on frakommune::int=dim_kode. Exclude frakommune='TOTFK' before casting.

@@ -31,4 +31,4 @@ notes:
 - For cohort analysis (how many children has a generation had?): kohort01 has cumulative fertility by birth cohort and age. Only 2023–2024 snapshot data; always filter to a single tid value. Use alder='1549' for completed cohort fertility (reliable for cohorts born ≤ ~1974).
 - fod33 and fod407 both express fertility as period rates (pr. 1.000 kvinder). Their TOT1/alder='TOT1' values are the total fertility rate for a given year — comparable across tables.
 - All tables measure fertility in the same unit (pr. 1.000 kvinder). No table has a unit selector column — values are always rates, never counts.
-- Map: fod407 supports choropleth maps at all three NUTS levels — context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: fod407 supports choropleth maps at all three NUTS levels — /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

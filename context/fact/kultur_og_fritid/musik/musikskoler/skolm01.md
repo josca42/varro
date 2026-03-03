@@ -11,4 +11,4 @@ notes:
 - komk joins dim.kommunegrupper at niveau 2 (98 kommuner). komk='0' is the national total and is not in the dim — exclude with WHERE f.komk != '0' or use LEFT JOIN when you want it.
 - aktp is a measurement selector, not a category to aggregate across. Each code is a distinct key figure with different semantics: some count schools with a specific feature (e.g. 10300=schools offering søskenderabat), one is a price (10330=violin rental price in Kr.). Always filter to a single aktp value before using indhold.
 - No TOT row for aktp — each aktp code is an independent metric. Query one at a time.
-- Map: context/geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet — merge on komk=dim_kode. Exclude komk=0.

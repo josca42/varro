@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts with niveau 1 (5 regioner, kode 81-85) and niveau 3 (98 kommuner). omrade=0 is "Hele landet" (total, not in dim) and omrade=98 is uoplyst — exclude both when joining.
 - alerams uses 5-year groups plus IALT. cf. sygks2 which has single-year ages but region-only breakdown.
 - Use this table when you need visits broken down by individual medical specialty with commune-level geography.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

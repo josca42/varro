@@ -50,4 +50,4 @@ notes:
 - For gender balance among candidates/elected MEPs (1994–2024): use ligedi4.
 - All tables with party-level valres rows also include aggregate rows (GYLD_IALT, VAELG, etc.). Always filter valres to either aggregate rows OR party rows — never mix them in a sum.
 - Party codes are numeric IDs (e.g. 5891=Socialdemokratiet, 5903=Venstre). Use ColumnValues("evkom1", "valres") to get the full id→name mapping.
-- Map: evkom1 and evpandel support kommune-level choropleth via context/geo/kommuner.parquet (omrade=dim_kode). ev24tot supports storkredse (omrade 10–19, subtract 9) and valgkredse (omrade 20–111, subtract 19) via context/geo/storkredse.parquet and context/geo/valgkredse.parquet.
+- Map: evkom1 and evpandel support kommune-level choropleth via /geo/kommuner.parquet (omrade=dim_kode). ev24tot supports storkredse (omrade 10–19, subtract 9) and valgkredse (omrade 20–111, subtract 19) via /geo/storkredse.parquet and /geo/valgkredse.parquet.

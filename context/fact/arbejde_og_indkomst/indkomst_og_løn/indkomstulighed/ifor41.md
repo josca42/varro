@@ -12,4 +12,4 @@ notes:
 - Gini-koefficient (70) is the most commonly cited inequality measure. Values typically range 0.25–0.35 for Danish kommuner.
 - This is the only table in the subject with pre-calculated inequality indices (Gini, S80/20, P90/10). Use it instead of computing inequality manually from decil data.
 - Sample query (Gini by kommune, 2023): SELECT d.titel, f.indhold FROM fact.ifor41 f JOIN dim.nuts d ON f.kommunedk = d.kode::int WHERE f.ullig = '70' AND f.tid = '2023-01-01' AND f.kommunedk != 0 ORDER BY f.indhold DESC;
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

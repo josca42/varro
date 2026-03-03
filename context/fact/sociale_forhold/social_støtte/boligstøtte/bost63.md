@@ -16,4 +16,4 @@ notes:
 - mnd is the month (1–12). These are stock figures (modtagere pr. måned), not flows — do not sum across months. Filter to a specific month for point-in-time comparisons.
 - To get a simple municipal count of housing-support recipients: filter ydelsestype='1000', enhed='3000', and pick a specific mnd and tid. Join omrade to dim.nuts WHERE d.niveau=3 for kommune names. Exclude omrade='0' from the join or handle it separately.
 - ColumnValues("nuts", "titel", for_table="bost63") shows the 99 kommuner actually present in the table.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

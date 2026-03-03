@@ -26,4 +26,4 @@ notes:
 - All three tables use aktp as a measurement selector column — it defines what indhold means (shelf metres, visitors, FTE staff, etc). Always filter to one aktp value; summing across aktp is meaningless.
 - arkiv01 and arkiv02b share the same set of aktp codes. arkiv03 has the same plus three digital ones (ITBES, ITSML, ITTIL).
 - In arkiv01, code TOT is the national aggregate across sub-archives; in arkiv02b, code 0 is the national aggregate across landsdele. Exclude these when summing across the breakdown dimension.
-- Map: arkiv02b supports choropleth at landsdel level via context/geo/landsdele.parquet — merge on blstkom=dim_kode. arkiv01 and arkiv03 have no geographic breakdown.
+- Map: arkiv02b supports choropleth at landsdel level via /geo/landsdele.parquet — merge on blstkom=dim_kode. arkiv01 and arkiv03 have no geographic breakdown.

@@ -9,4 +9,4 @@ notes:
 - fui01 encodes multiple classification perspectives — pick exactly ONE per query. See forsk01 notes for the full breakdown.
 - finanskilde='10' = grand total. Same hierarchy as forsk110: 10 = 20 + 60 + 70 + 120 with sub-items. Never sum sub-codes with parent totals.
 - Covers financing of purchased R&D (købt). For financing of own R&D, use forsk110.
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

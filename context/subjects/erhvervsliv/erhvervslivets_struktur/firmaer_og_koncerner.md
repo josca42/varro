@@ -91,4 +91,4 @@ notes:
 - For business group (koncern) statistics: konc11 (by employee-count size), konc12 (by firm-count size), konc13 (by sector). All cover 2022–2023 only.
 - Critical gotcha shared by almost all tables: enhed (or maengde4 in gf11/fgf1) stacks firmaer/fuldtidsansatte/omsætning as separate rows. Not filtering it multiplies every count by 3.
 - DB07 branche coding: letter codes (A–S, X = 19-group) do NOT join dim.db — use ColumnValues on the fact table directly. Numeric 10-group codes (1–11) match dim.db niveau 2. 127-group codes in gf11/gf12 partially match dim.db niveau 5, but zero-padded codes (e.g. 01000, 011100) do not match anything in dim.db.
-- Map: gf12 (kommune/landsdel/region), gf14 (region), and fgf6 (region) support choropleth maps via context/geo/kommuner.parquet, context/geo/landsdele.parquet, and context/geo/regioner.parquet respectively.
+- Map: gf12 (kommune/landsdel/region), gf14 (region), and fgf6 (region) support choropleth maps via /geo/kommuner.parquet, /geo/landsdele.parquet, and /geo/regioner.parquet respectively.

@@ -12,4 +12,4 @@ notes:
 - komk has both niveau=1 (5 regioner) and niveau=3 (99 kommuner) plus komk=0 (Hele landet, not in dim.nuts). Always filter to one level to avoid mixing granularities.
 - kon='TOT' for overall average age; filter komk to one geographic code.
 - Longest average age series: back to 2005. For parish-level average age use kmgalder (back to 2007).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on komk=dim_kode. Exclude komk=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on komk=dim_kode. Exclude komk=0.

@@ -13,4 +13,4 @@ notes:
 - alder: TOT=Alder i alt, 10-year bands (0-9 through 70+), 9999=Uoplyst. Filter to TOT to avoid double-counting.
 - udlanssted and dyrkat must each be filtered to a single value — same rules as ibib1.
 - ibib2 (to 2025) vs ibib2a (archive, to 2024).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -8,4 +8,4 @@ columns:
 dim docs: /dim/nuts.md
 
 notes:
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

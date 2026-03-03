@@ -18,4 +18,4 @@ notes:
   - 40–45 = city-size bands (under 10.000 to 100.000-499.999 inhabitants)
   Pick one scheme per query. ColumnValues("bio9", "omrade") shows all 28 codes with labels.
 - Only table with regional breakdown of cinema activity; starts 2014.
-- Map: context/geo/regioner.parquet (omrade 81–85) or context/geo/landsdele.parquet (omrade 1–11) — merge on omrade=dim_kode. Exclude omrade 0, 40–45, and city codes (46, 100, 461, 751, 851).
+- Map: /geo/regioner.parquet (omrade 81–85) or /geo/landsdele.parquet (omrade 1–11) — merge on omrade=dim_kode. Exclude omrade 0, 40–45, and city codes (46, 100, 461, 751, 851).

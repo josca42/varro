@@ -17,4 +17,4 @@ notes:
 - alder uses broader 10-year groups (not 5-year like indkp221). alder='00' is total.
 - koen='MOK' is total.
 - indhold = Antal (count of persons in each bracket).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

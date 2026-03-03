@@ -11,4 +11,4 @@ notes:
 - saesonfak is a measurement selector — always filter to exactly one value (10=count seasonally adjusted, 24=actual count, 9/22=percentage forms). Failing to filter inflates sums 4x.
 - omrade joins dim.nuts at levels 1/2/3. Extra code 0=Hele landet not in dim — use WHERE f.omrade = '0' for national total.
 - No ydelsestype or gender/age breakdown — regional seasonal adjustment only. Pair with auf01/aulk01 for full breakdowns.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

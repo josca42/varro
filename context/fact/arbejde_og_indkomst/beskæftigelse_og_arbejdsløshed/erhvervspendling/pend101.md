@@ -14,4 +14,4 @@ notes:
 - branche07 stores values as text (e.g. '1', '10', 'TOT'). Join to dim.db_10 with f.branche07::int = d.kode, filtering to niveau=1 (10 sectors + 11=Uoplyst). 'TOT' is the all-sectors total and is NOT in dim.db_10 — filter it out or handle separately.
 - pendling has 4 distinct measure types: NAT=natbefolkning (residents of the municipality), IND=indpendlere (workers commuting in), UD=udpendlere (residents commuting out), DAG=dagbefolkning (workers located there). These are not additive — pick exactly one type per query.
 - kon has only M and K (no TOT). Sum both to get total employed.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

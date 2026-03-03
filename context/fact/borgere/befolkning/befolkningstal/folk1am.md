@@ -13,4 +13,4 @@ notes:
 - No civilstand column. Use folk1a for marital status breakdown or for data before Oct 2021.
 - Monthly granularity (tid increments by month) from Oct 2021 — finest time resolution for population snapshots.
 - Filter non-target dims: kon='TOT', alder='IALT'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

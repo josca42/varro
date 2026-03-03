@@ -13,4 +13,4 @@ notes:
 - 4 dimensions with aggregate rows: paskat=PTOT, ejerform=TOTA, alder1=IALT. To get a simple total children count: WHERE paskat='PTOT' AND ejerform='TOTA' AND alder1='IALT'. Forgetting any one inflates by 3-4x.
 - alder1 'Under 5 år' (04) is a group covering pre-school aged children in afterschool care; individual ages start at 5. The age range spans 5-18 with no other groupings — aggregate in SQL with CASE if age groups are needed.
 - This table covers fritidsordninger (SFO, fritidshjem, ungdomsklubber) — not dagpasning (vuggestuer, børnehaver). For dagtilbud enrolled children use boern2/pboern2.
-- Map: context/geo/kommuner.parquet — merge on amt=dim_kode. Exclude amt=0.
+- Map: /geo/kommuner.parquet — merge on amt=dim_kode. Exclude amt=0.

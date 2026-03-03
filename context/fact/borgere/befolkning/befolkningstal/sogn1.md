@@ -12,4 +12,4 @@ notes:
 - 0=Uden placerbar adresse and 9999=Uden fast bopæl are non-geographic — exclude for geographic analysis.
 - Finest geographic level for age/sex population breakdown. Use ColumnValues("sogn1", "sogn") to search for specific parishes by name.
 - Annual data only (back to 2010). For quarterly parish data (without age/sex) use km1.
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).

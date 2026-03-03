@@ -12,4 +12,4 @@ notes:
 - arbejdslands joins dim.nuts correctly (84% match). Unmatched special codes: 0=Hele landet, 99=Uoplyst, 950=Uden for Danmark — exclude these from dim join. Contains both niveau 1 (regioner: 81–85) and niveau 2 (landsdele: 1–11). Filter d.niveau=1 for regioner or d.niveau=2 for landsdele to avoid summing both levels.
 - sektor is inline (correct — no broken join here). Values: 1000=Sektorer i alt, 1032=Offentlig forvaltning og service, 1035=Offentlige virksomheder, 1040=Private virksomheder, 1045=Private nonprofit-organisationer, 1050=Uoplyst.
 - Example: lønmodtagere per region by sector: filter tal=1020, sektor != 1000, AND d.niveau=1.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on arbejdslands=dim_kode. Exclude arbejdslands IN (0, 99, 950).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on arbejdslands=dim_kode. Exclude arbejdslands IN (0, 99, 950).

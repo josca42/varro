@@ -51,4 +51,4 @@ notes:
 - All three kfred tables share the same omrade coding: 5 NUTS niveau=1 regions (81–85) plus 0=landstal. No finer geographic breakdown available.
 - kv2kar1/2/3/4 are all single-year (2024) percentage tables from a cultural participation survey. All categories are non-mutually-exclusive — values will not sum to 100%. Use for comparing rates across categories or between gender/age groups, never for summing.
 - kv2kar1: which types of kulturarv people visit. kv2kar2: why they visit. kv2kar3: which specific UNESCO/landmark sites they visit. kv2kar4: why non-visitors don't go (barriers).
-- Map: kfred1, kfred2, kfred3 support choropleth at region level via context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0. kv2kar tables have no geographic breakdown.
+- Map: kfred1, kfred2, kfred3 support choropleth at region level via /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0. kv2kar tables have no geographic breakdown.

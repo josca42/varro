@@ -19,4 +19,4 @@ notes:
 - bopomr joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). Niveau 2 (landsdele) is absent. Use WHERE d.niveau=1 for regions or d.niveau=3 for municipalities. Code 0 = national total (not in dim); codes 998 and 999 are special aggregates (not in dim) — skip these unless specifically needed.
 - herkomst and herkomst1 are two independent breakdowns of origin. herkomst: 5=dansk oprindelse, 4=indvandrere, 3=efterkommere. herkomst1: 1=Danmark, 2=vestlige lande, 9=ikke-vestlige lande. Don't cross both in the same query without filtering the other to TOT.
 - uddannelse codes U20–U30 map to klassetrin 0–10. TOT sums all levels.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

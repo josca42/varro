@@ -17,4 +17,4 @@ notes:
 - bopreg joins dim.nuts but only niveau=1 (5 regioner: 81-85). bopreg=0 is the national total (I alt), bopreg=999 is uoplyst bopælsregion (students with unknown/foreign address). Both are outside dim.nuts. For a regional breakdown, filter WHERE bopreg IN (81,82,83,84,85) or join and get 5 rows.
 - herkomst and herkomst1 are complementary origin dimensions. herkomst = origin type (5=dansk, 4=indvandrer, 3=efterkommer, 0=uoplyst), herkomst1 = geographic origin country group. Both have TOT totals. For a plain count, set both to TOT.
 - To get enrollment by region: WHERE fstatus='B' AND uddannelse='H20' AND herkomst='TOT' AND herkomst1='TOT' AND kon='10' AND bopreg IN (81,82,83,84,85). All five filters needed to avoid overcounting.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on bopreg=dim_kode. Exclude bopreg IN (0, 999).
+- Map: /geo/regioner.parquet (niveau 1) — merge on bopreg=dim_kode. Exclude bopreg IN (0, 999).

@@ -16,4 +16,4 @@ notes:
 - hustyp=IHB ("Ikke hjemmeboende børn under 18 år") covers children not living in a household (institutions, foster care). Exclude IHB when counting children in ordinary households.
 - hustyp=AH ("Andre husstande bestående af flere familier") covers complex multi-family households.
 - This table uses husstandstype (household type) rather than familietype (family type) as in fam111n. A household can span multiple families. alder covers 0–24, kon is D/P only.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. No national total row exists in this table.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. No national total row exists in this table.

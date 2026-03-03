@@ -17,4 +17,4 @@ notes:
 - enhed selector (3 types). Always filter to one.
 - Covers indkomst i alt (before tax). For disponibel indkomst with the same structure use indkp106.
 - koen='MOK' is total.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

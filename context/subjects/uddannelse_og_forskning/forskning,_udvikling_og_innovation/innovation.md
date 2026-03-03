@@ -64,4 +64,4 @@ notes:
 - The innbranche column (inn21-inn25) encodes two parallel hierarchies in one column: branch breakdown (1000=total, 1010-1050) and size-group breakdown (1055=total, 1060-1075). Always filter to one hierarchy at a time.
 - The oin01 column (oin01dk-oin04dk) similarly encodes two hierarchies: sector view (1000=total, 1010-1030) and DB07 branch view (2000=total, 4000-4240). Choose one per query.
 - inn21-inn25 all have region joining dim.nuts niveau=1 (5 regions, codes 81-85). Code 0 = national total, not in dim — filter region='0' for national figures.
-- Map: inn21-inn25 support choropleth maps at region level via context/geo/regioner.parquet — merge on region=dim_kode. oin01dk-oin04dk have no geographic column.
+- Map: inn21-inn25 support choropleth maps at region level via /geo/regioner.parquet — merge on region=dim_kode. oin01dk-oin04dk have no geographic column.

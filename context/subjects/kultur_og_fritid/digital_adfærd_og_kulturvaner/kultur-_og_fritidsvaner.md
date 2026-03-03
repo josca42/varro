@@ -139,4 +139,4 @@ notes:
 - For long time-series membership counts (2007–2024): medlem2 (1.000 persons, not %).
 - Critical gotcha shared by all kv2* tables: indhold is a percentage, not a count. Each kultur/arbom/forentyp/begivenhed row is an independent activity — never sum across these category columns. They represent separate yes/no survey questions, not mutually exclusive choices.
 - For tables with kon and alder: always filter both to their totals (kon='10', alder='TOT') unless you specifically want a breakdown. kv2urb/kv2aurb use a merged koal column instead (koal='0' for total).
-- Map: kv2geo supports choropleth maps via context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. All other tables lack a geographic column.
+- Map: kv2geo supports choropleth maps via /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on kommunedk=dim_kode. All other tables lack a geographic column.

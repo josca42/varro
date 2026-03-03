@@ -21,4 +21,4 @@ notes:
 - afgreg=0 is national total, not in dim.nuts. Regions 81–85 join to dim.nuts at niveau=1. No sub-regional geography available.
 - To get a simple cohort count: filter afgklas='TOT', uddannelse='TOT', koen='10', herkomst='0', afgreg='0', pick one statustid and tid='2024-01-01'.
 - herkomst 10+20+30+40 sum to herkomst='0'. koen M+K sum to koen='10'. afgklas H2010+H2020+H2030 sum to TOT.
-- Map: context/geo/regioner.parquet — merge on afgreg=dim_kode. Exclude afgreg=0.
+- Map: /geo/regioner.parquet — merge on afgreg=dim_kode. Exclude afgreg=0.

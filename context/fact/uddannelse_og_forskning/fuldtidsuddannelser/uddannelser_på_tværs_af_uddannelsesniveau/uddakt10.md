@@ -16,4 +16,4 @@ notes:
 - Unmatched bopomr codes: '0' = national total (Hele landet, ~1.18M students in 2024), '998' and '999' = special/unknown categories (~8,060 each, not in dim.nuts). Sum of the 5 regions is 8,060 short of the national total — that gap sits in 998/999. For a national aggregate without a dim join, use bopomr='0'.
 - uddannelse is hierarchical: TOT → top-level (H10, H15, H20, H29, H30, H35, H40, H50, H60, H70, H80) → sub-codes (e.g. H1010, H1020, H1030 within H10). Top-level codes sum to TOT. Do not mix levels when aggregating — filter to one level or use TOT.
 - Minimal filter for a national student count: WHERE fstatus='B' AND bopomr='0' AND uddannelse='TOT' AND alder='TOT' AND kon='10'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

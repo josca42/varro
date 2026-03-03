@@ -17,4 +17,4 @@ notes:
 - uddannelsef has inline codes (H10-H90 + TOT) — these are the same 10 education levels as other tables in this subject; no dim join needed, use them directly.
 - To get simple population count by region and education: filter socio to all 4 values (or use GROUP BY + SUM), erhverv='TOT', alder='TOT', koen='TOT', then GROUP BY bopomr, uddannelsef.
 - This is the only table in the subject with socio (employment status) and erhverv (industry) dimensions — use it when those breakdowns matter.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

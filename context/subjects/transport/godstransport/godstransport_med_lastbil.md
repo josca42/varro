@@ -138,7 +138,7 @@ notes:
 - For truck characteristics (vehicle type, age, trip distance): nvg1 (national) or ivg1 (international).
 - For capacity utilization: nvg13/ivg14 (simple, by korart+læs) or nvg5/ivg6 (detailed, by trip distance and vehicle/direction type).
 - For dangerous goods: nvg33 (national, by region) or ivg3 (international, by direction).
-- Map: nvg23 and nvg33 support choropleth at landsdel level (context/geo/landsdele.parquet) via paregion/afregion. All other tables have no Danish geographic column.
+- Map: nvg23 and nvg33 support choropleth at landsdel level (/geo/landsdele.parquet) via paregion/afregion. All other tables have no Danish geographic column.
 - Universal pitfall: enhed (or maengde4) is a measurement selector present in every table — every row repeats per measurement unit. Always filter to one enhed/maengde4 value or results will be multiplied.
 - Universal pitfall: korart always has an aggregate total (1000=KØRSEL I ALT) plus breakdown codes that sum to it. Never sum the total with its children.
 - laes (present in nvg5, nvg13, ivg6, ivg14): 1010=inkl. tomkørsel contains 1030=med læs. Not mutually exclusive — always pick one.

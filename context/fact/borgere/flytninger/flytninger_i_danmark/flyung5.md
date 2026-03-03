@@ -13,4 +13,4 @@ notes:
 - TOTFL and TOTTL are aggregate codes — exclude both when you want the fra/til breakdown.
 - flyttetype has `0` = total. All three non-tid columns have aggregates.
 - To get e.g. "moves from Landsdel Byen København to all destinations": filter `fraflytland = '01'` and `tilflytland != 'TOTTL'` and `flyttetype != '0'`.
-- Map: context/geo/landsdele.parquet — OD matrix; merge on fraflytland::int=dim_kode (origin) or tilflytland::int=dim_kode (destination). Exclude TOTFL/TOTTL before casting.
+- Map: /geo/landsdele.parquet — OD matrix; merge on fraflytland::int=dim_kode (origin) or tilflytland::int=dim_kode (destination). Exclude TOTFL/TOTTL before casting.

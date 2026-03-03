@@ -15,4 +15,4 @@ notes:
 - kon: TOT=I alt, M=Mænd, K=Kvinder, 6=Uoplyst. Filter to TOT to avoid summing over gender.
 - ibib1 (current, to 2025) vs ibib1a (archive, to 2024): use ibib1 for current analysis.
 - Combining dyrkat=9020 (lånere) with 9025 (population) lets you calculate library borrower penetration rate.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

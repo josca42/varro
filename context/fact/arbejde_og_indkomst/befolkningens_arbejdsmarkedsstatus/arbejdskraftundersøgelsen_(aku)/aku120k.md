@@ -12,4 +12,4 @@ notes:
 - Quarterly data (tid steps quarterly: 2008-01-01, 2008-04-01, ...). For annual comparison use the annual table aku110a.
 - 3 beskstatus values (BESTOT, AKUL, UARBST) are mutually exclusive labour market categories — never sum across all three. Pick the category you need, or sum all three to get the 15-74 population.
 - For a region-level breakdown, filter omrade != '0' to exclude the national aggregate.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade='0'.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade='0'.

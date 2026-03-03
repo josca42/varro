@@ -39,4 +39,4 @@ notes:
 - modtag1 in pen114/pen113 and enhed in pen124/pen123 are measurement selectors — every row combination exists once per selector value. Always filter to a single value before aggregating.
 - ydelsestype=46 (pen114/pen124) and ydelsestype=40 (pen113/pen123) are the "i alt" totals. The sub-types (47–50 for folk, 41–45/55/60 for førtid) should not be summed with their respective totals.
 - For regional queries in pen113/pen114: omrade=0 is the national total, omrade=997 is people outside Denmark / unknown address (not in dim.nuts). Join via dim.nuts and always filter by niveau to avoid cross-level double-counting.
-- Map: pen113 and pen114 support choropleth maps at kommune (niveau 3) and landsdele (niveau 2) level via context/geo/kommuner.parquet and context/geo/landsdele.parquet — merge on omrade=dim_kode, exclude omrade IN (0, 997). pen123, pen124, pen200 have no geographic breakdown.
+- Map: pen113 and pen114 support choropleth maps at kommune (niveau 3) and landsdele (niveau 2) level via /geo/kommuner.parquet and /geo/landsdele.parquet — merge on omrade=dim_kode, exclude omrade IN (0, 997). pen123, pen124, pen200 have no geographic breakdown.

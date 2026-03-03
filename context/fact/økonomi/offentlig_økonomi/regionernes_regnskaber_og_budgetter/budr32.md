@@ -17,4 +17,4 @@ notes:
 - art has 42 values with the same aggregate/detail structure (TOT, UE, UI, I, S0-S9, numeric codes). Filter to one aggregate value.
 - dranst: 5 account types. Same pitfall as regr31.
 - To compare budget vs. actual: join budr32 with regr31 on regi07+funk1+dranst+art+prisenhed+tid (note: budr32 uses funktion, regr31 uses funk1 — same column, different name).
-- Map: context/geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.
+- Map: /geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.

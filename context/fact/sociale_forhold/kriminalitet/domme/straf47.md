@@ -18,4 +18,4 @@ notes:
 - omrade: same as straf44/46 — niveaux 1 and 3, omrade='0' = I alt (103 distinct values in this table), '998' = Uoplyst.
 - koen includes VIRKSOMHEDER (note: column is koen, not kon as in straf40/44).
 - Two dim joins (omrade + overtraed) plus straflang — filter all aggregates to get leaf-level counts.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN ('0', '998'). Kommune data can also be aggregated to 12 politikredse via dim.politikredse (niveau 2 koder match dim.nuts niveau 3; parent_kode → politikredsgrænser in context/geo/politikredse.parquet).
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN ('0', '998'). Kommune data can also be aggregated to 12 politikredse via dim.politikredse (niveau 2 koder match dim.nuts niveau 3; parent_kode → politikredsgrænser in /geo/politikredse.parquet).

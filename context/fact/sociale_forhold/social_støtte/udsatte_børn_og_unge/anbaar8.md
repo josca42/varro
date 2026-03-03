@@ -14,4 +14,4 @@ notes:
 - landdel joins dim.nuts at niveau 2 (11 landsdele, codes 1-11). Code 0 = national total.
 - foran: same full legal basis list as anbaar2/anbaar16 (code 0=I alt). alder1 uses age groups (IALT, 0005, 0611, 1217, 1800). kon: 0=I alt, D/P.
 - For total new placements by landsdel: WHERE foran='0' AND alder1='IALT' AND kon='0'.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.

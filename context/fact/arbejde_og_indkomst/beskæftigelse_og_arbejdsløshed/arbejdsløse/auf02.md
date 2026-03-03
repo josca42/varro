@@ -14,4 +14,4 @@ notes:
 - omrade joins dim.nuts. Levels 1/2/3 (regioner/landsdele/kommuner). omrade='0'=Hele landet, '997'=Udlandet not in dim. Hele landet = 5 regioner + Udlandet.
 - ydelsestype: TOT=Bruttoledige = LDP+LKT+ADP+AKT. Filter to one value.
 - Same structure as auf01 but starts from 2007 and is slightly behind auf01 in recency. alder groups are broader (30-39, 40-49) vs aulk01 which has finer bands (30-34, 35-39, etc.).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

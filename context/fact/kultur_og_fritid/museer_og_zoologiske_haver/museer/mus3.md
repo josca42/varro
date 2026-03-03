@@ -14,4 +14,4 @@ notes:
 - aktivi is a measurement selector: 411=antal besøgssteder, 420=besøg i udstillingen, 430=åbningstimer, 435=besøg på besøgssted. Never sum across aktivi.
 - museer=TOT5 and afdling=TOT are totals. Filter both for clean aggregation.
 - Regional breakdown only covers besøgssted-level aktiviteter (no frivillige, entréindtægter etc.). For those, use mus1.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

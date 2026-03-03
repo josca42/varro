@@ -17,4 +17,4 @@ notes:
 - alder=50 is overall total; alder=850 is the 67+ sub-total. Do not mix with individual bands.
 - koen=100 is total. Always filter all total codes to get a single non-duplicated count.
 - For the number of persons receiving home help use this table (aed06); for hours use aed022.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

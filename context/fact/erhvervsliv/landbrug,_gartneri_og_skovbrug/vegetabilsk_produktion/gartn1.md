@@ -13,4 +13,4 @@ notes:
 - tal is a measurement selector: 500=Dyrket areal (ha), 600=Høstet areal (ha), 700=Produktion (tons). All three appear for the same omrade/afgrode/tid. Always filter to one.
 - afgrode has 53 specific crop codes (10–265), all at the same granularity — no aggregate "I alt" code. Crops cover vegetables (10–130), soft fruits (135–165), orchard fruits (170–240), and berries (245–265).
 - To get totals across crops, aggregate in SQL with SUM over the desired afgrode codes.
-- Map: context/geo/landsdele.parquet (niveau 2) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

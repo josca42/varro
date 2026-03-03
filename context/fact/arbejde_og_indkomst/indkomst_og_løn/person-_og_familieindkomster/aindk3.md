@@ -16,4 +16,4 @@ notes:
 - alder1='00' is the total.
 - enhed selector (3 types). Always filter to one.
 - koen='MOK' is total. Shows udbetalt A-indkomst (net after A-skat and arbejdsmarkedsbidrag). Structure identical to aindk2 but covers what people actually received.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

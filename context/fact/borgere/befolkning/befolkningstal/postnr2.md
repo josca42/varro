@@ -13,4 +13,4 @@ notes:
 - Do NOT sum all pnr20 codes — pnr20=1 (Hele landet) is a separate aggregate that overlaps with all other codes.
 - Use postnr1 for simple "population by postal code". Use postnr2 when you need to split a cross-municipality postal area by municipality.
 - Same age groupings (5-year bands) and kon totals as postnr1.
-- Map: context/geo/postnumre.parquet — postal code is pnr20 % 10000; merge on (pnr20 % 10000)=dim_kode. Exclude pnr20=1 and rows where pnr20 % 10000 = 9999.
+- Map: /geo/postnumre.parquet — postal code is pnr20 % 10000; merge on (pnr20 % 10000)=dim_kode. Exclude pnr20=1 and rows where pnr20 % 10000 = 9999.

@@ -130,4 +130,4 @@ notes:
 - indkom (bil86/87): three overlapping schemes — income bands, decils, quartiles. Pick one. laby55 simplifies to decils+quartiles only.
 - bol (bil88/89): two overlapping classification schemes — boligtype (110-610) and ejerforhold (620-640). Pick one. bol=100/TOT1 is the total for both.
 - socio (bil90/91, laby53): hierarchical sub-groups. 100=total; 110=alle selvstændige, 130=alle lønmodtagere, 515=alle pensionister are sub-totals. Pick one granularity level.
-- Map: bil800 and bil811 support choropleth maps via context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: bil800 and bil811 support choropleth maps via /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

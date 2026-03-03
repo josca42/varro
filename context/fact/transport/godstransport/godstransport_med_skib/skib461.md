@@ -12,4 +12,4 @@ notes:
 - havn has the same aggregate/LANDSDEL structure as skib421/431/451. Filter to individual ports or havn='0'.
 - ret: filter to one of 3 values (1184 total, 1186 indgående, 1188 udgående).
 - Use ColumnValues("nuts", "titel", for_table="skib461") to see which landsdele codes appear in this table.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel IN (0, 888).
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel IN (0, 888).

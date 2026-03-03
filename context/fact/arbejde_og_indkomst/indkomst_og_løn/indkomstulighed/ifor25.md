@@ -12,4 +12,4 @@ notes:
 - decilgr has 9 codes (1DC–9DC): upper income boundaries between consecutive decils, not averages. 9DC = the 90th percentile income threshold.
 - kommunedk code 0 = Danmark i alt (not in dim.nuts). All other codes join dim.nuts at niveau=3 (kommuner).
 - See ifor22 for the same table without prisenhed. Use ifor25 with prisenhed = '5' for real price comparisons over time.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

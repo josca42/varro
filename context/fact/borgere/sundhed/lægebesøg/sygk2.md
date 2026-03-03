@@ -14,4 +14,4 @@ notes:
 - ydelsesart is hierarchical: 120=I ALT is the grand total, 130=ALMEN LÆGE I ALT is a GP sub-total. Do not sum all ydelsesart values — pick one level.
 - alerams has single-year ages (0, 1, 2, ... 99-=99+) plus IALT=total. More granular than sygk1 which has 5-year groups. Use sygk2 when single-year age breakdown is needed.
 - To get regional totals: filter ydelsesart=120, alerams='IALT', kon='TOT', then join dim.nuts WHERE d.niveau=1.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

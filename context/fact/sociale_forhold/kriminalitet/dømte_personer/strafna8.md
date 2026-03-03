@@ -9,5 +9,5 @@ dim docs: /dim/nuts.md
 notes:
 - omrade joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). Code 0 (I alt) is not in the dim — filter to a specific niveau.
 - afgorelse has 7 verdict types, no total row: 11=Ubetinget frihedsstraf, 12=Betinget frihedsstraf, 2=Bødeafgørelse, 3=Tiltalefrafald, 4=Tiltale undladt, 5=Anden afgørelse, 511=Foranstaltningsdomme. Same coding as strafna5/strfna11.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
-- Map: kommune data (niveau 3) can be aggregated to politikredse via dim.politikredse (niveau 2 = kommuner, niveau 1 = 12 politikredse). Use context/geo/politikredse.parquet for boundaries.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: kommune data (niveau 3) can be aggregated to politikredse via dim.politikredse (niveau 2 = kommuner, niveau 1 = 12 politikredse). Use /geo/politikredse.parquet for boundaries.

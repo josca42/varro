@@ -14,4 +14,4 @@ notes:
 - type is a structural dimension: 110=total, 120=Hoteller, 130=Feriecentre. Always filter to one value.
 - kapacitet is a measurement selector with max/min seasonal ranges: 1130=hoteller max, 1140=hoteller min, 1150=værelser max, 1160=værelser min, 1170=senge max, 1180=senge min, 1110=værelsesbel. pct., 1120=sengebel. pct. Never SUM across kapacitet.
 - Use hotel6 for annual min/max capacity broken down by hotel vs. feriecenter type (regioner only). Use hotel4 for same annual ranges with landsdele granularity but without type split.
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

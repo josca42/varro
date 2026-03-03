@@ -15,4 +15,4 @@ notes:
 - ydelsestype: TOT=Bruttoledige = LDP+LKT+ADP+AKT. Filter to one value.
 - alder has finer bands than auf01/auf02 (30-34, 35-39, 40-44, etc. instead of 30-39, 40-49).
 - Current monthly series from 2007. This is the preferred table for counts with full region/ydelse/akasse/alder/kon breakdown and history from 2007. Supersedes aul01 (which stopped at 2024-01).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

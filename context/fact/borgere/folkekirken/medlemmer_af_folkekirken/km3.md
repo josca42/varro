@@ -11,4 +11,4 @@ notes:
 - Quarterly data (tid: Jan, Apr, Jul, Oct). Each row = count of births or deaths in that sogns during that quarter. Sum across quarters for annual totals.
 - No fkmed column — this covers all residents (members and non-members). This is total births/deaths in sogns area regardless of church membership.
 - Natural increase = births - deaths; compute as SUM(CASE WHEN bevaegelsev='B02' THEN indhold ELSE -indhold END) by sogns/period.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

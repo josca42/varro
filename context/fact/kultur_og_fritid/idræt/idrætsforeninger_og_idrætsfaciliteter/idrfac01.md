@@ -12,4 +12,4 @@ notes:
 - omrade=0 is the national total (Danmark I alt) — not in dim.nuts. Use it directly to get a country-level number without joining.
 - idrfac has 28 distinct facility types (FAC1–FAC28), no total/aggregate code. Summing all 28 gives total facility count. Use ColumnValues("idrfac01", "idrfac") to see the full label mapping.
 - Example: facilities by landsdel: JOIN dim.nuts ON omrade=kode AND niveau=2, filter to desired idrfac and tid.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

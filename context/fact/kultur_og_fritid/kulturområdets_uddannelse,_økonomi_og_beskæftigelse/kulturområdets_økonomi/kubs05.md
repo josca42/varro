@@ -13,4 +13,4 @@ notes:
 - `bopomr` joins dim.nuts. bopomr=0 is national aggregate (not in dim). Three hierarchy levels present: niveau 1=regioner (81–85), niveau 2=landsdele (1–11), niveau 3=kommuner (101+). Filter `d.niveau` to pick one geographic level.
 - `kon=TOT`, `aldgrp=TOT`, `kulturemne=0` are aggregate totals. Filter all three to their totals for a national headcount, or pick specific values for breakdowns.
 - Parallel to kubs06 which counts money (1.000 kr.) rather than persons (Antal).
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on bopomr=dim_kode. Exclude bopomr=0.

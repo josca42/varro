@@ -15,4 +15,4 @@ notes:
 - CAVEAT: 13 anvend codes in bygb70 (130, 210, 220, 230, 310, 320, 330, 410, 420, 430, 440, 520, 530) only exist at niveau=2 in the dim — they have no niveau=3 sub-codes. Filtering d.niveau=3 drops these rows (~1.3M m2 for anvend=210 alone). If you need complete coverage, either drop the dim join and use anvend codes directly, or handle the 13 niveau=2-only codes separately.
 - anvend codes 122, 592, 990 are unmatched in dim.byganv entirely — dropped by any INNER JOIN.
 - Only covers 2021-2025; other bygb tables cover 2011-2025.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

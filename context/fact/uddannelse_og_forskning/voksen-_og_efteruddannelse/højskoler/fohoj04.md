@@ -17,4 +17,4 @@ notes:
 - `insti` institution codes differ from `insttyp` in veuhoj11/veuhoj21: fohoj04 uses 109=Folkehøjskoler (not 101=Almene og grundtvigske). 108=Seniorhøjskoler only has kursus=40 (Kort) and TOT — no Mellemlangt or Langt.
 - `kursus`, `kon` are varchar; `bopland`, `insti`, `enhed`, `tidspunkter` are all smallint.
 - This is the only table with geographic breakdown of participants by residence (bopland). The other tables have no regional dimension.
-- Map: context/geo/landsdele.parquet — merge on bopland=dim_kode. Exclude bopland=0 (Hele landet) and bopland=99 (Uoplyst). bopland codes 1–11 align with dim.nuts niveau 2 kode despite the non-NUTS labeling.
+- Map: /geo/landsdele.parquet — merge on bopland=dim_kode. Exclude bopland=0 (Hele landet) and bopland=99 (Uoplyst). bopland codes 1–11 align with dim.nuts niveau 2 kode despite the non-NUTS labeling.

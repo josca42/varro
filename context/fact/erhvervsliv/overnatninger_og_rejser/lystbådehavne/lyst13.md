@@ -12,4 +12,4 @@ notes:
 - kapacitet is a measure selector — 6 metrics, always filter to exactly one: 3025=antal lystbådehavne, 3030=faste bådepladser, 3032=gæstebådsovernatninger i alt, 3034=gæstebådsovernatninger betalte, 3036=gæstebådsovernatninger frihavnsordning, 3040=personovernatninger. Note: 3032 = 3034 + 3036 (total = paid + free harbour scheme), so never sum 3032+3034+3036.
 - lyst13 has more kapacitet detail than lyst12 (splits guest boat nights into paid vs. free harbour scheme) but lacks the marina size breakdown.
 - Example: regional breakdown of marinas: JOIN dim.nuts d ON f.omrade=d.kode WHERE d.niveau=2 AND f.kapacitet='3025'.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

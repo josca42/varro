@@ -64,4 +64,4 @@ notes:
 - For age × authority type: vie825 (2007–2024, longest series) or vie825k (2020–2024, adds month). Neither has total codes for vimyn or vimdr — sum across all values to get totals.
 - Month code inconsistency across tables: vie9 and viedag use zero-padded strings '001'–'012' + 'TOT'; vie325 and vie825k use plain integers 1–12 (no total code, no zero-padding). Do not copy month filter values between these groups.
 - All tables from 2007 onward use gender-neutral language (ældste/yngste person) to accommodate same-sex marriages.
-- Map: vie225 and vie325 support choropleth maps at kommune level (niveau 3) via context/geo/kommuner.parquet — merge on bopaegt1 or bopaegt2=dim_kode, fixing the other bopæl to '0'. Exclude codes 0 and 997.
+- Map: vie225 and vie325 support choropleth maps at kommune level (niveau 3) via /geo/kommuner.parquet — merge on bopaegt1 or bopaegt2=dim_kode, fixing the other bopæl to '0'. Exclude codes 0 and 997.

@@ -12,4 +12,4 @@ notes:
 - tilskudsart (30=privat pasning, 31=egne børn) and berort (32=børn, 33=familier) are fully orthogonal — there are NO total rows. Each of the 4 combinations is a distinct count. Do not sum across tilskudsart or berort to get a total (families receiving both subsidies would be double-counted).
 - To get total children receiving any childcare subsidy, query berort=32 for each tilskudsart separately and note they may overlap.
 - Longest time series in this subject: 2008-2024. Useful for long-run trend analysis of alternative childcare subsidies.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

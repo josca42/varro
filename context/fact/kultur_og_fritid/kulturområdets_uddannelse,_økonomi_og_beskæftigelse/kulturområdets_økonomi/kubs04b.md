@@ -15,4 +15,4 @@ notes:
 - `enhed` is a measurement selector: KUDB=total 1.000 kr., KKPB=kr. per inhabitant under 18. Always filter to one.
 - `statsinstituition` selector (SL vs SB) and `omrade` int-cast join issue same as kubs02b.
 - `omrade='00'` is national aggregate (not in dim). Use `f.omrade::int = d.kode` for the join.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade::int=dim_kode. Exclude omrade='00'.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade::int=dim_kode. Exclude omrade='00'.

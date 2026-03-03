@@ -14,4 +14,4 @@ notes:
 - indhold unit is '-' (mixed). Always filter afslutstatus to one semantic group (counts OR percentages) per query.
 - "Myndighedskommune" is the municipality responsible for the client, which may differ from where the treatment took place. Use omrade (smdbv001/smdbv002) for treatment location; myndighedskom here for responsible authority.
 - Sample query — completion outcomes by municipality (2024, percentages): SELECT d.titel, f.afslutstatus, f.indhold FROM fact.smdbv005 f JOIN dim.nuts d ON f.myndighedskom = d.kode WHERE d.niveau = 3 AND f.afslutstatus IN ('FRIPCT','REDSTABPCT','ANDPCT') AND f.tid = '2024-01-01'
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on myndighedskom=dim_kode. Exclude myndighedskom=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on myndighedskom=dim_kode. Exclude myndighedskom=0.

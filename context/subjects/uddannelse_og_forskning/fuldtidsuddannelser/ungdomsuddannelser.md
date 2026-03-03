@@ -40,4 +40,4 @@ notes:
 - For geographic accessibility (how far do students travel?): use laby48. It gives average distance in km by kommunegruppe (5 groups) and education type. Covers 2008–2021 only.
 - All four enrollment tables share the same fstatus column: B=enrolled 1. okt., F=fuldført, T=tilgang. Always filter to exactly one fstatus — the values represent different phenomena, not additive categories.
 - All uddannelse columns are hierarchical (code length encodes level). Always pick one level to avoid double-counting parent and child rows.
-- Map: uddakt30 supports regional choropleth via context/geo/regioner.parquet — merge on bopreg=dim_kode, exclude bopreg IN (0, 999). No other table in this subject has a geographic column.
+- Map: uddakt30 supports regional choropleth via /geo/regioner.parquet — merge on bopreg=dim_kode, exclude bopreg IN (0, 999). No other table in this subject has a geographic column.

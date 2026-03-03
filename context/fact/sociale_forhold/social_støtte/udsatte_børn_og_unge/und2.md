@@ -15,4 +15,4 @@ notes:
 - admkom joins dim.nuts at niveau 3 (kommuner). Code 0 = national total, code 998 = unknown municipality.
 - Same alder1 and kon encoding as und1 (total='00', ufødt='U0').
 - For total children with any notification by kommune: WHERE underret='0' AND alder1='00' AND kon='0'.
-- Map: context/geo/kommuner.parquet — merge on admkom=dim_kode. Exclude admkom=0 and admkom=998.
+- Map: /geo/kommuner.parquet — merge on admkom=dim_kode. Exclude admkom=0 and admkom=998.

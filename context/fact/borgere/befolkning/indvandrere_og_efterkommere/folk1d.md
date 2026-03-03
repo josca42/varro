@@ -14,4 +14,4 @@ notes:
 - statsb is simplified (TOT/DANSK/UDLAND). Use folk1b for country-level statsb breakdown.
 - alder has individual years (0–125) with IALT as total. No aggregate age bands.
 - 4 dimension columns (omrade, kon, alder, statsb). Filter non-target dims: omrade=0, kon='TOT', alder='IALT', statsb='TOT'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

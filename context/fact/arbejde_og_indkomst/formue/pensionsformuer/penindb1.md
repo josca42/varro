@@ -17,4 +17,4 @@ notes:
 - pentyp=20 (alle som indbetaler) is the total; 21=arbejdsgiveradministrerede, 22=privat tegnede. Components sum to total.
 - alder1=TOT is the aggregate; remaining 5 bands start at "under 25" (no data for 0-24 individually). koen=MOK is the total.
 - This is the only table with regional breakdown of pension contributions (indbetalinger) — use it for geographic comparisons. For pension wealth (formue) use penfor11/penfor20.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

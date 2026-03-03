@@ -11,4 +11,4 @@ notes:
 - paskat includes TOT=I alt alongside 2 specific types (no dagpleje — private institutions don't provide dagpleje). Filter to one paskat to avoid 3x inflation.
 - Short time range only: 2021-2023. For kommunale og selvejende institutions use boern2 (2015-2024).
 - To get total enrolled children (kommunal + private), join boern2 and pboern2 on blstkom, paskat='TOT', same tid.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on blstkom=dim_kode. Exclude blstkom=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on blstkom=dim_kode. Exclude blstkom=0.

@@ -15,4 +15,4 @@ notes:
 - The only wastewater table with regional breakdown. Use vandud for geography questions; use vandrg4 for industry breakdown.
 - Sample: nitrogen discharge by facility type for Denmark in 2023:
   SELECT f.anlaeg, f.indhold FROM fact.vandud f WHERE f.omrade='0' AND f.udl='KV' AND f.tid='2023-01-01' ORDER BY f.indhold DESC;
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -12,4 +12,4 @@ notes:
 - indsatser has the same 55 hierarchical codes as isbu01, but the total code differs: 2=BØRN OG UNGE DER MODTAGER FOREBYGGENDE FORANSTALTNINGER OG INDSATSER I ALT (vs code 3 in isbu01). Same hierarchy rules apply — do not sum parent + child codes.
 - kommunedk joins dim.nuts at niveau 3 (98 kommuner). Code 0 = national total.
 - For total children with support per kommune: WHERE indsatser=2 AND tid='2024-01-01'.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

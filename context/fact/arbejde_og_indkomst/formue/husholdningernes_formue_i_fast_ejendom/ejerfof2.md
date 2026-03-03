@@ -15,4 +15,4 @@ notes:
 - husgrp mixes three independent breakdowns in one column. A0=alle familier, C0=total for socioøkonomisk status gruppe (equals A0), D0=total for uddannelse gruppe (equals A0). The sub-groups: C110-C330 are socioøkonomisk statuses; D10-D9 are uddannelsesniveauer. Pick exactly one breakdown at a time: either filter to A0, or filter to one C-sub-group, or filter to one D-sub-group. Summing A0+C0+D0 triples counts (they're all the same population total).
 - bopkom joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). niveau 2 NOT present. bopkom='0' = national aggregate, not in dim.nuts.
 - Use ColumnValues("nuts", "titel", for_table="ejerfof2") to see available regions/kommuner.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.

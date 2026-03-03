@@ -13,4 +13,4 @@ notes:
 - pastil=65 (Integreret institution) only exists in 2017 data — the category was discontinued.
 - pastil=66 (Puljeordning) only appears with ejerform=66 (itself) — not with the standard ejerform codes.
 - indhold counts institutions (or units at the enheds-niveau for pastil=69). Comparing pastil=61 (forældrebe-styrelses niveau) and pastil=69 (enheds niveau) gives different granularities of the same daginstitutioner.
-- Map: context/geo/kommuner.parquet — merge on blstkom=dim_kode. Exclude blstkom=0.
+- Map: /geo/kommuner.parquet — merge on blstkom=dim_kode. Exclude blstkom=0.

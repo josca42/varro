@@ -25,4 +25,4 @@ notes:
 - camp3 = annual capacity stats with seasonal min/max values (max/min number of sites and units within the year). Use when you need the annual high/low range for capacity.
 - All three tables share the same omrade dimension: 5 regioner (niveau 1, kode 81–85) plus omrade=0 for the national total. No sub-regional breakdown (kommune level) is available.
 - All three tables have a kapacitet or overnat1/periode measurement selector — always filter to one value to avoid silently doubling counts. This is the most common pitfall across all tables in this subject.
-- Map: all three tables support choropleth maps at region level via context/geo/regioner.parquet — merge on omrade=dim_kode, exclude omrade=0.
+- Map: all three tables support choropleth maps at region level via /geo/regioner.parquet — merge on omrade=dim_kode, exclude omrade=0.

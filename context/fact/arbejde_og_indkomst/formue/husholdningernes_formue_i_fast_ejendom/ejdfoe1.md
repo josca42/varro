@@ -16,4 +16,4 @@ notes:
 - bopkom joins dim.nuts at niveau 1 (5 regioner) and niveau 3 (99 kommuner). niveau 2 (landsdele) is NOT present. bopkom='0' is the national aggregate — it has no match in dim.nuts (use WHERE bopkom='0' directly for national totals).
 - Use ColumnValues("nuts", "titel", for_table="ejdfoe1") to see the 103 joinable regions/kommuner.
 - Minimal working query: filter vaerdi, enhed, ejentyp, and d.niveau to avoid 6x overcounting.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.

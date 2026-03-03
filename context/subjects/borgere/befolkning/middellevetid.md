@@ -77,4 +77,4 @@ notes:
   - ligehi2: at age 50 by family type (enlige vs par), 1996+, 5-year rolling periods
   - ligehi4: at age 30 by education level, 2012+, 5-year rolling periods
 - All tables with kon include either M/K only (hisb7, hisb8, hisb9) or TOT/M/K (all others). Always filter kon to avoid overcounting when TOT is present.
-- Map: hisbr (regioner), hisb77 (landsdele), hisbk (kommuner) all support choropleth maps via context/geo/regioner.parquet, context/geo/landsdele.parquet, and context/geo/kommuner.parquet respectively — merge on omrade=dim_kode, exclude omrade=0.
+- Map: hisbr (regioner), hisb77 (landsdele), hisbk (kommuner) all support choropleth maps via /geo/regioner.parquet, /geo/landsdele.parquet, and /geo/kommuner.parquet respectively — merge on omrade=dim_kode, exclude omrade=0.

@@ -14,4 +14,4 @@ notes:
 - kombsos uses same binary positional code as brn15: hundreds=helsøskende, tens=halvsøskende, ones=papsøskende. E.g. 100=only full siblings, 011=half- and step-siblings.
 - This table counts ALL siblings regardless of cohabitation, unlike brn15 which only counts cohabiting siblings. For full sibship size, use this table; for household sibling composition, use brn15.
 - famtype=0 means "Udeboende" (child not living with any family).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

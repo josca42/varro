@@ -22,4 +22,4 @@ notes:
   WHERE f.bnogle=1000 AND f.neetsund='TOTAL' AND f.kon='MOK'
     AND f.tid='2022-01-01' AND d.niveau=1 AND f.statusneet IN (5,10)
   ORDER BY d.titel, f.statusneet;
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on bop=dim_kode. Exclude bop=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on bop=dim_kode. Exclude bop=0.

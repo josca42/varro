@@ -11,4 +11,4 @@ notes:
 - kommunedk joins dim.nuts at niveau 3 only (97 kommuner). kommunedk=0 = Hele landet. No regional (niveau 1) grouping in this table.
 - bnogle: 19 metric codes same as bib1 plus 10170=Aktive personlige lånere and 10175=Aktive betjeningssteder (2024-). Always filter to one bnogle.
 - For national folkebibliotek stats use bib1; use fsbib1 only when specifically asked about school libraries.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

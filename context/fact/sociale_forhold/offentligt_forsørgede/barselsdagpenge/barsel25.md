@@ -15,4 +15,4 @@ notes:
 - Same column structure and filter logic as barsel04. `tal` is a measurement selector (always filter to one value), `beret` total is `'3'`, `morud` total is `'2'`, `farud` total is `'4'`.
 - `omrade` joins dim.nuts. Code `0` = national total (not in dim). niveau 2 = 11 landsdele, niveau 3 = 98 kommuner. Filter `d.niveau` to avoid cross-level double counting.
 - Shorter time range than barsel04 (2016–2022 vs. 2015–2023).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -14,4 +14,4 @@ notes:
 - TOTTL is the aggregate code for all destination landsdele.
 - agebygroup has `TOT1529` as aggregate; flyttetype has `0` as total. Filter appropriately.
 - Covers only young people aged 15–29.
-- Map: context/geo/landsdele.parquet — merge on tilflytland::int=dim_kode. Exclude tilflytland='TOTTL' before casting.
+- Map: /geo/landsdele.parquet — merge on tilflytland::int=dim_kode. Exclude tilflytland='TOTTL' before casting.

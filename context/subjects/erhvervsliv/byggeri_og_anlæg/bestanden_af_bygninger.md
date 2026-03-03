@@ -49,4 +49,4 @@ notes:
 - bygb70 — buildings and floor area (maengde4 selector) by building use at niveau=3 BBR detail. No opforelsesar dimension (unlike bygb40/50/60).
 - Tables bygb40, bygb50, bygb60, bygb70 all have maengde4 as a measurement selector (45=antal, 50=areal in 1.000 m2). Always filter to one value — summing both silently combines incompatible units.
 - opforelsesar (construction period) uses confusing century-wrapping 5-year codes ("05-09"=1905-1909 but "05-10"=2005-2009). Use ColumnValues to read labels rather than interpreting the codes visually.
-- Map: All 6 tables support choropleth maps via omrade — context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1). Merge on omrade=dim_kode. Exclude omrade=0.
+- Map: All 6 tables support choropleth maps via omrade — /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1). Merge on omrade=dim_kode. Exclude omrade=0.

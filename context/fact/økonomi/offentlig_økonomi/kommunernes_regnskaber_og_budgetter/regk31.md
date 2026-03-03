@@ -16,4 +16,4 @@ notes:
 - funktion codes are 4–5 digit integers encoding the DST x.xx.xx account format (e.g., 2201 = 0.22.01, 32320 = 3.23.20 folkeskole). 355 distinct funktion values. Use ColumnValues("regk31", "funktion") with fuzzy_match_str to find relevant codes. There are no aggregate/total funktion codes in this table — funk1-level totals are only in regk11.
 - art and dranst have the same aggregate/detail structure as regk11: art='TOT' for net totals, do not sum with UE or I.
 - Use this table when you need detail at the function level (e.g., folkeskole, dagtilbud, ældreområdet). Use regk11 for main-account (funk1) aggregates.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -13,4 +13,4 @@ notes:
 - No total rows: alder is 0–99 only, kon is M/K only. Summing all rows for a kommune gives the true intra-municipal move count.
 - This table covers only moves *within* a municipality (flytning der ikke krydser kommunegrænse). For inter-municipal moves use fly66; for all moves nationally use fly.
 - ColumnValues("nuts", "titel", for_table="fly33") returns the 99 kommuner present in this table.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

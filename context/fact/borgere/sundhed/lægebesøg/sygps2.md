@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts niveau 1 only. omrade=0 is "Hele landet" and omrade=86 is uoplyst — exclude both when joining.
 - ydelsesart lists individual specialties (no grand-total row).
 - alerams has single-year ages (0, 1, ... 99-=99+) plus IALT.
-- Map: context/geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

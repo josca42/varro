@@ -16,4 +16,4 @@ notes:
 - moherk has 4 mutually exclusive categories (0=Uoplyst, 3=Efterkommere, 4=Indvandrere, 5=Dansk oprindelse). No aggregate total — sum all 4 for a complete count.
 - mooprind and mostat both join dim.lande_psd at niveau 3 only (individual countries). dim.lande_psd has 265 niveau-3 codes but fact.fodie uses only 195 for mooprind and 184 for mostat. Always use ColumnValues("lande_psd", "titel", for_table="fodie") — it drastically reduces the list. Hierarchy: niveau 1=continents, niveau 2=regions, niveau 3=countries. Only niveau 3 is present in the fact table.
 - moherk and mooprind/mostat are strongly correlated: mothers with mooprind=Danmark (5100) will have moherk=5. When filtering to a specific country of origin, moherk is largely redundant.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

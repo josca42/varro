@@ -82,4 +82,4 @@ notes:
 - best18 vs best19: entry/exit flow tables (2023 only). best18 = who joined or continued. best19 = who left or continued. Not comparable to stock counts in best11–best15.
 - branchedb0721 in all industry tables (best14, best15, best17, best18, best19, ligedi13) uses DB07 19-group letter codes (A–S, X, TOT). These do NOT join dim.db. Use ColumnValues on the fact table directly for labels.
 - All count tables (best11–best19) include total rows: type='10', kon='100', virkstr='3001', uddannelse='TOT', alder='IALT'. Always filter non-target dimensions to their total to avoid overcounting.
-- Map: best11 supports choropleth maps at landsdel level via context/geo/landsdele.parquet — merge on bopland=dim_kode, exclude bopland IN (0, 12). Other tables have no geographic dimension.
+- Map: best11 supports choropleth maps at landsdel level via /geo/landsdele.parquet — merge on bopland=dim_kode, exclude bopland IN (0, 12). Other tables have no geographic dimension.

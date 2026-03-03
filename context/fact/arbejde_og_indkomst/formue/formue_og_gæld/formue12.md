@@ -15,4 +15,4 @@ notes:
 - Same three mandatory selectors as all formue tables: form1 (pick one wealth type), enhed (pick one unit), popu (5005=alle or 5025=kun med). Omitting any of these multiplies row counts.
 - alder here is coarser than formue11: only 5 broad groups (1802=total, 1829, 3049, 5069, 7099). Cannot do 5-year age bands with this table.
 - enhed=240 is antal personer (count), not a kr. value — don't mix with the financial enhed values.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

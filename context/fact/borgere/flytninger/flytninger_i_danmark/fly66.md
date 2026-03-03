@@ -15,4 +15,4 @@ notes:
 - Origin-destination matrix at municipality level: each row is moves from frakommune to tilkommune. To get "moves into Kommune X" filter `tilkommune = X`; for "moves from" filter `frakommune = X`. Do not sum both dimensions simultaneously.
 - Covers only *inter-municipal* moves. For within-municipality moves see fly33; for all moves use fly.
 - ColumnValues("nuts", "titel", for_table="fly66") works for both tilkommune and frakommune — same 99 kommuner.
-- Map: context/geo/kommuner.parquet — OD matrix; merge on tilkommune=dim_kode (moves into) or frakommune=dim_kode (moves out of) for choropleth. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — OD matrix; merge on tilkommune=dim_kode (moves into) or frakommune=dim_kode (moves out of) for choropleth. Exclude omrade=0.

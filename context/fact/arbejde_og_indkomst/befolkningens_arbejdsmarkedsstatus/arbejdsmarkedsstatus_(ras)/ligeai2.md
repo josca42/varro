@@ -17,4 +17,4 @@ notes:
 - omrade='0' is the national total — not in dim.nuts. Use directly.
 - famtype includes sub-totals — see ligeab1/ligeai1 notes for the hierarchy structure.
 - No herkomst column (unlike ligeai1). Use ligeai1 for herkomst × famtype, ligeai2 for region × famtype.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

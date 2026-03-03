@@ -11,4 +11,4 @@ notes:
 - indhold values are decimal (e.g. 867.6) because DST reports quarterly averages of daily service counts. This measures services delivered, not unique recipients. For headcounts use hand07 instead.
 - ydelsestype has 21 inline service types with no aggregate/total row. Summing all 21 gives total services across all types. Use ColumnValues("hand01", "ydelsestype") to see the full list with labels.
 - hand05 covers the same dimensions but ends 2024-01-01 and only has 17 ydelsestype (missing 32001–32004: "hastigt fremskridende sygdom" types added 2024K3). hand01 supersedes hand05.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

@@ -15,4 +15,4 @@ notes:
 - samling: 35=Børnesamling, 39=Voksen samling. Filter to one unless you want both.
 - mater contains hierarchy: 500=Alle materialetyper (grand total), 560=I ALT MONOGRAFIER (subtotal) — don't mix with individual material type codes or you double-count.
 - Typical query for adult book loans by region: SELECT d.titel, SUM(f.indhold) FROM fact.bib3 f JOIN dim.nuts d ON f.omrade=d.kode WHERE f.opgoer1='14' AND f.samling='39' AND f.mater='503' AND d.niveau=1 GROUP BY d.titel.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

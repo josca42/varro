@@ -11,4 +11,4 @@ notes:
 - kon has TOT, M, K — filter to kon='TOT' for overall average age per parish.
 - sogn=0 is "Hele landet" (national average). 9999=Uden fast bopæl is a non-geographic code.
 - Finest geographic granularity for average age (parish level, back to 2007). For commune/region level use galder.
-- Map: context/geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogn=dim_kode. Exclude sogn IN (0, 9999).

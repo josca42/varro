@@ -13,4 +13,4 @@ notes:
 - region joins dim.nuts at niveau=1 (the 5 regions, codes 81-85). Code 0 = national total, not in dim.nuts. Use WHERE f.region = '0' for national results or LEFT JOIN.
 - inno is multi-select: a firm can be both produktinnovativ (80) and procesinnovativ (90). inno=130 (Innovative i alt) is the total (46%); 80+90=24+41=65% > 46%, confirming overlap. Use inno=130 for the headline share of innovative firms.
 - All indhold values are percentages. Never sum across inno or innbranche categories.
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

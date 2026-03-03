@@ -14,4 +14,4 @@ notes:
 - hustyp, husstor, and antbornh have NO total/aggregate codes. Every row is a specific combination. To get total household count for an area, SUM across all hustyp × husstor × antbornh values — they are non-overlapping categories. Never filter to a single value without intent.
 - IHB (Ikke hjemmeboende børn under 18 år) is a tiny category (~1,300 nationally in 2025). It represents children under 18 who head their own household, not living with parents. Often appropriate to exclude when counting family households.
 - Example: total households in a region — JOIN dim.nuts d ON omrade=d.kode WHERE d.niveau=1, then GROUP BY d.titel and SUM(indhold) across all hustyp/husstor/antbornh.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

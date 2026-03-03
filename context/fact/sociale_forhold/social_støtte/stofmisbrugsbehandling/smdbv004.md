@@ -13,4 +13,4 @@ notes:
 - OK + EJOK should equal NYBEH (guarantee applies to all new treatments). OKPCT + EJOKPCT ≈ 100.
 - indhold unit is '-' (mixed) — confirm you understand whether you're reading counts or percentages before interpreting values. National avg 2024: OKPCT≈89%, EJOKPCT≈11%.
 - Sample query — guarantee compliance rate by region (2024): SELECT d.titel, f.indhold FROM fact.smdbv004 f JOIN dim.nuts d ON f.omrade = d.kode WHERE d.niveau = 1 AND f.ventetidgaranti = 'OKPCT' AND f.tid = '2024-01-01'
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

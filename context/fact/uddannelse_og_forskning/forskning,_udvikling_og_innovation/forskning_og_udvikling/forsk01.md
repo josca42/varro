@@ -16,4 +16,4 @@ notes:
   - All three aggregate totals (fui01='0', '1000', '3000') give the same national grand total. Never mix codes from different perspectives in the same aggregation.
 - fui08='10' = Udgifter til egen FoU i alt (main aggregate). Values 20–70 are sub-components (driftsudgifter + investeringsudgifter). Filter to fui08='10' for a simple total.
 - To get a single national total: WHERE fui01='1000' AND fui08='10' AND tid='...'
-- Map: context/geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.
+- Map: /geo/regioner.parquet — filter fui01 IN (81,82,83,84,85) for the region perspective, then merge on fui01=dim_kode.

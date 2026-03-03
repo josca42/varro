@@ -15,4 +15,4 @@ notes:
 - famtyp: only 3 types (FAIA, PAIA, ENIA). Filter to one.
 - enhed selector (3 types). Always filter to one.
 - Covers indkomst i alt (before tax). For disponibel by kommune use indkf132 (identical structure).
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

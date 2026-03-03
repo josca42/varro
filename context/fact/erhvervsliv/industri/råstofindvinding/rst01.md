@@ -13,4 +13,4 @@ notes:
 - Use `ColumnValues("nuts", "titel", for_table="rst01")` to see the 103 dim-matched omrade codes.
 - rastoftype TOTLAND = sum across all material types. Filter `WHERE rastoftype != 'TOTLAND'` when summing across types to avoid double-counting. The 9 individual types are: SANDGRUS, KVARTS, GRANIT, LER, EKSPLER, MOLER, KRIDT, TØRV, ANDRE.
 - indhold unit is 1.000 m³ (thousands of cubic metres).
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

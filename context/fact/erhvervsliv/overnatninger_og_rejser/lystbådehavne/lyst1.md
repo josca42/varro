@@ -13,4 +13,4 @@ notes:
 - periode is a critical overcounting column. Values 1=Hele året (annual sum), 2=År til dato, 5-9=individual months May–Sep. Always filter to exactly one periode value. Never sum across periode values or you multiply counts.
 - nation1 has 27 values including TOT=I alt (all nationalities), DAN=Danmark, UDLAN=Verden udenfor Danmark (non-DK subtotal), then individual countries. TOT is the grand total; DAN+UDLAN=TOT. Filter nation1='TOT' for overall counts.
 - For a simple annual national total: WHERE f.omrade='0' AND f.nation1='TOT' AND f.periode='1'.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -13,4 +13,4 @@ notes:
 - `region=0` is the national total ("Hele landet") and is NOT in dim.nuts. Regions 81–85 are the 5 standard regions (alle niveau=1 in dim.nuts). To include the national total in results, handle it separately or use a LEFT JOIN with a CASE for region=0.
 - `ejendomskate=556` (Andelsboliger) only has national-level data (region=0) — no regional breakdown. Avoid filtering both region≠0 AND ejendomskate=556 or you'll get zero rows.
 - Sample query — huslejeindeks by region for alle boliger: `SELECT d.titel, f.tid, f.indhold FROM fact.hus1 f JOIN dim.nuts d ON f.region=d.kode WHERE f.tal=100 AND f.ejendomskate=550 ORDER BY f.tid, d.titel;` (excludes region=0 national total, includes 5 regioner).
-- Map: context/geo/regioner.parquet (niveau 1) — merge on region=dim_kode. Exclude region=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on region=dim_kode. Exclude region=0.

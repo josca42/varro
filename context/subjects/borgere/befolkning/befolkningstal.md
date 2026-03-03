@@ -203,9 +203,9 @@ notes:
 - Faroese-born in Denmark by parental origin: **bef5f**; Greenlandic-born: **bef5g**
 
 **Map-ready tables**
-- Kommune/region choropleth: **folk1a**, **folk1am** (omrade, niveau 1+3), **bev22**, **bev107** (omrade, niveau 3 only), **galder**, **by2** (komk, niveau 1+3 / niveau 3) — all merge on column=dim_kode via context/geo/kommuner.parquet or regioner.parquet.
+- Kommune/region choropleth: **folk1a**, **folk1am** (omrade, niveau 1+3), **bev22**, **bev107** (omrade, niveau 3 only), **galder**, **by2** (komk, niveau 1+3 / niveau 3) — all merge on column=dim_kode via /geo/kommuner.parquet or regioner.parquet.
 - Postal code choropleth: **postnr1** (pnr20=dim_kode, exclude 1+9999), **postnr2** (pnr20 % 10000 = dim_kode).
-- Parish (sogn) choropleth: **km1**, **sogn1**, **kmsta003**, **kmgalder** — merge on sogn=dim_kode via context/geo/sogne.parquet, exclude 0+9999.
+- Parish (sogn) choropleth: **km1**, **sogn1**, **kmsta003**, **kmgalder** — merge on sogn=dim_kode via /geo/sogne.parquet, exclude 0+9999.
 
 **Urban distribution percentages**
 - Age profile within each kommunegruppe: **laby02**

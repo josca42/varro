@@ -15,4 +15,4 @@ notes:
 - This table has 5 dimension columns (omrade, ydelsestype, kon, alder, tid). For a simple national total: omrade='0', kon='TOT', alder='TOT', ydelsestype='TOT'. Forgetting any one of these inflates the sum.
 - alder groups: TOT, then 5-year bands from 16-24 through 55-59, plus 6099 (60+). No individual ages.
 - Quarterly data (tid steps Jan/Apr/Jul/Oct). Latest to 2025-04-01. For annual data use auh01.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN (0, 997).

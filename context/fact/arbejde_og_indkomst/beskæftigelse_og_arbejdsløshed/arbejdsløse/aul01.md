@@ -14,4 +14,4 @@ notes:
 - Superseded by aulk01 (same structure, updated to 2025). Use aulk01 for current data.
 - omrade joins dim.nuts (levels 1/2/3). omrade='0'=Hele landet not in dim.
 - ydelsestype: TOT=Bruttoledige is the aggregate of LDP+LKT+ADP+AKT. Filter to one ydelsestype.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

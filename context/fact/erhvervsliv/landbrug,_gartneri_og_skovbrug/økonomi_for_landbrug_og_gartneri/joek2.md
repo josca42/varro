@@ -10,4 +10,4 @@ notes:
 - region is stored as integers (81–85 + 0) but dim.landbrugslandsdele uses zero-padded strings (081–085). Join with: `JOIN dim.landbrugslandsdele d ON LPAD(f.region::text, 3, '0') = d.kode AND d.niveau = 1`. The 5 codes correspond to the 5 Danish regions. Code 0 = hele landet, not in dim.
 - produkt hierarchy is the same nested accounting tree as joek1, but a narrower subset. Pick a specific aggregate or leaf; never sum all produkt rows.
 - Only 2 years of data (2022–2023). For the national series including 2024 use joek1 (no regional split there).
-- Map: context/geo/regioner.parquet — merge on region=dim_kode (5 standard regions, codes 81–85). Exclude region=0.
+- Map: /geo/regioner.parquet — merge on region=dim_kode (5 standard regions, codes 81–85). Exclude region=0.

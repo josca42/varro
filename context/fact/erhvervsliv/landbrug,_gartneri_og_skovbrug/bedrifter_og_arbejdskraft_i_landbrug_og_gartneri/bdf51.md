@@ -12,4 +12,4 @@ notes:
 - udbedrift encodes three completely independent breakdowns in one column — never sum across groups: 1xxx = farm size by cultivated area (1000=i alt, 1010-1080=size brackets); 2xxx = crop types; 3xxx = livestock types. Each group has its own total: 1000 for farm count total; 3120=Svin i alt, 3100=Søer i alt etc. for livestock.
 - The same farm appears in both 2xxx (crops) and 3xxx (livestock) categories — these are not mutually exclusive subsets. Pick one category group per query.
 - Data only runs 2010-2020. For more recent municipal agricultural data, there is no direct equivalent in this subject.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

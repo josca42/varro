@@ -10,4 +10,4 @@ notes:
 - landsdel joins dim.nuts at niveau=2 (11 landsdele). landsdel=0 is a national total not in dim.nuts — use it for Denmark-wide figures.
 - indsatser has 10 values: types 1–8 (specific indsatstyper) plus 100=Handicapindsatser i alt and 110=unique children receiving them. Sum of types 1–8 ≈ 100 (not exact due to rounding/other). Never mix 100/110 with individual types in a SUM — pick one level.
 - Use 110 for "how many children", 100 for "how many interventions", types 1–8 for breakdowns by intervention type. A child can receive multiple types, so summing types 1–8 will exceed 110.
-- Map: context/geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.
+- Map: /geo/landsdele.parquet — merge on landsdel=dim_kode. Exclude landsdel=0.

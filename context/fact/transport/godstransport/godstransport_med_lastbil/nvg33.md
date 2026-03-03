@@ -14,4 +14,4 @@ notes:
 - enhed is a measurement selector — filter to one value. Only 4 enhed options here (20/50/70/80); trip totals (10/30/40/60) are absent.
 - gods: 700=FARLIGT GODS I ALT (total dangerous goods). Individual hazard classes 710–830 sum to 700. Never sum 700 with its subcategories.
 - This table only covers dangerous goods. For all goods between regions use nvg23.
-- Map: context/geo/landsdele.parquet (niveau 2) — merge on paregion=dim_kode or afregion=dim_kode. Exclude code 0. OD table; aggregate by one dimension for choropleth.
+- Map: /geo/landsdele.parquet (niveau 2) — merge on paregion=dim_kode or afregion=dim_kode. Exclude code 0. OD table; aggregate by one dimension for choropleth.

@@ -13,4 +13,4 @@ notes:
 - kon: 1=Mænd, 2=Kvinder. No TOT row — sum both for combined total.
 - Starts from 2010 (later than km5 which starts 2007). Available annually (1. januar).
 - Pair with km5 to compute membership share: km5 (fkmed='F') / sogns1 total by sogns/age/gender.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

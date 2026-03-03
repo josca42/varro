@@ -14,4 +14,4 @@ notes:
 - prisenhed is a measurement selector (V_T or V_C — no volume/chain index available for household income). Always filter to one prisenhed.
 - transakt codes follow the household income account: B6GD (disponibel bruttoindkomst) is the bottom-line disposable income. D1K=modtaget aflønning, D62K=sociale ydelser, D5D=betalt skat, etc. These are additive components in the account but do not sum meaningfully without knowing the sign convention (K=modtaget/received, D=betalt/paid). Pick the specific transaction needed.
 - Only covers from 2000 (not 1993 like nrhp/nrbb10). No branche breakdown — purely regional household income flows.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade IN (0, 999).

@@ -16,4 +16,4 @@ notes:
 - alder covers only 65–84 years: TOT85 (65–84 i alt) plus 4 five-year bands. This table is not applicable for other age groups.
 - parorendeforhold (PR810–PR840): same 4 adult family-structure categories as paaroe31 — mutually exclusive.
 - Sample query — national home care rate by family type (total, 2024): SELECT parorendeforhold, indhold FROM fact.paaroe50 WHERE omrade='0' AND alder='TOT85' AND indikator='LATOT' AND tid='2024-01-01';
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -15,4 +15,4 @@ notes:
 - alerams: 5-year age bands from 0-4 through 95+. No total row — values represent each band's share of the selected collection+materialtype+area combination.
 - Still requires filtering samling (35 or 39) and mater (use 500 for all types, or a specific type) to avoid mixing.
 - omrade joins dim.nuts at niveau 1 and niveau 3. omrade=0 = Hele landet.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

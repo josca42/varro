@@ -12,4 +12,4 @@ notes:
 - fkmed: F=Medlem, U=Ikke-Medlem. To get membership count only: WHERE fkmed='F'. To get total population by sogn, sum both values (or omit fkmed filter).
 - Quarterly data — tid takes values 1 jan, 1 apr, 1 jul, 1 oct each year. For annual comparisons, filter WHERE EXTRACT(MONTH FROM tid)=1 to use January snapshots consistently.
 - No age/gender breakdown here. Use km5 (by sogn) for age+gender+membership, or km6 (by kommune) for the same at municipality level.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).

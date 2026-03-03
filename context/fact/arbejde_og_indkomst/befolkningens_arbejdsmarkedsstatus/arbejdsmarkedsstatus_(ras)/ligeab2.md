@@ -16,4 +16,4 @@ notes:
 - famtype includes sub-totals (F1/F2/E1/P1) alongside sub-types (EUHB/EMHB/PUHB/PMHB) — see ligeab1 notes. Do not mix levels in the same SUM.
 - No herkomst column (unlike ligeab1). Use ligeab1 for herkomst × famtype, ligeab2 for region × famtype.
 - Population scope is 16-64 år only.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

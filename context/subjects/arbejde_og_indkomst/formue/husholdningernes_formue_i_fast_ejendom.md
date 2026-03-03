@@ -25,4 +25,4 @@ notes:
 - ejerfof2: use when you need breakdown by socioøkonomisk status (selvstændige, lønmodtagerniveauer, pensionister, etc.) or by uddannelsesniveau. Same formue+gæld components as ejerfof1.
 - All three tables share bopkom (kommune/region, 2004-2024) and have enhed as a measurement selector — always filter enhed to one value.
 - All three require care with hierarchical columns: ejdfoe1 has ejentyp T as aggregate; ejerfof1/ejerfof2 have hierarchical formgld (105/135/145 are aggregates) and hierarchical famtype/husgrp totals. Summing without filtering these inflates results.
-- Map: All three tables support choropleth maps via bopkom. Use context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.
+- Map: All three tables support choropleth maps via bopkom. Use /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on bopkom=dim_kode. Exclude bopkom='0'.

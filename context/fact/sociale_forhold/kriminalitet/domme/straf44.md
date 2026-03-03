@@ -17,4 +17,4 @@ notes:
 - kon includes VIRKSOMHEDER; filter kon='TOT' for total persons+companies or kon IN ('M','K') for persons only.
 - Most complete sentence table with regional breakdown. Only from 2007 (straf40 goes to 1980 without region).
 - To get sentences by region: JOIN dim.nuts d ON f.omrade = d.kode AND d.niveau = 1, AND WHERE overtraed='TOT' AND afgorelse='000' AND alder='TOT' AND kon='TOT'.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN ('0', '998'). Kommune data can also be aggregated to 12 politikredse via dim.politikredse (niveau 2 koder match dim.nuts niveau 3; parent_kode → politikredsgrænser in context/geo/politikredse.parquet).
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade IN ('0', '998'). Kommune data can also be aggregated to 12 politikredse via dim.politikredse (niveau 2 koder match dim.nuts niveau 3; parent_kode → politikredsgrænser in /geo/politikredse.parquet).

@@ -14,4 +14,4 @@ notes:
 - socio joins dim.socio at niveau 3, but codes 100, 115, 130 are NOT in dim.socio (same custom aggregates as indkp104). An INNER JOIN silently drops them.
 - enhed selector (4 types). Always filter to one.
 - indkomsttype is hierarchical — pick one specific type, never sum across types.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

@@ -13,4 +13,4 @@ notes:
 - omrade has niveau 1 (5 regioner) and niveau 3 (98 kommuner). omrade=0 is "Hele landet" and omrade=98 is uoplyst — exclude both when joining.
 - ydelsesart lists individual specialties (no grand-total row) — sum all codes or use sygu1 for totals.
 - alerams uses 5-year groups plus IALT.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

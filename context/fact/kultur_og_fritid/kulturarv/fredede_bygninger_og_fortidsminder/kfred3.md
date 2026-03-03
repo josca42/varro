@@ -12,4 +12,4 @@ notes:
 - enhed selects between 4 independent series: 1=Fortidsminder nyfredning, 2=Fortidsminder affredning, 3=Bygninger nyfredning, 4=Bygninger affredning. Always filter to the specific enhed(s) you want — never sum across all 4 as it mixes fortidsminder and bygninger counts.
 - To get net change in protected buildings: query enhed=3 (nyfredning) minus enhed=4 (affredning) for the same omrade and tid.
 - Sample: annual new protected buildings nationally: SELECT tid, indhold FROM fact.kfred3 WHERE enhed='3' AND omrade='0' ORDER BY tid
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

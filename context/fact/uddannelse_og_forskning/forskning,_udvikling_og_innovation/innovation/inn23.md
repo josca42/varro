@@ -13,4 +13,4 @@ notes:
 - region joins dim.nuts at niveau=1 (codes 81-85, the 5 regions). Code 0 = national total, not in dim.nuts.
 - innpro has 3 mutually exclusive product innovation types: 170=vareinnovation only, 180=both vare- og serviceinnovation, 190=serviceinnovation only. These sum to ~100% for product-innovative firms. This table covers only produktinnovative firms (a subset); for the share of all firms that are produktinnovative, use inn22.
 - All indhold values are percentages. Never sum innpro categories (they already cover 100%).
-- Map: context/geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.
+- Map: /geo/regioner.parquet — merge on region=dim_kode. Exclude region='0'.

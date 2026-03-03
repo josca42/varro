@@ -11,4 +11,4 @@ notes:
 - omrade joins dim.nuts at niveau=1 only (5 regioner: 81–85). Code 0 = landstal (national total) — not in dim.
 - ankat has 7 categories (Erhverv, Begravelse, Tro, Mærkesten, Transport, Forsvar, Bebyggelse, Social) — there is no "all categories" total row. Sum across all ankat values to get total fortidsminder per region.
 - Sample: fortidsminder by category nationally in 2024: SELECT f.ankat, f.indhold FROM fact.kfred2 f WHERE f.omrade='0' AND f.tid='2024-01-01' ORDER BY f.indhold DESC
-- Map: context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

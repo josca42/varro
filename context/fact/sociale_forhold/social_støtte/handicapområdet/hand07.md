@@ -10,4 +10,4 @@ notes:
 - omrade joins dim.nuts at niveau=3 only (97 kommuner). No national total row (omrade=0 not present). SUM across all kommuner to get a national figure.
 - indhold is whole-number counts of unique recipients (modtagere). Compare with hand01 which counts services (decimal averages) — hand07 values are always >= hand01 for the same cell because one recipient may receive a service for more or fewer days in the quarter.
 - ydelsestype has 21 types with no total row. Use ColumnValues("hand07", "ydelsestype") for labels.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

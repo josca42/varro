@@ -14,4 +14,4 @@ notes:
 - behandling has TOT + GENANV/FORBRND/DEPOT — filter to one to avoid double-counting.
 - afffrak covers household waste fractions only (TOTHHAFFALD + 10 categories A–X). Not the full fraction list from the affald tables.
 - Use laby25 for per-capita kg and recycling rate (%) by kommunegruppe.
-- Map: context/geo/kommuner.parquet — filter dim.kommunegrupper to niveau=2, then merge on komgrp=dim_kode. Exclude komgrp=0.
+- Map: /geo/kommuner.parquet — filter dim.kommunegrupper to niveau=2, then merge on komgrp=dim_kode. Exclude komgrp=0.

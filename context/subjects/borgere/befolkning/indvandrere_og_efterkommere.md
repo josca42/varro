@@ -234,8 +234,8 @@ notes:
 - **kmsta001** — population by parish (søgn) × herkomst × church membership. Unique sub-municipality geography. herkomst column uses west/non-west coding, not dim.herkomst — treat as inline.
 
 ## Map support
-- Regional/municipal choropleth: folk1b, folk1c, folk1d, folk1e, indoph1, indoph3, eb3, eb4 — all join via omrade=dim_kode to context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1). Exclude omrade=0 for tables that include a national total.
-- Parish-level choropleth: kmsta001 — join via sogn=dim_kode to context/geo/sogne.parquet. Exclude sogn IN (0, 9999).
+- Regional/municipal choropleth: folk1b, folk1c, folk1d, folk1e, indoph1, indoph3, eb3, eb4 — all join via omrade=dim_kode to /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1). Exclude omrade=0 for tables that include a national total.
+- Parish-level choropleth: kmsta001 — join via sogn=dim_kode to /geo/sogne.parquet. Exclude sogn IN (0, 9999).
 - No map: folk2, dkstat, iepct, kryds1-4, eb1, eb2, indoph2, indoph4, van5m, van5rkam, van66*, van77*, van8*.
 
 ## Common pitfalls across all tables

@@ -12,4 +12,4 @@ notes:
 - struk codes (1010–1140) represent entirely different structural statistics — number of farms, greenhouse area by age of greenhouse, heating systems, irrigation methods. These are not sub-categories of one total. Each struk code is its own distinct metric. Only compare or aggregate struk codes if they are the same type of measure (e.g. summing area codes).
 - struk=1015 (Væksthusareal i alt) is the top-level area measure. Codes 1016-1025 are area by crop type, 1030-1045 are area by heating type, 1050-1065 by construction type, etc. Don't mix categories.
 - No enhed/measurement selector — unit varies by struk code (bedrifter, 1000 m2, etc.).
-- Map: context/geo/landsdele.parquet (niveau 2) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet (niveau 2) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

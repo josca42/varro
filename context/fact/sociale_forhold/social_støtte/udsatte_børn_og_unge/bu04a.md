@@ -15,4 +15,4 @@ notes:
 - alder: IALT=all ages, 0005/0611/1217/1800 are age groups, 999=unknown. Filter to IALT for totals.
 - kon uses TOT/M/K/9 (unlike anbaar tables which use 0/D/P/9). Filter to TOT for totals.
 - To get total udsatte children by landsdel in 2024: WHERE foran=1 AND alder='IALT' AND kon='TOT' AND tid='2024-01-01'
-- Map: context/geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/landsdele.parquet — merge on omrade=dim_kode. Exclude omrade=0.

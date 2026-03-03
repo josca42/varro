@@ -20,4 +20,4 @@ notes:
 - ydelsestype is hierarchical in both tables: 1000 (total) > 1010/1060/1120 (benefit-type aggregates) > individual subtypes by housing form. Pick one level and don't sum across it.
 - mnd (month 1–12) must always be filtered — these are stock figures per month, not flows.
 - Neither table has gender breakdown. For questions combining geography and age, these tables must be used separately (no single table has both dimensions).
-- Map: bost63 supports choropleth maps at kommune level via context/geo/kommuner.parquet (merge on omrade=dim_kode, exclude omrade=0). bost64 has no geographic dimension.
+- Map: bost63 supports choropleth maps at kommune level via /geo/kommuner.parquet (merge on omrade=dim_kode, exclude omrade=0). bost64 has no geographic dimension.

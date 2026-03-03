@@ -16,4 +16,4 @@ notes:
 - famtyp here has only 3 types (FAIA, PAIA, ENIA) — no gender breakdown of singles.
 - enhed selector (4 types). Always filter to one.
 - indkomsttype is hierarchical — pick one specific type.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

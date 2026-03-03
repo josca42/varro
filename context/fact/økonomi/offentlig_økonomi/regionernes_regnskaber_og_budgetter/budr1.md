@@ -17,4 +17,4 @@ notes:
 - art has 42 values (TOT, UE, UI, I, S0-S9, numeric codes). Filter to one aggregate value.
 - dranst: 5 account types (1=drift, 2=statsrefusion, 3=anlæg, 4=renter, 7=finansiering).
 - Use this table for a quick budget overview by sector and region. For detailed function-level budgets, use budr32.
-- Map: context/geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.
+- Map: /geo/regioner.parquet — merge on regi07=dim_kode. Exclude regi07=0.

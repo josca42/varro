@@ -13,4 +13,4 @@ notes:
 - omrade joins dim.nuts at niveau 2 (11 landsdele) and niveau 3 (99 kommuner). omrade='0' is the national total. No niveau 1 (regioner) — use niveau 2 for broader regional breakdowns. Use ColumnValues("nuts", "titel", for_table="laby04") to see available codes.
 - This is the right table when you want "what share of families in [kommune/landsdel] have children" or "breakdown of family types as percentages."
 - Data goes back to 2007 — shorter series than fam44n (1986). For trend analysis before 2007, switch to fam44n and compute percentages from counts.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

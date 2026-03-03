@@ -17,4 +17,4 @@ notes:
 - alder: individual ages 15–100+. Special code 9915 = "Under 15 år" covers ages below 15. No age-group buckets — use CASE expressions in SQL to aggregate into age groups.
 - This table is extremely dense (7 dimensions × 99 kommuner × 40 years). Always filter tid, omrade, and at least a few other dimensions to avoid pulling millions of rows. A typical query: one kommune, one year, one hustyp, then GROUP BY alder.
 - hustyp IHB is absent here (unlike fam55n) — this table covers adults in households, not the IHB children category.
-- Map: context/geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet — merge on omrade=dim_kode. Exclude omrade=0.

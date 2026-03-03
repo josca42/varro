@@ -141,4 +141,4 @@ notes:
 - **Gender equity indicators (ligeki1, ligeki2)**: Both use `indikator` with percentage values (LA1=Mænd%, LA2=Kvinder%, LA3=difference pp). Never sum across indicators. ligeki1 = recipient counts, ligeki2 = disbursement amounts.
 - **Biblioteksafgift (bia01, bia02)**: bia01 = recipient count (Antal), bia02 = disbursement (1.000 kr.). Both break down by bopomr (dim.nuts), kon, and alder. The biblioteksafgift is a public lending right fee paid to authors.
 - **laby40**: Average payment per recipient by kommunegruppe type (5 groups). Values are kr./modtager — do not sum across groups.
-- **Map-ready tables**: kubs05, kubs06, kubs07, kubs08, bia01, bia02, ligeki1, ligeki2 support choropleth maps at kommune/landsdel/region level via bopomr or kubsbeli joined to context/geo/. kubs02b, kubs04b, kubs09b, kubs10b also support maps via omrade (use int cast).
+- **Map-ready tables**: kubs05, kubs06, kubs07, kubs08, bia01, bia02, ligeki1, ligeki2 support choropleth maps at kommune/landsdel/region level via bopomr or kubsbeli joined to /geo/. kubs02b, kubs04b, kubs09b, kubs10b also support maps via omrade (use int cast).

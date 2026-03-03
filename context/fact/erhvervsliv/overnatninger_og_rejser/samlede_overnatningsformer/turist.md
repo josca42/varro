@@ -16,4 +16,4 @@ notes:
 - omrade=0 is the national aggregate and NOT in dim.nuts — use it directly as a filter (WHERE omrade = 0) for national totals without joining.
 - overnatf hierarchy: 100=Alle typer contains 110=Hoteller og Feriecentre (which contains 120=Hoteller and 130=Feriecentre), 140=Camping, 150=Vandrerhjem, 160=Lystbådehavne, 170=Feriehuse. Never SUM multiple overnatf codes that are parent/child — double-counts. Filter to overnatf=100 for a total across all types.
 - This table counts overnatninger (overnight stays). For guest counts (number of guests, not nights), use turist2 which has the same structure but from 2018 only.
-- Map: context/geo/regioner.parquet (niveau 1) or context/geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/regioner.parquet (niveau 1) or /geo/landsdele.parquet (niveau 2) — merge on omrade=dim_kode. Exclude omrade=0.

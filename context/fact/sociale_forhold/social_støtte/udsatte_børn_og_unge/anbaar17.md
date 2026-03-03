@@ -14,4 +14,4 @@ notes:
 - landdel joins dim.nuts at niveau 2 (11 landsdele). Code 0 = national total.
 - anbringelse code 0 = I alt. alder1 uses age groups. kon: 0=I alt, D/P.
 - For total new placements by landsdel and placement type: WHERE alder1='IALT' AND kon='0'.
-- Map: context/geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.
+- Map: /geo/landsdele.parquet — merge on landdel=dim_kode. Exclude landdel=0.

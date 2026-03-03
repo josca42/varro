@@ -17,4 +17,4 @@ notes:
 - opvarm has 10 values (1–10), no total code. These are mutually exclusive heating types — safe to sum.
 - opforelsesar: confusing century-wrapping 5-year codes. Use ColumnValues("bygb40", "opforelsesar") to browse with labels. No total code.
 - To get number of buildings by heating type nationally: filter maengde4=45, omrade=0, and choose a single tid.
-- Map: context/geo/kommuner.parquet (niveau 3), context/geo/landsdele.parquet (niveau 2), or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3), /geo/landsdele.parquet (niveau 2), or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

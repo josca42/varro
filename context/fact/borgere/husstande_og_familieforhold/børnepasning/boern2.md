@@ -11,4 +11,4 @@ notes:
 - paskat includes TOT=I alt alongside 3 specific types. Always filter to one paskat value — summing across all rows inflates by 4x.
 - For total FTE enrolled children by municipality: WHERE paskat = 'TOT' AND blstkom != '0'.
 - Covers kommunale og selvejende institutions only. For private institutions add pboern2 (2021-2023 only). For fritidsordninger (SFO, fritidshjem) use boern5.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on blstkom=dim_kode. Exclude blstkom=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on blstkom=dim_kode. Exclude blstkom=0.

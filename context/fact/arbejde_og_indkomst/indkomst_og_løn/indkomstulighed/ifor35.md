@@ -11,4 +11,4 @@ notes:
 - prisenhed is a measurement selector: every row exists twice — faste priser (real, inflation-adjusted, code 5) and nominelle priser (nominal, code 6). Always filter to one: prisenhed = '5' for real prices or prisenhed = '6' for nominal. Forgetting this doubles all sums.
 - kommunedk code 0 = Danmark i alt (not in dim.nuts). All other codes join dim.nuts at niveau=3 (kommuner). See ifor32 for the version without prisenhed.
 - Use ifor35 (over ifor32) when comparing trends across time — faste priser removes inflation effects.
-- Map: context/geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.
+- Map: /geo/kommuner.parquet — merge on kommunedk=dim_kode. Exclude kommunedk=0.

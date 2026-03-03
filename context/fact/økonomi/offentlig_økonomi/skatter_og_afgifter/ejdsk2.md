@@ -11,4 +11,4 @@ notes:
 - omrade has niveau 1 (5 regioner) and niveau 3 (98 kommuner) — both present. omrade='0' is national (not in dim.nuts). Use ColumnValues("nuts","titel",for_table="ejdsk2") to see available areas, then filter by d.niveau.
 - skatpro values are rates (promille), not amounts. Each is a different tax rate concept — never sum across skatpro. Many kommuner have 0 for skatpro=2/3/4 (dækningsafgifter are optional).
 - This table covers grundskyldspromille through 2025 (unlike pskat where GRUND ends 2023). Use this table for the most recent property tax rate data.
-- Map: context/geo/kommuner.parquet (niveau 3) or context/geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.
+- Map: /geo/kommuner.parquet (niveau 3) or /geo/regioner.parquet (niveau 1) — merge on omrade=dim_kode. Exclude omrade=0.

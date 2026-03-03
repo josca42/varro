@@ -13,4 +13,4 @@ notes:
 - No fkmed column — covers all residents regardless of church membership.
 - Annual data (tid: yearly). Available 2015–2024.
 - Use B11 (Befolkningstilvækst) for total population change, or B20A for end-of-year stock. Use primary flows (B02, B03, B05, B06, B08A, B09A) to avoid double-counting with aggregate codes.
-- Map: context/geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
+- Map: /geo/sogne.parquet — merge on sogns=dim_kode. Exclude sogns IN (0, 9999).
