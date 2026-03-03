@@ -199,7 +199,6 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     import plotly.graph_objects as go
     import matplotlib.pyplot as plt
     import geopandas as gpd
-    from varro.agent.utils import get_geo
     ```
 
     Args:
