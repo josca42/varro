@@ -60,16 +60,6 @@ def get_dim_tables() -> tuple[str, ...]:
             )
         )
 
-
-@lru_cache
-def _load_geo(layer: str) -> gpd.GeoDataFrame:
-    return gpd.read_parquet(GEO_DIR / f"{layer}.parquet")
-
-
-def get_geo(layer: str) -> gpd.GeoDataFrame:
-    return _load_geo(layer).copy(deep=False)
-
-
 # Helper functions for allowing the agent to view plotly and matplotlib figures
 async def show_element(element) -> Any | None:
     """Convert a cell output to a format suitable for ToolReturn content."""

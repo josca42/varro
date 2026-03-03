@@ -11,7 +11,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import geopandas as gpd
-from varro.agent.utils import get_geo
 
 import plotly.io as pio
 pio.renderers.default = None
