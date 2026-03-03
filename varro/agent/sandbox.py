@@ -129,6 +129,16 @@ def _int_setting(name: str, default: int) -> int:
     return int(raw)
 
 
+def _int_setting_with_fallback(name: str, fallback_name: str, default: int) -> int:
+    raw = settings.get(name)
+    if raw is not None and raw != "":
+        return int(raw)
+    fallback = settings.get(fallback_name)
+    if fallback is not None and fallback != "":
+        return int(fallback)
+    return default
+
+
 @dataclass(frozen=True)
 class ResourceLimits:
     cpu_seconds: int | None = None
@@ -147,8 +157,8 @@ BASH_LIMITS = ResourceLimits(
 )
 WORKER_LIMITS = ResourceLimits(
     memory_bytes=_int_setting("SANDBOX_MEMORY_MB", 2048) * 1024 * 1024,
-    nproc=_int_setting("SANDBOX_NPROC", 256),
-    nofile=_int_setting("SANDBOX_NOFILE", 1024),
+    nproc=_int_setting_with_fallback("SANDBOX_WORKER_NPROC", "SANDBOX_NPROC", 1024),
+    nofile=_int_setting_with_fallback("SANDBOX_WORKER_NOFILE", "SANDBOX_NOFILE", 4096),
     fsize=_int_setting("SANDBOX_FSIZE_MB", 256) * 1024 * 1024,
 )
 
@@ -381,6 +391,20 @@ def _minimal_env(*, cwd_rel: str = "/") -> dict[str, str]:
     }
 
 
+def _worker_env() -> dict[str, str]:
+    env = _minimal_env()
+    env["HOME"] = "/home/dev"
+    env["XDG_CACHE_HOME"] = "/home/dev/.cache"
+    env["XDG_CONFIG_HOME"] = "/home/dev/.config"
+    env["MPLCONFIGDIR"] = "/home/dev/.cache/matplotlib"
+    env["ARROW_NUM_THREADS"] = "1"
+    env["OMP_NUM_THREADS"] = "1"
+    env["OPENBLAS_NUM_THREADS"] = "1"
+    env["MKL_NUM_THREADS"] = "1"
+    env["NUMEXPR_NUM_THREADS"] = "1"
+    return env
+
+
 def run_bash_command(user_id: int, cwd_rel: str, command: str) -> tuple[str, str]:
     if not _use_bwrap():
         return run_bash_command_vanilla(user_id, cwd_rel, command)
@@ -475,7 +499,7 @@ class SandboxShellProxy:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            env=_minimal_env(),
+            env=_worker_env(),
             preexec_fn=_apply_limits(WORKER_LIMITS),
         )
 

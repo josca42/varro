@@ -43,7 +43,7 @@ logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
-sonnet_model = AnthropicModel("claude-opus-4-6")
+sonnet_model = AnthropicModel("claude-sonnet-4-6")
 sonnet_settings = AnthropicModelSettings(
     anthropic_thinking={"type": "enabled", "budget_tokens": 3000},
     parallel_tool_calls=True,
