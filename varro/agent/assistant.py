@@ -26,7 +26,7 @@ from varro.config import COLUMN_VALUES_DIR
 from varro.db import crud
 from sqlalchemy import text
 from varro.chat.runtime_state import load_bash_cwd, save_bash_cwd
-from varro.agent.bash import run_bash_command
+from varro.agent.sandbox import run_bash_command
 from varro.dashboard.verify import (
     format_validation_error,
     format_validation_result,
@@ -218,10 +218,14 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
         )
 
     elements_rendered = []
+    render_show = getattr(ctx.deps.shell, "render_show", None)
     for name in show:
-        element = ctx.deps.shell.user_ns.get(name)
         try:
-            rendered = await show_element(element)
+            if callable(render_show):
+                rendered = await render_show(name)
+            else:
+                element = ctx.deps.shell.user_ns.get(name)
+                rendered = await show_element(element)
         except ValueError as e:
             raise ModelRetry(
                 f"{e}. show must reference a pandas DataFrame/Styler, plotly Figure, or matplotlib Figure."

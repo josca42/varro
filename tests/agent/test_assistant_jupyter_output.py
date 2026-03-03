@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS, get_shell
+from varro.agent.shell import JUPYTER_INITIAL_IMPORTS, get_shell
 
 
 @pytest.fixture
@@ -91,3 +91,29 @@ def test_jupyter_returns_empty_text_without_show_for_plotly_expression(assistant
     assert result.return_value == ""
     assert "Figure(" not in result.return_value
     assert result.metadata == {"ui": {"has_tool_content": False}}
+
+
+def test_jupyter_uses_shell_render_show_when_available(assistant_module):
+    class _ProxyShell:
+        def __init__(self):
+            self.user_ns = {}
+
+        def run_cell(self, code: str):
+            return SimpleNamespace(
+                stdout="ok\n",
+                error_before_exec=None,
+                error_in_exec=None,
+            )
+
+        async def render_show(self, name: str):
+            return f"rendered:{name}"
+
+    ctx = SimpleNamespace(deps=SimpleNamespace(shell=_ProxyShell()))
+
+    result = asyncio.run(
+        assistant_module.Jupyter(ctx, code='print("ok")', show=["fig"])
+    )
+
+    assert result.return_value == "ok\n"
+    assert result.content == ["rendered:fig"]
+    assert result.metadata == {"ui": {"has_tool_content": True}}
