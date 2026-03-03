@@ -1,6 +1,6 @@
 # Varro Notes Index
 
-Last updated: 2026-03-01.
+Last updated: 2026-03-03.
 
 ## Core notes
 
@@ -19,6 +19,8 @@ Last updated: 2026-03-01.
 ## Notes
 
 - [Dashboard Filter Select Value Label](notes/dashboard_filter_select_value_label.md)
+- [Bubblewrap Phase 0 Preflight](notes/bwrap_phase0_preflight.md)
+- [Bubblewrap Phase 2 + 3 Shell Sandbox](notes/bwrap_phase2_phase3_shell_sandbox.md)
 
 ## Skills
 

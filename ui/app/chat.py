@@ -47,7 +47,7 @@ from varro.dashboard.parser import (
 )
 
 if TYPE_CHECKING:
-    from varro.agent.ipython_shell import TerminalInteractiveShell
+    from varro.agent.shell import TerminalInteractiveShell
     from varro.db.models.chat import Chat, Turn
 
 

@@ -6,9 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import dill
-
-from varro.agent.ipython_shell import JUPYTER_INITIAL_IMPORTS, TerminalInteractiveShell, get_shell
+from varro.agent.sandbox import close_shell, create_shell
 from varro.config import DATA_DIR
 
 
@@ -22,7 +20,7 @@ def shell_snapshot_fp(user_id: int, chat_id: int) -> Path:
 
 @dataclass
 class ShellEntry:
-    shell: TerminalInteractiveShell
+    shell: object
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     in_use_count: int = 0
     last_active: datetime = field(default_factory=_utc_now)
@@ -108,9 +106,11 @@ class ShellPool:
         async with self._lock:
             entry = self._entries.get(key)
             if entry is None:
-                shell = get_shell()
-                shell.run_cell(JUPYTER_INITIAL_IMPORTS)
-                self._load_snapshot(shell, user_id=user_id, chat_id=chat_id)
+                shell = create_shell(
+                    user_id=user_id,
+                    chat_id=chat_id,
+                    snapshot_fp=shell_snapshot_fp(user_id, chat_id),
+                )
                 entry = ShellEntry(shell=shell)
                 self._entries[key] = entry
 
@@ -128,38 +128,17 @@ class ShellPool:
 
     def _close_shell(
         self,
-        shell: TerminalInteractiveShell,
+        shell: object,
         *,
         save_snapshot: bool,
         user_id: int,
         chat_id: int,
     ) -> None:
-        if save_snapshot:
-            self._save_snapshot(shell, user_id=user_id, chat_id=chat_id)
-        try:
-            shell.reset(new_session=False)
-            if shell.history_manager:
-                shell.history_manager.end_session()
-        except Exception:
-            return
-
-    def _save_snapshot(self, shell: TerminalInteractiveShell, *, user_id: int, chat_id: int) -> None:
-        fp = shell_snapshot_fp(user_id, chat_id)
-        fp.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            with fp.open("wb") as f:
-                dill.dump(getattr(shell, "user_ns", {}), f)
-        except Exception:
-            fp.unlink(missing_ok=True)
-
-    def _load_snapshot(self, shell: TerminalInteractiveShell, *, user_id: int, chat_id: int) -> None:
-        fp = shell_snapshot_fp(user_id, chat_id)
-        if not fp.exists():
-            return
-        with fp.open("rb") as f:
-            value = dill.load(f)
-        if isinstance(value, dict):
-            shell.user_ns.update(value)
+        close_shell(
+            shell,
+            save_snapshot=save_snapshot,
+            snapshot_fp=shell_snapshot_fp(user_id, chat_id),
+        )
 
 
 shell_pool = ShellPool()

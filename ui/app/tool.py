@@ -23,7 +23,7 @@ from pydantic_ai.messages import ToolReturnPart
 from varro.chat.tool_results import ToolRenderRecord
 
 if TYPE_CHECKING:
-    from varro.agent.ipython_shell import TerminalInteractiveShell
+    from varro.agent.shell import TerminalInteractiveShell
 
 
 INLINE_IMAGE_TOOLS = {"jupyter", "jupyter_notebook", "read"}
