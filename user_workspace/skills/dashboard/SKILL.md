@@ -5,6 +5,26 @@ description: Create, edit, and iterate on data dashboards. Use when the user wan
 
 # Dashboard Creation
 
+## When to create a dashboard
+
+A dashboard is a consolidation artifact, not an exploration tool. The natural flow is:
+
+1. **Explore first** — query data, show charts and tables inline, discuss findings with the user.
+2. **Consolidate later** — once there's a clear picture worth persisting, offer to package it as a dashboard.
+
+Don't jump to dashboard creation from a vague question. If the user explicitly asks for a dashboard with a clear scope, build it. Otherwise, explore first and offer a dashboard when there's substance to persist.
+
+### Check prior work
+
+Before creating a new dashboard, read `/dashboard/index.md`. If related dashboards exist:
+- Tell the user what exists and which tables they use.
+- Ask whether to extend the existing dashboard or start fresh.
+- Reuse queries and patterns where they fit.
+
+If the user's request is clearly distinct from existing work, note it briefly and proceed.
+
+## Dashboard structure
+
 Create dashboards at `/dashboard/{name}/` with three required files:
 
 ```
