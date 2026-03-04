@@ -23,6 +23,10 @@ Before creating a new dashboard, read `/dashboard/index.md`. If related dashboar
 
 If the user's request is clearly distinct from existing work, note it briefly and proceed.
 
+### Working notes
+
+Create `notes.md` in the dashboard folder to record context that isn't visible in the dashboard itself: analytical decisions, data caveats, why you chose one table over another, filter logic, or anything useful for understanding the dashboard later. This file is not rendered in the app.
+
 ## Dashboard structure
 
 Create dashboards at `/dashboard/{name}/` with three required files:
