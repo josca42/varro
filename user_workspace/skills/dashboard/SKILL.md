@@ -7,21 +7,12 @@ description: Create, edit, and iterate on data dashboards. Use when the user wan
 
 ## When to create a dashboard
 
-A dashboard is a consolidation artifact, not an exploration tool. The natural flow is:
-
-1. **Explore first** — query data, show charts and tables inline, discuss findings with the user.
-2. **Consolidate later** — once there's a clear picture worth persisting, offer to package it as a dashboard.
-
-Don't jump to dashboard creation from a vague question. If the user explicitly asks for a dashboard with a clear scope, build it. Otherwise, explore first and offer a dashboard when there's substance to persist.
+By the time you're here, you should either have explored the data in conversation already, or have a request specific enough to build 
+from directly. If neither is true, go back to the conversation and explore first.
 
 ### Check prior work
 
-Before creating a new dashboard, read `/dashboard/index.md`. If related dashboards exist:
-- Tell the user what exists and which tables they use.
-- Ask whether to extend the existing dashboard or start fresh.
-- Reuse queries and patterns where they fit.
-
-If the user's request is clearly distinct from existing work, note it briefly and proceed.
+Read /dashboard/index.md before creating anything new. If related dashboards exist, tell the user what's there and how it relates to their request. Ask whether to extend or start fresh.
 
 ### Working notes
 
@@ -184,14 +175,15 @@ Prisindeks for forskellige ejendomstyper (2015=100).
 
 ## Workflow
 
-1. **Explore data** — use SQL to understand available tables, columns, and values
-2. **Write queries** — one `.sql` per query in `queries/`. Use `:param` and `IS NULL OR` for optional filters
-3. **Write outputs.py** — one `@output` function per visual element. Match function names to the tags you'll use in the markdown
-4. **Write dashboard.md** — arrange components with containers. Add markdown commentary to explain the data
-5. **Navigate to the dashboard** — use `UpdateUrl(path="/dashboard/{name}")` to open it in the app
-6. **Validate** — after each `Write`/`Edit` to `dashboard.md`, `outputs.py`, or `queries/*.sql`, validation runs automatically. You can also call `ValidateDashboard(url?)` explicitly
-7. **Snapshot and inspect** — use `Snapshot()` (no arguments needed when already viewing the dashboard) to materialize outputs to disk
-8. **Iterate** — read validation and snapshot files, fix issues, re-validate, then re-snapshot
+1. **Check prior work** — read `/dashboard/index.md`. If related dashboards exist, tell the user and ask whether to extend or  start fresh. Reuse queries and patterns where they fit.
+2. **Plan structure** — decide which queries, outputs, and filters the dashboard needs. If you explored data in conversation, reuse those queries as starting points.
+3. **Write queries** — one `.sql` per query in `queries/`. Use `:param` and `IS NULL OR` for optional filters.
+4. **Write outputs.py** — one `@output` function per visual element.
+5. **Write dashboard.md** — layout with containers and component tags. Add markdown commentary to explain the data.
+6. **Navigate** — `UpdateUrl(path="/dashboard/{name}")` to open it.
+7. **Validate** — Use `ValidateDashboard(url?)` to run full end-to-end check of the dashboard.
+8. **Snapshot and inspect** — `Snapshot()` to materialize outputs. Read the PNGs and JSON selectively to verify the dashboard looks right.
+9. **Iterate** — fix issues, re-validate, re-snapshot.
 
 ## Validation
 

@@ -1,79 +1,108 @@
 # Test Plan: Rigsstatistikeren
 
-## Category 1: Simple Analytical Questions (warm-up)
-Basic workflow: read docs → find table → SQL → present answer.
+## 1. Simple Factual Questions
 
-1. **"Hvor mange mennesker bor der i Danmark?"** — Simplest possible query. Tests that the agent can find `folk1a` and return a number.
+| # | Question | Tests | First move |
+|---|----------|-------|------------|
+| 1 | "Hvor mange mennesker bor der i Danmark?" | Find `folk1a`, return a single number. Baseline data access. | Execute |
+| 2 | "Hvad er den gennemsnitlige husleje i Danmark?" | Navigate `erhvervsliv/bygge_og_boligforhold`, find `livm12` or similar rental table. | Execute |
+| 3 | "Hvor mange biler er der i Danmark?" | Find transport/køretøjer tables (`bil707`/`bil10`). Tests navigating a less obvious subject. | Execute |
+| 4 | "Hvad er den mest dyrkede afgrøde i Danmark?" | Navigate `erhvervsliv/landbrug_gartneri_og_skovbrug`, find crop tables (`afg07`). Tests ColumnValues on agricultural categories. | Execute |
 
-2. **"Hvad er arbejdsløshedsprocenten lige nu?"** — Tests finding the right unemployment table (`aup01`), understanding seasonally adjusted data.
+## 2. Exploratory / Vague Questions
 
-3. **"Hvad er Danmarks BNP?"** — Tests navigation to `økonomi/nationalregnskab` and querying `nan1` or `nkn1`.
+| # | Question | Tests | First move |
+|---|----------|-------|------------|
+| 5 | "Hvordan går det med den danske økonomi?" | Agent should pick 2-3 headline indicators (BNP, ledighed, inflation) and show data — not ask "hvad mener du med økonomi?". | Explore |
+| 6 | "Fortæl mig noget interessant om danske biblioteker" | Navigate `kultur_og_fritid/biblioteker`. Agent should surface data first, offer to dig deeper. Non-expert phrasing. | Explore |
+| 7 | "Hvad sker der med energiforbruget i Danmark?" | Navigate `miljø_og_energi/energi`. Should show a trend and volunteer observations about the mix (renewables vs fossil). | Explore |
+| 8 | "Jeg er nysgerrig på kriminalitet i Danmark — hvad viser tallene?" | Navigate `sociale_forhold/kriminalitet`. Should show headline trend, then offer drill-down directions. | Explore |
 
-## Category 2: Multi-step Analysis (analytical depth)
-Joining tables, filtering, and interpreting results.
+## 3. Multi-step Analysis
 
-4. **"Hvordan har befolkningsudviklingen været i de 5 regioner de sidste 10 år? Hvilke regioner vokser og hvilke skrumper?"** — Tests joining with `dim.nuts`, filtering by `niveau`, creating a time series comparison.
+| # | Question | Tests | First move |
+|---|----------|-------|------------|
+| 9 | "Sammenlign befolkningsvæksten i de 5 regioner de sidste 10 år — hvilke vokser og hvilke skrumper?" | Join `folk1a` with `dim.nuts`, filter by niveau. Time series comparison across regions. | Execute |
+| 10 | "Er der sammenhæng mellem uddannelsesniveau og indkomstniveau på tværs af kommuner?" | Cross-domain: `uddannelse_og_forskning` + `arbejde_og_indkomst`. Requires joining on geography. | Execute |
+| 11 | "Hvordan har Danmarks import og eksport med Kina udviklet sig sammenlignet med Tyskland og USA?" | Navigate `økonomi/udenrigshandel`, filter trade tables by partner country. Multi-series comparison. | Execute |
+| 12 | "Hvilke brancher har det højeste sygefravær, og er der kønsforskelle?" | Join sickness absence tables with industry dimensions and gender breakdown. Requires careful overcounting avoidance. | Execute |
 
-5. **"Er der en sammenhæng mellem forældres uddannelsesniveau og unges gennemførelse af ungdomsuddannelser?"** — Tests `statusu4`/`statusu5` (youth education by parental education/income). Requires thoughtful analysis.
+## 4. Dashboard Requests
 
-6. **"Sammenlign sygefravær på tværs af brancher og køn. Hvilke brancher har størst kønsforskelle?"** — Tests `fra020`+ tables, requires joins with industry dimension, comparison logic.
+| # | Question | Tests | First move |
+|---|----------|-------|------------|
+| 13 | "Lav et dashboard om turisme i Danmark" | Vague request — agent should explore `erhvervsliv/hoteller_og_restauranter` + `erhvervsliv/ferie_og_turisme` first, then consolidate. Tests the full dashboard creation workflow. | Explore → build |
+| 14 | "Lav et dashboard over boligmarkedet med prisudvikling, boligbestand og salgsaktivitet, filtreret på region og ejendomstype" | Specific request — agent should build directly from `erhvervsliv/bygge_og_boligforhold`. Tests multi-query dashboard with filters. | Execute |
+| 15 | "Kan du tilføje en fane om pendling til dashboardet?" | Extension of #14. Tests iteration: editing existing `dashboard.md` and `outputs.py`, adding queries. Must read existing dashboard first. | Execute |
+| 16 | "Lav et dashboard der viser hvordan det går med den grønne omstilling" | Semi-vague — agent should identify relevant tables across `miljø_og_energi` (renewable energy share, emissions, waste recycling) and build a coherent narrative. | Explore → build |
 
-7. **"Hvordan har kriminaliteten udviklet sig de sidste 20 år, opdelt på overtrædelsestyper?"** — Tests `strafna3`-`strafna9`, hierarchical offense classification, long time series.
+## 5. Collaboration Edge Cases
 
-## Category 3: Visualization Quality (Jupyter + Plotly)
-Should produce good figures and test the `show` parameter.
+| # | Question | Tests | First move |
+|---|----------|-------|------------|
+| 17 | "Vis mig data om uddannelse" | Ambiguous — could be enrollment, completion, expenditure, or international students. One clarifying question is justified (but should be accompanied by a data teaser). | Clarify (lightly) |
+| 18 | "Lav et dashboard om turisme" (when #13 already exists) | Tests `/dashboard/index.md` check. Agent should surface the existing dashboard and ask whether to extend or start fresh. | Clarify |
+| 19 | Start analyzing crime trends (#8), then: "Vent — kan vi i stedet kigge på, om det hænger sammen med ungdomsarbejdsløshed?" | Mid-conversation pivot. Tests that the agent can shift direction without losing context, and joins crime data with youth unemployment. | Execute (new direction) |
 
-8. **"Lav en befolkningspyramide for Danmark"** — Classic demographic visualization. Tests age/gender breakdown from `folk1a`, proper horizontal bar chart.
+## 6. Visualization Quality
 
-9. **"Vis udviklingen i detailhandlen de sidste 5 år som et line chart, opdelt på produktgrupper"** — Tests `deta212`, time series plotly line chart with multiple traces.
-
-10. **"Plot Danmarks jernbaneinvesteringer over tid sammenlignet med togkilometer"** — Tests `bane42` + `bane31`, dual-axis or normalized comparison chart.
-
-## Category 4: Dashboard Creation (core feature)
-
-11. **"Lav et dashboard over befolkningsudviklingen i Danmark med filtre for region og tidsperiode"** — The canonical test. Should create `queries/*.sql`, `outputs.py`, `dashboard.md` with filters, metrics, and figures. Agent should read `user_workspace/skills/dashboard/SKILL.md` first.
-
-12. **"Lav et dashboard der sammenligner uddannelsesniveauet på tværs af regioner med fokus på kønsforskelle"** — Complex dashboard with multiple queries, cross-dimensional analysis. Good test of filter implementation.
-
-13. **"Kan du lave et dashboard over affald og genanvendelse i Danmark?"** — Tests material/waste data (`affald`, `laby24`). Less obvious subject, tests navigation of unfamiliar tables.
-
-## Category 5: Dashboard Navigation & Iteration
-Tests `UpdateUrl`, `Snapshot`, and iterating on existing dashboards.
-
-14. After dashboard #11: **"Naviger til dashboardet og vis mig Region Hovedstaden"** — Tests `UpdateUrl` with filter params.
-
-15. **"Tag et snapshot af dashboardet med de nuværende filtre"** — Tests `Snapshot()` tool, verify folder structure matches design doc pattern.
-
-16. **"Figuren for befolkningstrend ser lidt rodet ud — kan du ændre den til kun at vise de sidste 5 år?"** — Tests editing an existing dashboard (`Edit` on `outputs.py` or `queries/*.sql`), not creating a new one.
-
-## Category 6: Cross-domain / Exploratory
-Working across subject areas, open-ended questions.
-
-17. **"Hvad kan du fortælle mig om den danske økonomi over de sidste 150 år?"** — Tests historical national accounts (`hnr1`, 1870-2024). Open-ended, tests how the agent structures a long analysis.
-
-18. **"Er der en sammenhæng mellem urbanisering og kriminalitet i Danmark?"** — Requires combining population data (`by1`/`by2`) with crime data (`strafna6`/`strafna7`). True cross-domain analysis.
-
-19. **"Sammenlign energiforbrug med BNP-udvikling — har Danmark afkoblet vækst fra energiforbrug?"** — Tests `miljø_og_energi` + `økonomi`, requires normalization and interpretation.
-
-## Category 7: Edge Cases & Robustness
-
-20. **"Hvor mange spiller cello i danske musikskoler?"** — Tests `ColumnValues` fuzzy matching, niche data.
-
-21. **"Vis mig data om turisme"** — Vague query, tests whether the agent navigates to `overnatninger_og_rejser` and handles ambiguity.
-
-22. **"Hvad er den mest populære uddannelse i Danmark?"** — Ambiguous (popular how?), tests agent reasoning.
+| # | Question | Tests | First move |
+|---|----------|-------|------------|
+| 20 | "Lav en befolkningspyramide for Danmark" | Classic demographic chart. Tests age×gender breakdown from `folk1a`, horizontal bar chart, proper axis formatting. | Execute |
+| 21 | "Vis et kort over indkomstniveauet i danske kommuner" | Tests GeoParquet map visualization. Agent must read `/geo/README.md`, join income data with `dim.nuts`, and render a choropleth. | Execute |
+| 22 | "Sammenlign de nordiske landes BNP per capita som et bar chart" | Tests whether the agent recognizes it needs external data (DST covers Denmark only) or finds Nordic comparison tables. Should handle gracefully. | Execute or explain limitation |
 
 ## Suggested Test Order
 
-| Phase | Tests | Focus |
-|-------|-------|-------|
-| **1. Smoke test** | #1, #2, #3 | Basic query → answer flow works |
-| **2. Analysis depth** | #4, #8, #9 | Multi-step analysis + visualization |
-| **3. Dashboard creation** | #11 | Core dashboard creation flow |
-| **4. Dashboard interaction** | #14, #15, #16 | Navigation, snapshots, iteration |
-| **5. Complex analysis** | #5, #6, #7 | Cross-dimensional, interpretation |
-| **6. Second dashboard** | #12 or #13 | Another domain, verify consistency |
-| **7. Cross-domain** | #17, #18, #19 | Open-ended, multi-subject |
-| **8. Edge cases** | #20, #21, #22 | Robustness, ambiguity handling |
+### Session A — Core flow (questions in one continuous session)
 
-Phase 1-4 in one chat session (tests conversation continuity and dashboard iteration). Phases 5-8 as separate conversations to test fresh starts across different subject areas.
+| Phase | Questions | Focus |
+|-------|-----------|-------|
+| **Smoke test** | #1, #3 | Basic data lookup works |
+| **Exploration** | #5 | Agent shows data without over-asking |
+| **Analysis** | #9 | Multi-step join + comparison |
+| **Visualization** | #20 | Chart quality |
+| **Dashboard creation** | #13 | Full dashboard workflow (vague → explore → build) |
+| **Dashboard iteration** | snapshot + navigate with filters | Validate, snapshot, filter interaction |
+
+Session A tests conversation continuity: the agent should remember context from earlier turns and not repeat work.
+
+### Session B — Targeted dashboard (fresh session)
+
+| Phase | Questions | Focus |
+|-------|-----------|-------|
+| **Specific dashboard** | #14 | Direct build from detailed spec |
+| **Extension** | #15 | Iterating on existing dashboard |
+
+### Session C — Analysis depth (fresh session)
+
+| Phase | Questions | Focus |
+|-------|-----------|-------|
+| **Cross-domain** | #10 | Education × income join |
+| **Trade analysis** | #11 | Multi-country comparison |
+| **Exploratory** | #7 | Energy data, open scope |
+
+### Session D — Edge cases (fresh session)
+
+| Phase | Questions | Focus |
+|-------|-----------|-------|
+| **Ambiguity** | #17 | Light clarification + data |
+| **Overlap** | #18 | Existing dashboard detection |
+| **Pivot** | #8 → #19 | Direction change mid-analysis |
+
+### Session E — Remaining (fresh sessions, any order)
+
+| Questions | Focus |
+|-----------|-------|
+| #2, #4 | Niche factual lookups |
+| #6, #8 | Exploration of unfamiliar domains |
+| #12 | Sickness absence analysis |
+| #16 | Green transition dashboard |
+| #21, #22 | Map visualization, data boundary handling |
+
+### Session notes
+
+- **Session A** is the critical path — if it fails, later sessions will too.
+- **Session B** depends on Session A only for #15 (extending the tourism dashboard from #13 could be swapped to extending #14 instead).
+- **Sessions C–E** are independent and can run in any order.
+- Run #18 after #13 has been completed (needs the existing dashboard to detect).

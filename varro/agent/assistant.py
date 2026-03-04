@@ -204,6 +204,9 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     Args:
         code (str): The Python code to execute.
     """
+    # FIXME: dev hack to make geo work without the sandbox.
+    if "/geo/" in code:
+        code = code.replace("/geo/", "/Users/josca/dev/varro/agent_data/geo/")
     res = ctx.deps.shell.run_cell(code)
     if res.error_before_exec:
         raise ModelRetry(repr(res.error_before_exec))
