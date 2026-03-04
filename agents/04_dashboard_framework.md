@@ -159,20 +159,19 @@ Published dashboards are stored in `data/public/{owner_id}/{slug}`.
   - file hash mismatch returns editor with conflict notice and latest file content,
   - successful save clears dashboard cache entry for `(user_id, dashboard_name)`.
 
-## Dashboard validation flow (2026-02-26)
+## Dashboard validation flow (2026-03-04)
 
-- Validation core is implemented in `varro/agent/dashboard_validation.py`.
-- `validate_dashboard_url(...)` executes all `queries/*.sql` and all `@output` functions for a dashboard URL and returns a structured result (`queries`, `outputs`, `warnings`, blocking errors).
-- Empty-result severity rule:
-  - unfiltered/default filters: empty query/output is blocking,
+- Validation core is `varro/dashboard/verify.py`.
+- `validate_dashboard_url(...)` executes all `queries/*.sql` and all `@output` functions for a dashboard URL and returns a structured result (`queries`, `outputs`, `warnings`, `query_errors`, `output_errors`).
+- Empty-result severity rule is URL-aware:
+  - unfiltered/default filters: empty query/output is blocking (`*_errors`),
   - filtered URLs: empty query/output is warning-only.
-- `ValidateDashboard(url?)` tool is available in `varro/agent/assistant.py` and returns `VALIDATION_RESULT {json}` on pass/warnings, `ModelRetry` on blocking failures.
-- `Write`/`Edit` in `varro/agent/assistant.py` now auto-run dashboard validation after successful edits to:
-  - `/dashboard/{slug}/dashboard.md`
-  - `/dashboard/{slug}/outputs.py`
-  - `/dashboard/{slug}/queries/*.sql`
-- Auto-validation behavior:
-  - blocking issues -> `ModelRetry`,
-  - incomplete dashboard structure during incremental creation -> non-blocking `Validation pending: ...`,
-  - pass/warnings -> tool output includes validation summary + `VALIDATION_RESULT`.
+- `ValidateDashboard(url?)` in `varro/agent/assistant.py` runs full validation with `strict_structure=True` and:
+  - returns `VALIDATION_RESULT {json}` on pass/warnings,
+  - raises `ModelRetry` on blocking failures.
+- `Write`/`Edit` in `varro/agent/assistant.py` call `run_validation_after_write(...)` only for:
+  - `/dashboard/{slug}/queries/*.sql` -> execute that single SQL (`validate_single_query`),
+  - `/dashboard/{slug}/outputs.py` -> syntax compile only (`validate_outputs_syntax`),
+  - `/dashboard/{slug}/dashboard.md` -> lightweight structure warnings (`validate_dashboard_structure`).
+- Write-time validation never raises `ModelRetry`; it appends plain text status/warnings to the tool result.
 - Snapshot remains separate (`Snapshot` does not auto-validate).

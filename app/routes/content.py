@@ -102,6 +102,8 @@ def _render_welcome_editor(content: str):
 
 @ar.get("/app")
 def app_home(req, sess):
+    if not req.headers.get("HX-Request"):
+        sess.pop("chat_id", None)
     user_id = sess["user_id"]
     welcome_content = _welcome_path(user_id).read_text(encoding="utf-8")
     content = _render_welcome_page(welcome_content, list_dashboards(user_id))

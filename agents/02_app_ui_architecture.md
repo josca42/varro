@@ -27,9 +27,10 @@
   - `GET /` renders `ui/app/frontpage.py`.
   - Signed-in users hitting `/` are redirected to `/app` (303).
 - Authenticated intro flow:
-  - `GET /app` renders welcome markdown inside `AppShell`.
+  - `GET /app` clears `sess["chat_id"]` on full-page loads (non-HTMX), then renders welcome markdown inside `AppShell`.
   - `GET /app/code` renders intro markdown editor inside `AppShell`.
   - `PUT /app/code` saves editor content with hash guard for optimistic conflict handling.
+  - HTMX requests to `/app` do not clear `sess["chat_id"]`.
 - Internal routes requiring auth include:
   - `/app`, `/app/code`, `/settings`, `/chat*`, `/dashboard*`, `/commands/search`.
 - Public dashboard routes are anonymous-readable:
