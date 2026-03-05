@@ -1,7 +1,8 @@
 import argparse
+import os
 from datetime import timedelta
 
-from fasthtml.common import Beforeware, RedirectResponse, serve
+from fasthtml.common import Beforeware, RedirectResponse, Response, serve
 
 from app.routes.auth import AUTH_SKIP, ar as auth_routes
 from app.routes.chat import ar as chat_routes
@@ -27,25 +28,31 @@ LOGIN_REDIRECT = RedirectResponse("/login", status_code=303)
 
 
 def before(req, sess):
-    # auth = req.scope["auth"] = sess.get("auth")
-    # if not auth:
-    #     if req.url.path.startswith("/public/"):
-    #         return
-    #     return LOGIN_REDIRECT
-    auth = 1
+    auth = req.scope["auth"] = sess.get("auth")
+    if not auth:
+        if req.url.path.startswith("/public/"):
+            return
+        return LOGIN_REDIRECT
     sess["user_id"] = auth
     req.state.chats = crud.chat.for_user(auth)
 
 
-beforeware = Beforeware(before, skip=[*STATIC_SKIP, *AUTH_SKIP, r"/"])
+beforeware = Beforeware(before, skip=[*STATIC_SKIP, *AUTH_SKIP, r"/", r"/health"])
 
-app, rt = daisy_app(before=beforeware, live=True)
+LIVE_RELOAD = os.environ.get("VARRO_LIVE", "1") == "1"
+
+app, rt = daisy_app(before=beforeware, live=LIVE_RELOAD)
 
 mount_dashboard_routes(app, DATA_DIR, dst_read_engine)
 chat_routes.to_app(app)
 command_routes.to_app(app)
 content_routes.to_app(app)
 auth_routes.to_app(app)
+
+
+@app.get("/health")
+def health():
+    return Response("ok", status_code=200)
 
 
 @app.get("/")
@@ -71,4 +78,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=5001)
     args = parser.parse_args()
-    serve(port=args.port)
+    serve(port=args.port, live=False)

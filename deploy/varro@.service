@@ -1,0 +1,33 @@
+[Unit]
+Description=Varro worker %i (port 8%i)
+After=network.target postgresql.service
+
+[Service]
+User=prod
+Group=shared
+WorkingDirectory=/home/prod/varro
+Environment="PATH=/home/prod/varro/.venv/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="VARRO_LIVE=0"
+
+ExecStart=/home/prod/varro/.venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8%i \
+    --log-level info
+
+Restart=always
+RestartSec=3
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+LimitNOFILE=65536
+
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/home/prod/varro
+ReadWritePaths=/data
+ReadOnlyPaths=/agent_data
+
+[Install]
+WantedBy=multi-user.target
