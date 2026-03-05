@@ -153,13 +153,11 @@ class ResourceLimits:
 BASH_LIMITS = ResourceLimits(
     cpu_seconds=_int_setting("SANDBOX_BASH_CPU_SECONDS", 30),
     memory_bytes=_int_setting("SANDBOX_MEMORY_MB", 2048) * 1024 * 1024,
-    nproc=_int_setting("SANDBOX_NPROC", 256),
     nofile=_int_setting("SANDBOX_NOFILE", 1024),
     fsize=_int_setting("SANDBOX_FSIZE_MB", 256) * 1024 * 1024,
 )
 WORKER_LIMITS = ResourceLimits(
     memory_bytes=_int_setting("SANDBOX_MEMORY_MB", 2048) * 1024 * 1024,
-    nproc=_int_setting_with_fallback("SANDBOX_WORKER_NPROC", "SANDBOX_NPROC", 1024),
     nofile=_int_setting_with_fallback("SANDBOX_WORKER_NOFILE", "SANDBOX_NOFILE", 4096),
     fsize=_int_setting("SANDBOX_FSIZE_MB", 256) * 1024 * 1024,
 )
