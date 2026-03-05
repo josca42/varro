@@ -174,6 +174,12 @@ Snapshot contract:
 
 ## Recent updates
 
+- Shell runtime now routes through `varro.agent.sandbox`:
+  - `ShellPool` creates/closes shells via `create_shell(...)` / `close_shell(...)`.
+  - In `BASH_MODE=BWRAP`, Jupyter runs in a separate bubblewrap worker process (`varro.agent.ipython_worker`) instead of in the main server process.
+  - `Assistant.Bash` now calls `run_bash_command` from `varro.agent.sandbox`; vanilla bash lives in `varro.agent.shell`.
+  - Worker exchange dir is `.varro_exchange/{chat_id}` in user workspace and is cleaned on shell close; resumed chats recreate a fresh exchange dir after snapshot load.
+  - Worker sandbox env now pins writable home/cache dirs under `/home/dev` (`HOME`, `XDG_CACHE_HOME`, `XDG_CONFIG_HOME`, `MPLCONFIGDIR`) and constrains native thread pools (`ARROW_NUM_THREADS`, `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS`, `NUMEXPR_NUM_THREADS`) to stabilize parquet transfer + plotting flows.
 - `run_agent(...)` now keeps URL in mutable per-turn state and passes both getter/setter in deps. `UpdateUrl` can mutate this state so same-turn `Snapshot()`/`ValidateDashboard()` calls see the updated URL.
 - `UpdateUrl` now adds optional warning metadata for dashboard select filters when URL param values are not in the filter options query result set (helps catch value/label mismatches like `Region Hovedstaden` vs `84`).
 - When `agent.iter(...)` raises after tool retry exhaustion, `run.result` can be `None` while `run.ctx.state.message_history` still contains accumulated messages. This allows partial turn persistence by storing only the new suffix (`message_history[len(previous_history):]`) before re-raising.

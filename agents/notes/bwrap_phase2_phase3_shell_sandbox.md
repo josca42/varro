@@ -22,8 +22,13 @@ Sandbox behavior:
   - state survives via existing `shell.pkl` snapshot path contract.
   - `Sql` dataframe injection still uses `ctx.deps.shell.user_ns[df_name] = df`.
   - `Jupyter(show=[...])` supports proxy rendering via `shell.render_show(name)` when available.
+  - exchange storage is scoped per chat at `.varro_exchange/{chat_id}` and cleaned on shell close/eviction.
+  - when a chat resumes later, snapshot state is loaded and a fresh `.varro_exchange/{chat_id}` directory is created.
 
 Operational note:
 
 - `RLIMIT_NPROC=128` caused bwrap startup failure (`Creating new namespace failed: Resource temporarily unavailable`) on this host.
 - Default sandbox NPROC was raised to `256` to keep startup reliable.
+- Plot/image-heavy workloads can require more worker processes/FDs than bash commands. Worker limits now support `SANDBOX_WORKER_NPROC`/`SANDBOX_WORKER_NOFILE` (fallback to shared limits), with defaults `1024`/`4096`.
+- Worker env now uses writable home/cache paths under `/home/dev` (`HOME`, `XDG_CACHE_HOME`, `XDG_CONFIG_HOME`, `MPLCONFIGDIR`) to avoid Fontconfig cache failures in sandboxed plotting flows.
+- Worker env also constrains native thread pools (`ARROW_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `NUMEXPR_NUM_THREADS=1`) to avoid `std::system_error: Resource temporarily unavailable` during parquet dataframe transfer in `set_dataframe`.
