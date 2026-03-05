@@ -29,7 +29,7 @@ Each file is a GeoParquet with:
 - **navn**: Region/kommune name (str)
 - **geometry**: Polygon boundaries in WGS84 (EPSG:4326)
 
-## Add geo data
+## Merge data with geo boundaries
 
 ```python
 geo = gpd.read_parquet("/geo/kommuner.parquet")
@@ -37,23 +37,24 @@ df = df[df["omrade"] != 0]  # drop whole-country aggregate
 merged = geo.merge(df, left_index=True, right_on="omrade")
 ```
 
-After merge, use `merged.index` for `locations` and `merged.geometry` for `geojson`.
-
 ## Plot map
 
-Use `px.choropleth_map` with a tile basemap:
+Use `px.choropleth_map`. Pass `merged.geometry` as geojson and `merged.index` as locations — plotly matches each feature by position.
 
 ```python
 fig = px.choropleth_map(
     merged,
     geojson=merged.geometry,
     locations=merged.index,
-    color="indhold",
+    color="value_column",
     hover_name="navn",
     map_style="carto-positron",
     center={"lat": 56.0, "lon": 10.5},
-    zoom=5.5,
+    zoom=5.8,
 )
+fig.update_layout(margin=dict(l=0, r=0, t=40, b=0), height=550)
 ```
 
-Denmark center: `lat=56.0, lon=10.5`, zoom `5.5` fits the mainland and islands. Bornholm (far east) may appear small — zoom `5.0` if it matters.
+Denmark center: `lat=56.0, lon=10.5`, zoom `5.8` fits the mainland and islands. Bornholm (far east) may appear small — zoom `5.0` if it matters.
+
+

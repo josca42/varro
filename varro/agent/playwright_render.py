@@ -79,8 +79,11 @@ async def html_to_png(html: str, *, width: int = 600, height: int = 400) -> byte
             state="visible",
         )
 
-        # Optional tiny extra delay if you ever see partial renders:
-        # await page.wait_for_timeout(100)
+        # Map-based charts (choropleth_map, scattermap) use a maplibre WebGL canvas
+        # that needs extra time to load tiles and render polygons.
+        map_canvas = page.locator(".maplibregl-canvas, .mapboxgl-canvas")
+        if await map_canvas.count():
+            await page.wait_for_timeout(2000)
 
         png_bytes = await page.screenshot(type="png", scale="css")
         return png_bytes
