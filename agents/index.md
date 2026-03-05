@@ -10,6 +10,7 @@ Last updated: 2026-03-04.
 - [04 Dashboard Framework](04_dashboard_framework.md)
 - [05 Data + Context Pipeline](05_data_context_pipeline.md)
 - [06 Playground Exploration](06_playground_exploration.md)
+- [07 Deployment](07_deployment.md)
 
 ## Dev
 
