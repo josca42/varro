@@ -78,4 +78,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=5001)
     args = parser.parse_args()
-    serve(port=args.port, live=False)
+    serve(port=args.port)
