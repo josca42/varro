@@ -1,5 +1,7 @@
 # Deployment
 
+Production is live at `varro.dk` as of 2026-03-05. The `prod` user runs the app from `/home/prod/varro`.
+
 ## Stack
 
 - **Caddy** — reverse proxy, TLS, compression, sticky sessions
@@ -20,6 +22,10 @@ All deployment config lives in `deploy/`:
 
 ## Initial Setup
 
+Run once: `sudo bash deploy/setup.sh [N]` (default 4 workers).
+
+Or manually:
+
 ```bash
 sudo cp deploy/varro@.service /etc/systemd/system/
 sudo systemctl daemon-reload
@@ -33,6 +39,8 @@ for i in $(seq 1 10); do
   sudo systemctl start "varro@${id}.service"
 done
 ```
+
+Current state (2026-03-05): 10 workers running, Caddy proxying, all health checks passing.
 
 ## Common Operations
 
@@ -71,7 +79,16 @@ journalctl -u varro@001.service -f
 
 `GET /health` returns `200 "ok"`. Caddy checks every 10s and removes unhealthy workers from the pool.
 
-## Env Var
+## Prod User
+
+- User: `prod`, group: `shared`
+- App dir: `/home/prod/varro`
+- Venv: `/home/prod/varro/.venv` (has uvicorn installed)
+- systemd sandboxing: `ProtectSystem=strict`, `PrivateTmp=true`, `NoNewPrivileges=true`
+- Read-write: `/home/prod/varro`, `/data`
+- Read-only: `/agent_data`
+
+## Env Vars
 
 - `VARRO_LIVE=0` — set in the systemd unit, disables live reload
 - `VARRO_LIVE=1` (default) — used in development with `uv run python app/main.py`
