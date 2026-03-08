@@ -28,7 +28,8 @@ Sandbox behavior:
 Operational note:
 
 - `RLIMIT_NPROC=128` caused bwrap startup failure (`Creating new namespace failed: Resource temporarily unavailable`) on this host.
-- Default sandbox NPROC was raised to `256` to keep startup reliable.
-- Plot/image-heavy workloads can require more worker processes/FDs than bash commands. Worker limits now support `SANDBOX_WORKER_NPROC`/`SANDBOX_WORKER_NOFILE` (fallback to shared limits), with defaults `1024`/`4096`.
+- Sandbox-level `RLIMIT_NPROC` limits were later removed for both Bash and worker startup after user task/thread counts exceeded sandbox caps during normal use.
+- `SANDBOX_NPROC` and `SANDBOX_WORKER_NPROC` are no longer used by runtime limits.
+- Plot/image-heavy workloads can require higher FD ceilings; worker limits support `SANDBOX_WORKER_NOFILE` (fallback to `SANDBOX_NOFILE`, default `4096`).
 - Worker env now uses writable home/cache paths under `/home/dev` (`HOME`, `XDG_CACHE_HOME`, `XDG_CONFIG_HOME`, `MPLCONFIGDIR`) to avoid Fontconfig cache failures in sandboxed plotting flows.
 - Worker env also constrains native thread pools (`ARROW_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, `NUMEXPR_NUM_THREADS=1`) to avoid `std::system_error: Resource temporarily unavailable` during parquet dataframe transfer in `set_dataframe`.

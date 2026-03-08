@@ -5,6 +5,8 @@ from fasthtml.common import APIRouter, A, Button, Div, Form, Input, NotStr, Text
 
 from ui.app.layout import AppShell, SettingsPage
 from varro.agent.workspace import user_workspace_root
+from varro.config import DATA_DIR
+from varro.dashboard.public_fs import has_public_dashboard
 from varro.dashboard.routes import list_dashboards
 from varro.db import crud
 
@@ -49,16 +51,22 @@ def _welcome_path(user_id: int):
     return path
 
 
-def _dashboard_list_markdown(dashboards: list[str]) -> str:
+def _dashboard_list_markdown(dashboards: list[str], user_id: int, data_root) -> str:
     if not dashboards:
         return "- _(No dashboards found for this user.)_"
-    return "\n".join(f"- [{slug}](/dashboard/{slug})" for slug in dashboards)
+    lines = []
+    for slug in dashboards:
+        line = f"- [{slug}](/dashboard/{slug})"
+        if has_public_dashboard(data_root, user_id, slug):
+            line += f" — [public](/public/{user_id}/{slug})"
+        lines.append(line)
+    return "\n".join(lines)
 
 
-def _render_welcome_page(content: str, dashboards: list[str]):
+def _render_welcome_page(content: str, dashboards: list[str], user_id: int):
     rendered_md = content.replace(
         WELCOME_DASHBOARD_TOKEN,
-        _dashboard_list_markdown(dashboards),
+        _dashboard_list_markdown(dashboards, user_id, DATA_DIR),
     )
     html = mistletoe.markdown(rendered_md)
     return Div(
@@ -106,7 +114,7 @@ def app_home(req, sess):
         sess.pop("chat_id", None)
     user_id = sess["user_id"]
     welcome_content = _welcome_path(user_id).read_text(encoding="utf-8")
-    content = _render_welcome_page(welcome_content, list_dashboards(user_id))
+    content = _render_welcome_page(welcome_content, list_dashboards(user_id), user_id)
     return _app_or_fragment(req, sess, content)
 
 
@@ -141,5 +149,6 @@ def settings(req, sess):
     page = SettingsPage(
         user_name=db_user.name if db_user else None,
         user_email=db_user.email if db_user else None,
+        user_balance=db_user.balance if db_user else None,
     )
     return _app_or_fragment(req, sess, page)

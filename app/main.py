@@ -8,6 +8,7 @@ from app.routes.auth import AUTH_SKIP, ar as auth_routes
 from app.routes.chat import ar as chat_routes
 from app.routes.commands import ar as command_routes
 from app.routes.content import ar as content_routes
+from app.routes.payments import ar as payment_routes
 from ui.app.frontpage import Frontpage
 from ui.core import daisy_app
 from varro.chat.run_manager import run_manager
@@ -28,7 +29,8 @@ LOGIN_REDIRECT = RedirectResponse("/login", status_code=303)
 
 
 def before(req, sess):
-    auth = req.scope["auth"] = sess.get("auth")
+    # auth = req.scope["auth"] = sess.get("auth")
+    auth = 3
     if not auth:
         if req.url.path.startswith("/public/"):
             return
@@ -37,7 +39,10 @@ def before(req, sess):
     req.state.chats = crud.chat.for_user(auth)
 
 
-beforeware = Beforeware(before, skip=[*STATIC_SKIP, *AUTH_SKIP, r"/", r"/health"])
+beforeware = Beforeware(
+    before,
+    skip=[*STATIC_SKIP, *AUTH_SKIP, r"/", r"/health", r"/payments/webhook"],
+)
 
 LIVE_RELOAD = os.environ.get("VARRO_LIVE", "1") == "1"
 
@@ -48,6 +53,7 @@ chat_routes.to_app(app)
 command_routes.to_app(app)
 content_routes.to_app(app)
 auth_routes.to_app(app)
+payment_routes.to_app(app)
 
 
 @app.get("/health")

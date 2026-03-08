@@ -5,7 +5,7 @@ Split-panel application shell for chat + URL-driven content.
 
 from __future__ import annotations
 
-from fasthtml.common import A, Div, H1, Li, P, Script, Span, Ul
+from fasthtml.common import A, Button, Div, Form, H1, Input, Li, P, Script, Span, Ul
 
 from ui.core import cn
 from ui.app.chat import ChatPanel, ChatClientScript
@@ -51,8 +51,14 @@ def OverviewPage():
     return DashboardOverviewPage([])
 
 
-def SettingsPage(user_name: str | None = None, user_email: str | None = None):
+def SettingsPage(
+    user_name: str | None = None,
+    user_email: str | None = None,
+    user_balance=None,
+):
     initial = (user_name or user_email or "U")[0].upper()
+    balance = user_balance if user_balance is not None else 0
+    balance_text = f"{balance:.2f} DKK"
 
     profile_section = Div(
         Div(
@@ -88,6 +94,62 @@ def SettingsPage(user_name: str | None = None, user_email: str | None = None):
         cls="py-6 border-b border-base-300",
     )
 
+    billing_section = Div(
+        H1("Balance", cls="text-lg font-semibold mb-4"),
+        Div(
+            Div("Current balance", cls="text-sm font-medium"),
+            Div(balance_text, cls="text-2xl font-semibold"),
+            cls="space-y-1",
+        ),
+        Div(
+            Form(
+                Input(type="hidden", name="amount_dkk", value="50.00"),
+                Button("50 DKK", type="submit", cls="btn btn-outline btn-sm"),
+                action="/payments/checkout",
+                method="post",
+                cls="m-0",
+                hx_boost="false",
+            ),
+            Form(
+                Input(type="hidden", name="amount_dkk", value="100.00"),
+                Button("100 DKK", type="submit", cls="btn btn-outline btn-sm"),
+                action="/payments/checkout",
+                method="post",
+                cls="m-0",
+                hx_boost="false",
+            ),
+            Form(
+                Input(type="hidden", name="amount_dkk", value="200.00"),
+                Button("200 DKK", type="submit", cls="btn btn-outline btn-sm"),
+                action="/payments/checkout",
+                method="post",
+                cls="m-0",
+                hx_boost="false",
+            ),
+            cls="flex flex-wrap gap-2",
+        ),
+        Form(
+            Div(
+                Input(
+                    type="number",
+                    name="amount_dkk",
+                    min="1",
+                    step="0.01",
+                    placeholder="Custom amount (DKK)",
+                    cls="input input-bordered input-sm w-full sm:w-56",
+                ),
+                Button("Add funds", type="submit", cls="btn btn-primary btn-sm"),
+                cls="flex flex-col sm:flex-row sm:items-center gap-2",
+            ),
+            action="/payments/checkout",
+            method="post",
+            cls="mt-3",
+            hx_boost="false",
+        ),
+        P("Payments are processed by Stripe in DKK.", cls="text-sm text-base-content/60"),
+        cls="py-6 border-b border-base-300 space-y-4",
+    )
+
     danger_section = Div(
         A(
             "Log out",
@@ -102,6 +164,7 @@ def SettingsPage(user_name: str | None = None, user_email: str | None = None):
             H1("Settings", cls="text-2xl font-semibold mb-6"),
             profile_section,
             account_section,
+            billing_section,
             danger_section,
             cls="max-w-2xl p-6",
         ),

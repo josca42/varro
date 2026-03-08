@@ -18,7 +18,9 @@ from fasthtml.common import (
     Button,
     Div,
     Form,
+    H3,
     Input,
+    P,
     RedirectResponse,
     Response,
     Textarea,
@@ -363,7 +365,8 @@ def navbar_context_action(url: str = "", sess=None):
         return Form(
             Button(label, type="submit", cls="btn btn-primary btn-sm"),
             hx_post=f"/dashboard/{private_slug}/publish",
-            hx_swap="none",
+            hx_target="body",
+            hx_swap="beforeend",
             **{
                 "hx-on::after-request": "window.__varroRefreshNavbarContextAction && window.__varroRefreshNavbarContextAction()",
             },
@@ -473,6 +476,36 @@ async def dashboard_code_save(name: str, req, sess):
     return _shell_or_fragment(req, sess, content)
 
 
+def _publish_modal(slug, user_id, is_update):
+    path = f"/public/{user_id}/{slug}"
+    url = f"https://varro.dk{path}"
+    title = "Dashboard updated!" if is_update else "Dashboard published!"
+    return Div(
+        Div(
+            Div(cls="fixed inset-0 bg-black/30 z-40", **{"x-dialog:overlay": True}),
+            Div(
+                Div(
+                    H3(title, cls="text-lg font-semibold", **{"x-dialog:title": True}),
+                    P(A(url, href=path, target="_blank", cls="link link-primary break-all"), cls="py-2"),
+                    Div(
+                        Button("Copy link", type="button", cls="btn btn-sm btn-outline",
+                               **{"@click": f"navigator.clipboard.writeText('{url}')"}),
+                        Button("Close", type="button", cls="btn btn-sm btn-primary",
+                               **{"@click": "$dialog.close()"}),
+                        cls="flex gap-2 justify-end",
+                    ),
+                    cls="bg-base-100 rounded-xl p-6 shadow-lg w-full max-w-sm space-y-2",
+                ),
+                cls="fixed inset-0 z-50 flex items-center justify-center p-4",
+                **{"x-dialog:panel": True},
+            ),
+            **{"x-dialog": True, "x-model": "open"},
+        ),
+        x_data="{ open: true }",
+        **{"x-effect": "if (!open) $el.remove()"},
+    )
+
+
 @ar("/dashboard/{name}/publish", methods=["POST"])
 def publish_dashboard(name: str, req, sess):
     user_id = _session_user_id(sess)
@@ -485,12 +518,13 @@ def publish_dashboard(name: str, req, sess):
     if source_dir is None:
         return Response("Dashboard not found", status_code=404)
 
+    is_update = has_public_dashboard(_dashboards_root, user_id, name)
     destination_dir = public_dashboard_dir(_dashboards_root, user_id, name)
     copy_dashboard_source(source_dir, destination_dir)
     _cache.pop(("public", user_id, name), None)
 
     if req.headers.get("HX-Request"):
-        return Response("", headers={"HX-Trigger": '{"dashboardPublished": {}}'})
+        return _publish_modal(name, user_id, is_update)
     return RedirectResponse(f"/dashboard/{name}", status_code=303)
 
 

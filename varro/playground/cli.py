@@ -237,7 +237,7 @@ async def _run(args) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--user-id", type=int, default=1)
+    parser.add_argument("--user-id", type=int, default=3)
     parser.add_argument("--chat-id", type=int)
     parser.add_argument("--current-url", default="/")
     args = parser.parse_args()

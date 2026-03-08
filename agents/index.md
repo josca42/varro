@@ -1,6 +1,6 @@
 # Varro Notes Index
 
-Last updated: 2026-03-05.
+Last updated: 2026-03-08.
 
 ## Core notes
 
@@ -22,6 +22,12 @@ Last updated: 2026-03-05.
 - [Dashboard Filter Select Value Label](notes/dashboard_filter_select_value_label.md)
 - [Bubblewrap Phase 0 Preflight](notes/bwrap_phase0_preflight.md)
 - [Bubblewrap Phase 2 + 3 Shell Sandbox](notes/bwrap_phase2_phase3_shell_sandbox.md)
+- [Playground Q1: Befolkning](notes/playground_q1_befolkning.md) — Chat 70 findings: Snapshot auth failure, exploration quality
+- [Playground Q2: Husleje](notes/playground_q2_husleje.md) — Chat 71 findings: Strong session, subject search tool opportunity
+- [Playground Q4: Afgrøder](notes/playground_q4_afgroeder.md) — Chat 72 findings: Cleanest session, SQL cast syntax doc gap
+- [Playground Q5: Dansk økonomi](notes/playground_q5_oekonomi.md) — Chat 73 findings: Best session, vague question handled perfectly, snapshot fixed
+- [Playground Q9: Regioner](notes/playground_q9_regioner.md) — Chat 74 findings: Strongest analysis session, filter value contract gap, parquet type constraint
+- [Stripe payments + user balance](notes/stripe_payments_balance.md) — DKK top-up flow, webhook reconciliation, balance column, settings top-up UI
 
 ## Skills
 
