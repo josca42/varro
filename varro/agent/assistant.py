@@ -66,6 +66,7 @@ agent = Agent(
     model=sonnet_model,
     model_settings=sonnet_settings,
     deps_type=AssistantRunDeps,
+    retries=3,
     builtin_tools=[
         # MemoryTool(),
         WebSearchTool(

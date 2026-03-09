@@ -1,6 +1,6 @@
 # Varro Notes Index
 
-Last updated: 2026-03-08.
+Last updated: 2026-03-09.
 
 ## Core notes
 
@@ -28,6 +28,7 @@ Last updated: 2026-03-08.
 - [Playground Q5: Dansk økonomi](notes/playground_q5_oekonomi.md) — Chat 73 findings: Best session, vague question handled perfectly, snapshot fixed
 - [Playground Q9: Regioner](notes/playground_q9_regioner.md) — Chat 74 findings: Strongest analysis session, filter value contract gap, parquet type constraint
 - [Stripe payments + user balance](notes/stripe_payments_balance.md) — DKK top-up flow, webhook reconciliation, balance column, settings top-up UI
+- [Model cost debiting from user balance](notes/model_cost_debiting.md) — Per-run model charge ledger, DKK debits, low-balance gating, hourly price refresh
 
 ## Skills
 

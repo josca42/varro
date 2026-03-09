@@ -11,6 +11,7 @@ from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
 from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
 from varro.agent.assistant import AssistantRunDeps, agent
+from varro.chat.model_costs import apply_model_charge, has_positive_balance
 from varro.chat.render_cache import save_turn_render_cache
 from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
 from varro.chat.turn_store import load_messages_for_turns, save_turn_messages, turn_fp
@@ -55,6 +56,7 @@ async def run_agent(
     chats,
     shell,
     chat_id: int,
+    run_id: str,
     current_url: str | None = None,
 ) -> AsyncIterator[object]:
     chat = chats.get(chat_id, with_turns=True)
@@ -83,13 +85,45 @@ async def run_agent(
         request_current_url=get_current_url,
         request_set_current_url=set_current_url,
     )
-    async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
-        async for node in run:
-            for block in node_to_blocks(node, shell, state):
-                if block:
-                    yield block
+    assistant_model_name = agent.model.model_name
+    turn_charge_key = f"assistant:{run_id}"
+    run = None
+    try:
+        async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
+            async for node in run:
+                for block in node_to_blocks(node, shell, state):
+                    if block:
+                        yield block
+    except Exception:
+        if run is not None:
+            usage = run.usage()
+            apply_model_charge(
+                user_id=user_id,
+                chat_id=chat_id,
+                turn_idx=turn_idx,
+                charge_type="assistant_run",
+                charge_key=turn_charge_key,
+                model_name=assistant_model_name,
+                usage=usage,
+            )
+        raise
 
-    new_msgs = run.result.new_messages()
+    if run is None:
+        raise RuntimeError("Agent run did not initialize.")
+
+    run_result = run.result
+    assistant_usage = run_result.usage()
+    apply_model_charge(
+        user_id=user_id,
+        chat_id=chat_id,
+        turn_idx=turn_idx,
+        charge_type="assistant_run",
+        charge_key=turn_charge_key,
+        model_name=run_result.response.model_name or assistant_model_name,
+        usage=assistant_usage,
+    )
+
+    new_msgs = run_result.new_messages()
     fp = turn_fp(user_id, chat_id, turn_idx)
     save_turn_messages(new_msgs, fp)
     save_turn_render_cache(new_msgs, fp, shell)
@@ -105,7 +139,7 @@ async def run_agent(
     crud.chat.update(Chat(id=chat_id, updated_at=datetime.now(timezone.utc)))
 
     if turn_idx == 0:
-        asyncio.create_task(_set_chat_title(chat_id, user_text))
+        asyncio.create_task(_set_chat_title(chat_id, user_id, turn_idx, user_text))
 
 
 _title_agent = Agent(
@@ -117,9 +151,27 @@ _title_agent = Agent(
 )
 
 
-async def _set_chat_title(chat_id: int, user_text: str) -> None:
+async def _set_chat_title(
+    chat_id: int,
+    user_id: int,
+    turn_idx: int,
+    user_text: str,
+) -> None:
     try:
+        if not has_positive_balance(user_id):
+            return
         result = await _title_agent.run(user_text)
+        usage = result.usage()
+        model_name = result.response.model_name or "claude-haiku-4-5"
+        apply_model_charge(
+            user_id=user_id,
+            chat_id=chat_id,
+            turn_idx=turn_idx,
+            charge_type="title_generation",
+            charge_key=f"title:{chat_id}:{turn_idx}",
+            model_name=model_name,
+            usage=usage,
+        )
         title = result.output.strip()[:100]
         crud.chat.update(Chat(id=chat_id, title=title))
     except Exception:

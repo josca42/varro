@@ -15,6 +15,7 @@ from ui.app.chat import (
     ChatRunStream,
     ErrorBlock,
 )
+from varro.chat.model_costs import has_positive_balance
 from varro.chat.run_manager import run_manager
 from varro.chat.runtime_state import runtime_state_fp
 from varro.chat.shell_pool import shell_pool, shell_snapshot_fp
@@ -51,6 +52,16 @@ def _stream_block(block):
     return Div(block, hx_swap_oob="beforebegin:#chat-progress")
 
 
+def _insufficient_balance_blocks(chat_id: int | None):
+    return (
+        ChatFormEnabled(chat_id),
+        Div(
+            ErrorBlock("Insufficient balance. Add funds in Settings to continue."),
+            hx_swap_oob="beforebegin:#chat-progress",
+        ),
+    )
+
+
 async def _publish_blocks(run_id: str, *blocks) -> None:
     for block in blocks:
         if block is None:
@@ -79,6 +90,7 @@ async def _execute_run(
                 chats=chats,
                 shell=shell,
                 chat_id=chat_id,
+                run_id=run_id,
                 current_url=request_url,
             ):
                 await run_manager.publish(run_id, _stream_block(block))
@@ -123,11 +135,13 @@ async def chat_run_start(
         return Response(status_code=403)
 
     chats = req.state.chats
+    if chat_id is not None and not chats.get(chat_id):
+        return Response(status_code=404)
+    if not has_positive_balance(user_id):
+        return _insufficient_balance_blocks(chat_id)
     if chat_id is None:
         chat = chats.create(Chat())
         chat_id = chat.id
-    elif not chats.get(chat_id):
-        return Response(status_code=404)
 
     run_id = uuid4().hex
     run = await run_manager.create_run(
