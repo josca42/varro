@@ -20,6 +20,31 @@ def test_run_bash_command_delegates_to_vanilla_in_dev_mode(monkeypatch):
     assert cwd == "/next"
 
 
+def test_run_bash_command_rewrites_absolute_paths_in_dev_mode(tmp_path: Path, monkeypatch):
+    sandbox = importlib.import_module("varro.agent.sandbox")
+    monkeypatch.setattr(sandbox, "SHELL_MODE", "DEV")
+    monkeypatch.setattr(sandbox, "user_workspace_root", lambda user_id: tmp_path)
+
+    captured = {}
+
+    def fake_run_bash_command(user_id: int, cwd_rel: str, command: str):
+        captured["command"] = command
+        return "ok", "/"
+
+    monkeypatch.setattr(sandbox, "run_bash_command_vanilla", fake_run_bash_command)
+
+    sandbox.run_bash_command(
+        1,
+        "/",
+        'ls /subjects && find / -name "*.md" && grep x "/dashboard/file.txt" && ls ./dashboard',
+    )
+
+    assert captured["command"] == (
+        f'ls {tmp_path}/subjects && find {tmp_path}/ -name "*.md" && '
+        f'grep x "{tmp_path}/dashboard/file.txt" && ls ./dashboard'
+    )
+
+
 def test_run_bash_command_blocks_delete_targets_in_readonly_roots(tmp_path: Path, monkeypatch):
     sandbox = importlib.import_module("varro.agent.sandbox")
     monkeypatch.setattr(sandbox, "SHELL_MODE", "BWRAP")

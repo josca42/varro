@@ -21,6 +21,7 @@ Last updated: 2026-03-04.
 - [Dashboard Filter Select Value Label](notes/dashboard_filter_select_value_label.md)
 - [Bubblewrap Phase 0 Preflight](notes/bwrap_phase0_preflight.md)
 - [Bubblewrap Phase 2 + 3 Shell Sandbox](notes/bwrap_phase2_phase3_shell_sandbox.md)
+- [DEV Bash Absolute Path Translation](notes/dev_bash_absolute_path_translation.md)
 
 ## Skills
 
