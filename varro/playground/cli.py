@@ -5,6 +5,7 @@ import asyncio
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
 
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.chat.agent_run import run_agent
@@ -105,6 +106,7 @@ async def _ask(session: PlaygroundSession, message: str) -> None:
                 chats=chats,
                 shell=shell,
                 chat_id=session.chat_id,
+                run_id=f"playground-{uuid4().hex}",
                 current_url=session.current_url,
             ):
                 pass
@@ -237,7 +239,7 @@ async def _run(args) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--user-id", type=int, default=1)
+    parser.add_argument("--user-id", type=int, default=3)
     parser.add_argument("--chat-id", type=int)
     parser.add_argument("--current-url", default="/")
     args = parser.parse_args()

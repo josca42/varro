@@ -8,6 +8,7 @@ from functools import lru_cache
 from pathlib import Path, PurePosixPath
 import posixpath
 import resource
+import shutil
 import subprocess
 import sys
 import threading
@@ -120,6 +121,7 @@ BASH_ALLOWED_BINARIES = [
 ]
 BASH_DELETE_COMMANDS = {"rm", "rmdir", "unlink"}
 LIB_DIRS = (Path("/lib"), Path("/lib64"), Path("/usr/lib"), Path("/usr/lib64"))
+EXCHANGE_ROOT_NAME = ".varro_exchange"
 _MISSING = object()
 
 
@@ -152,13 +154,11 @@ class ResourceLimits:
 BASH_LIMITS = ResourceLimits(
     cpu_seconds=_int_setting("SANDBOX_BASH_CPU_SECONDS", 30),
     memory_bytes=_int_setting("SANDBOX_MEMORY_MB", 2048) * 1024 * 1024,
-    nproc=_int_setting("SANDBOX_NPROC", 256),
     nofile=_int_setting("SANDBOX_NOFILE", 1024),
     fsize=_int_setting("SANDBOX_FSIZE_MB", 256) * 1024 * 1024,
 )
 WORKER_LIMITS = ResourceLimits(
     memory_bytes=_int_setting("SANDBOX_MEMORY_MB", 2048) * 1024 * 1024,
-    nproc=_int_setting_with_fallback("SANDBOX_WORKER_NPROC", "SANDBOX_NPROC", 1024),
     nofile=_int_setting_with_fallback("SANDBOX_WORKER_NOFILE", "SANDBOX_NOFILE", 4096),
     fsize=_int_setting("SANDBOX_FSIZE_MB", 256) * 1024 * 1024,
 )
@@ -342,7 +342,11 @@ def _build_bwrap_bash_args(user_root: Path, cwd_rel: str) -> list[str]:
     return args
 
 
-def _build_bwrap_worker_args(user_root: Path, snapshot_dir: Path) -> list[str]:
+def _build_bwrap_worker_args(
+    user_root: Path,
+    snapshot_dir: Path,
+    exchange_dir_guest: str,
+) -> list[str]:
     args = _bwrap_base_args(user_root, "/")
     args += [
         "--dir",
@@ -376,6 +380,8 @@ def _build_bwrap_worker_args(user_root: Path, snapshot_dir: Path) -> list[str]:
         "varro.agent.ipython_worker",
         "--snapshot-path",
         "/varro_state/shell.pkl",
+        "--exchange-dir",
+        exchange_dir_guest,
     ]
     return args
 
@@ -479,8 +485,16 @@ class SandboxShellProxy:
         self.chat_id = chat_id
         self.user_root = user_workspace_root(user_id).resolve()
         self.snapshot_fp = snapshot_fp
-        self._exchange_dir = self.user_root / ".varro_exchange"
+        self._exchange_root = self.user_root / EXCHANGE_ROOT_NAME
+        self._exchange_root.mkdir(parents=True, exist_ok=True)
+        self._exchange_dir = self._exchange_root / str(chat_id)
+        if self._exchange_dir.exists():
+            if self._exchange_dir.is_dir():
+                shutil.rmtree(self._exchange_dir, ignore_errors=True)
+            else:
+                self._exchange_dir.unlink(missing_ok=True)
         self._exchange_dir.mkdir(parents=True, exist_ok=True)
+        self._exchange_dir_guest = self._host_path_to_worker(self._exchange_dir)
         self._cache: dict[str, object] = {}
         self._io_lock = threading.Lock()
         self._stderr_lines: deque[str] = deque(maxlen=40)
@@ -493,7 +507,11 @@ class SandboxShellProxy:
     def _spawn_worker(self) -> subprocess.Popen:
         snapshot_dir = self.snapshot_fp.parent
         snapshot_dir.mkdir(parents=True, exist_ok=True)
-        args = _build_bwrap_worker_args(self.user_root, snapshot_dir)
+        args = _build_bwrap_worker_args(
+            self.user_root,
+            snapshot_dir,
+            self._exchange_dir_guest,
+        )
         return subprocess.Popen(
             args,
             stdin=subprocess.PIPE,
@@ -636,6 +654,11 @@ class SandboxShellProxy:
                 except subprocess.TimeoutExpired:
                     self._proc.kill()
                     self._proc.wait(timeout=2)
+            shutil.rmtree(self._exchange_dir, ignore_errors=True)
+            try:
+                self._exchange_root.rmdir()
+            except OSError:
+                pass
 
 
 def _save_snapshot(shell, snapshot_fp: Path) -> None:

@@ -19,7 +19,7 @@ dependencies = [
     "plotly>=6.3.1",
     "psycopg[binary]>=3.2.12",
     "pyarrow>=22.0.0",
-    "pydantic-ai>=1.7.0",
+    "pydantic-ai>=1.8",
     "pytest-playwright>=0.7.2",
     "rapidfuzz>=3.14.3",
     "sqlmodel>=0.0.27",
@@ -38,6 +38,9 @@ dependencies = [
     "prefect>=3.6.18",
     "scipy>=1.17.1",
     "python-frontmatter>=1.1.0",
+    "nbformat>=5.10.4",
+    "stripe>=14.4.0",
+    "genai-prices>=0.0.35",
 ]
 
 [dependency-groups]

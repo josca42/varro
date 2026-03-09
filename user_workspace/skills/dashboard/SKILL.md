@@ -7,8 +7,7 @@ description: Create, edit, and iterate on data dashboards. Use when the user wan
 
 ## When to create a dashboard
 
-By the time you're here, you should either have explored the data in conversation already, or have a request specific enough to build 
-from directly. If neither is true, go back to the conversation and explore first.
+By the time you're here, you should either have explored the data in conversation already, or have a request specific enough to build from directly. If neither is true, go back to the conversation and explore first.
 
 ### Check prior work
 

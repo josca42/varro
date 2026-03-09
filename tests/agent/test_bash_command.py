@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import resource
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -136,3 +137,38 @@ def test_int_setting_with_fallback_uses_primary_then_fallback(monkeypatch):
 
     monkeypatch.setattr(sandbox, "settings", _Settings({}))
     assert sandbox._int_setting_with_fallback("A", "B", 10) == 10
+
+
+def test_default_limits_do_not_set_nproc():
+    sandbox = importlib.import_module("varro.agent.sandbox")
+
+    assert sandbox.BASH_LIMITS.nproc is None
+    assert sandbox.WORKER_LIMITS.nproc is None
+
+
+def test_apply_limits_skips_nproc_when_unset(monkeypatch):
+    sandbox = importlib.import_module("varro.agent.sandbox")
+    calls = []
+
+    def fake_setrlimit(kind, values):
+        calls.append((kind, values))
+
+    monkeypatch.setattr(sandbox.resource, "setrlimit", fake_setrlimit)
+    preexec = sandbox._apply_limits(
+        sandbox.ResourceLimits(
+            cpu_seconds=7,
+            memory_bytes=11,
+            nproc=None,
+            nofile=13,
+            fsize=17,
+        )
+    )
+
+    preexec()
+
+    kinds = {kind for kind, _ in calls}
+    assert resource.RLIMIT_NPROC not in kinds
+    assert resource.RLIMIT_CPU in kinds
+    assert resource.RLIMIT_AS in kinds
+    assert resource.RLIMIT_NOFILE in kinds
+    assert resource.RLIMIT_FSIZE in kinds

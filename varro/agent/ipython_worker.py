@@ -96,7 +96,9 @@ def _handle_render_show(shell, name: str) -> dict:
     return {"ok": False, "error": f"Invalid output type: {type(value)}"}
 
 
-def serve(snapshot_path: Path) -> int:
+def serve(snapshot_path: Path, exchange_dir: Path) -> int:
+    global EXCHANGE_DIR
+    EXCHANGE_DIR = exchange_dir
     shell = get_shell()
     shell.run_cell(JUPYTER_INITIAL_IMPORTS)
     _load_snapshot(shell, snapshot_path)
@@ -162,8 +164,9 @@ def serve(snapshot_path: Path) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--snapshot-path", required=True)
+    parser.add_argument("--exchange-dir", required=True)
     args = parser.parse_args()
-    return serve(Path(args.snapshot_path))
+    return serve(Path(args.snapshot_path), Path(args.exchange_dir))
 
 
 if __name__ == "__main__":

@@ -1,1 +1,0 @@
-accurate outline map of modern-day Denmark with an open book and graduation cap drawn inside the landmass, ink sketch, fine crosshatching, sepia tones, 18th century engraving style, simple centered composition --ar 3:4 --style raw --v 6.1

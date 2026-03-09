@@ -43,7 +43,7 @@ logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
-sonnet_model = AnthropicModel("claude-sonnet-4-6")
+sonnet_model = AnthropicModel("claude-opus-4-6")
 sonnet_settings = AnthropicModelSettings(
     anthropic_thinking={"type": "enabled", "budget_tokens": 3000},
     parallel_tool_calls=True,
@@ -66,6 +66,7 @@ agent = Agent(
     model=sonnet_model,
     model_settings=sonnet_settings,
     deps_type=AssistantRunDeps,
+    retries=3,
     builtin_tools=[
         # MemoryTool(),
         WebSearchTool(
@@ -204,9 +205,6 @@ async def Jupyter(ctx: RunContext[AssistantRunDeps], code: str, show: list[str] 
     Args:
         code (str): The Python code to execute.
     """
-    # FIXME: dev hack to make geo work without the sandbox.
-    if "/geo/" in code:
-        code = code.replace("/geo/", "/Users/josca/dev/varro/agent_data/geo/")
     res = ctx.deps.shell.run_cell(code)
     if res.error_before_exec:
         raise ModelRetry(repr(res.error_before_exec))

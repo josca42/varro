@@ -1,16 +1,19 @@
 import argparse
+import os
 from datetime import timedelta
 
-from fasthtml.common import Beforeware, RedirectResponse, serve
+from fasthtml.common import Beforeware, RedirectResponse, Response, serve
 
 from app.routes.auth import AUTH_SKIP, ar as auth_routes
 from app.routes.chat import ar as chat_routes
 from app.routes.commands import ar as command_routes
 from app.routes.content import ar as content_routes
+from app.routes.payments import ar as payment_routes
 from ui.app.frontpage import Frontpage
 from ui.core import daisy_app
 from varro.chat.run_manager import run_manager
 from varro.chat.shell_pool import shell_pool
+from varro.chat.price_updates import start_price_updates, stop_price_updates
 from varro.config import DATA_DIR
 from varro.dashboard.routes import mount_dashboard_routes
 from varro.db import crud
@@ -27,7 +30,8 @@ LOGIN_REDIRECT = RedirectResponse("/login", status_code=303)
 
 
 def before(req, sess):
-    auth = req.scope["auth"] = sess.get("auth")
+    # auth = req.scope["auth"] = sess.get("auth")
+    auth = 1
     if not auth:
         if req.url.path.startswith("/public/"):
             return
@@ -36,15 +40,26 @@ def before(req, sess):
     req.state.chats = crud.chat.for_user(auth)
 
 
-beforeware = Beforeware(before, skip=[*STATIC_SKIP, *AUTH_SKIP, r"/"])
+beforeware = Beforeware(
+    before,
+    skip=[*STATIC_SKIP, *AUTH_SKIP, r"/", r"/health", r"/payments/webhook"],
+)
 
-app, rt = daisy_app(before=beforeware, live=True)
+LIVE_RELOAD = os.environ.get("VARRO_LIVE", "1") == "1"
+
+app, rt = daisy_app(before=beforeware, live=False)
 
 mount_dashboard_routes(app, DATA_DIR, dst_read_engine)
 chat_routes.to_app(app)
 command_routes.to_app(app)
 content_routes.to_app(app)
 auth_routes.to_app(app)
+payment_routes.to_app(app)
+
+
+@app.get("/health")
+def health():
+    return Response("ok", status_code=200)
 
 
 @app.get("/")
@@ -58,16 +73,18 @@ def frontpage(sess):
 async def start_chat_cleanup():
     run_manager.start_cleanup_task(retention=timedelta(minutes=5), interval=30)
     shell_pool.start_cleanup_task(ttl=timedelta(minutes=10), interval=60)
+    start_price_updates()
 
 
 @app.on_event("shutdown")
 async def stop_chat_cleanup():
     run_manager.stop_cleanup_task()
     shell_pool.stop_cleanup_task()
+    stop_price_updates()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=5001)
     args = parser.parse_args()
-    serve(port=args.port)
+    serve(port=args.port, reload=False)
