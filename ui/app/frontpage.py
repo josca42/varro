@@ -3,22 +3,23 @@ from fasthtml.common import A, Div, Footer, Img, Nav, P, Section, Span, Title
 from ui.components import GameOfLifeAnimation
 
 _STAMPS = [
-    {"topic": "Befolkning",    "slug": "befolkning",    "rotate": "0deg",  "z": 10},
-    {"topic": "Arbejdsmarked", "slug": "arbejdsmarked", "rotate": "3deg",  "z": 20},
-    {"topic": "Bolig",         "slug": "bolig",         "rotate": "-2deg", "z": 30},
-    {"topic": "Uddannelse",    "slug": "uddannelse",    "rotate": "-5deg", "z": 40},
-    {"topic": "Sundhed",       "slug": "sundhed",       "rotate": "1deg",  "z": 50},
-    {"topic": "Indkomst",      "slug": "indkomst",      "rotate": "5deg",  "z": 60},
+    {"topic": "Bolig",        "slug": "bolig",        "rotate": "-2deg", "y": "8px"},
+    {"topic": "Forsvar",      "slug": "forsvar",       "rotate": "1.5deg", "y": "-4px"},
+    {"topic": "Indvandring",  "slug": "indvandring",  "rotate": "-1deg", "y": "6px"},
+    {"topic": "Økonomi",      "slug": "økonomi",      "rotate": "2.5deg", "y": "-6px"},
+    {"topic": "Pension",      "slug": "pension",      "rotate": "-1.5deg", "y": "4px"},
+    {"topic": "Sundhed",      "slug": "sundhed",      "rotate": "1deg",  "y": "-8px"},
+    {"topic": "Ulighed",      "slug": "ulighed",      "rotate": "-2.5deg", "y": "5px"},
 ]
 
 
-def _stamp(topic, slug, rotate, z):
+def _stamp(topic, slug, rotate, y):
     return A(
-        Img(src=f"/static/images/stamps/{slug}.png", alt=topic, cls="stamp-img"),
+        Img(src=f"/static/images/maps/{slug}.png", alt=topic, cls="stamp-img"),
         Span(topic, cls="stamp-label"),
         href=f"/dashboard/{slug}",
         cls="stamp",
-        style=f"--rotate: {rotate}; z-index: {z}",
+        style=f"--rotate: {rotate}; --y: {y}",
     )
 
 
@@ -43,6 +44,19 @@ def Frontpage():
         cls="py-4",
     )
 
+    stamps = [_stamp(**s) for s in _STAMPS]
+
+    stamps_desktop = Div(*stamps, cls="stamps-row stamps-desktop")
+
+    stamps_mobile = Div(
+        Div(
+            *[_stamp(**s) for s in _STAMPS],
+            *[_stamp(**s) for s in _STAMPS],
+            cls="stamps-marquee-track",
+        ),
+        cls="stamps-row stamps-mobile",
+    )
+
     hero = Section(
         Div(
             GameOfLifeAnimation(
@@ -58,13 +72,11 @@ def Frontpage():
                 href="/signup",
                 cls="btn btn-primary px-8 h-11 rounded-lg text-sm font-medium tracking-wide",
             ),
-            Div(
-                *[_stamp(**s) for s in _STAMPS],
-                cls="stamps-row",
-            ),
-            cls="flex flex-col items-center text-center gap-6",
+            cls="flex flex-col items-center text-center gap-6 px-6",
         ),
-        cls="pt-24 pb-20 md:pt-36 md:pb-28 px-6 bg-base-200",
+        stamps_desktop,
+        stamps_mobile,
+        cls="pt-24 pb-0 md:pt-36 bg-base-200",
     )
 
     footer = Footer(
