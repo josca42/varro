@@ -520,6 +520,20 @@ h6 {
   object-fit: cover;
 }
 
+[data-slot="public-frontpage"] .stamp-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-slot="public-frontpage"] .stamp:hover .stamp-video {
+  opacity: 1;
+}
+
 [data-slot="public-frontpage"] .stamp-label {
   position: absolute;
   top: 1rem;

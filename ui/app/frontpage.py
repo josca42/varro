@@ -1,4 +1,6 @@
-from fasthtml.common import A, Div, Footer, Img, Nav, P, Section, Span, Title
+from fasthtml.common import (
+    A, Div, Footer, Img, Nav, P, Section, Span, Title, Video,
+)
 
 from ui.components import GameOfLifeAnimation
 
@@ -6,7 +8,6 @@ _STAMPS = [
     {"topic": "Bolig",        "slug": "bolig",        "rotate": "-2deg", "y": "8px"},
     {"topic": "Forsvar",      "slug": "forsvar",       "rotate": "1.5deg", "y": "-4px"},
     {"topic": "Indvandring",  "slug": "indvandring",  "rotate": "-1deg", "y": "6px"},
-    {"topic": "Økonomi",      "slug": "økonomi",      "rotate": "2.5deg", "y": "-6px"},
     {"topic": "Pension",      "slug": "pension",      "rotate": "-1.5deg", "y": "4px"},
     {"topic": "Sundhed",      "slug": "sundhed",      "rotate": "1deg",  "y": "-8px"},
     {"topic": "Ulighed",      "slug": "ulighed",      "rotate": "-2.5deg", "y": "5px"},
@@ -16,10 +17,22 @@ _STAMPS = [
 def _stamp(topic, slug, rotate, y):
     return A(
         Img(src=f"/static/images/maps/{slug}.png", alt=topic, cls="stamp-img"),
+        Video(
+            src=f"/static/images/maps_video/{slug}.mp4",
+            muted=True, loop=True, playsinline=True,
+            preload="none",
+            cls="stamp-video",
+            **{"x-ref": "video"},
+        ),
         Span(topic, cls="stamp-label"),
         href=f"/dashboard/{slug}",
         cls="stamp",
         style=f"--rotate: {rotate}; --y: {y}",
+        **{
+            "x-data": "{}",
+            "@mouseenter": "$refs.video.play()",
+            "@mouseleave": "$refs.video.pause(); $refs.video.currentTime = 0",
+        },
     )
 
 
@@ -28,14 +41,14 @@ def Frontpage():
         Div(
             Div(
                 A(
-                    "Sign in",
+                    "Log ind",
                     href="/login",
-                    cls="text-sm text-base-content/60 hover:text-base-content transition-colors no-underline",
+                    cls="text-base text-base-content/60 hover:text-base-content transition-colors no-underline",
                 ),
                 A(
-                    "Get Started",
+                    "Kom i gang",
                     href="/signup",
-                    cls="btn btn-primary btn-sm rounded-lg",
+                    cls="btn btn-primary rounded-lg text-base px-6",
                 ),
                 cls="flex items-center gap-6",
             ),
@@ -63,20 +76,27 @@ def Frontpage():
                 width=660, height=180, cell_size=3,
                 text="VARRO", color="#9b2743", autoplay=100,
             ),
-            P(
-                "The Danish AI State Statistician",
-                cls="text-xl md:text-2xl text-base-content/50 max-w-xl leading-relaxed",
+            Div(
+                P(
+                    "Med tal skal land forstås",
+                    cls="text-4xl md:text-7xl font-serif font-medium text-base-content max-w-3xl leading-tight",
+                ),
+                P(
+                    "Alle har en holdning. Få har set tallene.",
+                    cls="text-xl md:text-2xl text-base-content max-w-xl leading-relaxed mt-3",
+                ),
+                cls="flex flex-col items-center text-center",
             ),
             A(
-                "Get Started for Free →",
+                "Se selv →",
                 href="/signup",
-                cls="btn btn-primary px-8 h-11 rounded-lg text-sm font-medium tracking-wide",
+                cls="btn btn-primary px-12 h-14 rounded-lg text-base font-medium tracking-wide",
             ),
-            cls="flex flex-col items-center text-center gap-6 px-6",
+            cls="flex flex-col items-center text-center gap-8 px-6",
         ),
         stamps_desktop,
         stamps_mobile,
-        cls="pt-24 pb-0 md:pt-36 bg-base-200",
+        cls="pt-16 pb-0 md:pt-24 bg-base-200",
     )
 
     footer = Footer(
