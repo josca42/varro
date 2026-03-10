@@ -77,7 +77,7 @@ def read_file(
     return "\n".join(lines)
 
 
-def write_file(file_path: str, content: str, user_id: int) -> str:
+def write_file(file_path: str, user_id: int, content: str) -> str:
     if is_readonly_user_path(file_path):
         return _error("file_path is read-only")
     resolved = resolve_user_path(user_id=user_id, file_path=file_path)
@@ -93,6 +93,7 @@ def write_file(file_path: str, content: str, user_id: int) -> str:
         path.write_text(content, encoding="utf-8")
     except OSError as exc:
         return _error(str(exc))
+
     return f"Wrote {len(content)} bytes to {file_path}."
 
 

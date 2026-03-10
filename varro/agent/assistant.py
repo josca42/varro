@@ -45,7 +45,8 @@ DIM_TABLES = get_dim_tables()
 
 sonnet_model = AnthropicModel("claude-opus-4-6")
 sonnet_settings = AnthropicModelSettings(
-    anthropic_thinking={"type": "enabled", "budget_tokens": 3000},
+    max_tokens=16000,
+    anthropic_thinking={"type": "adaptive"},
     parallel_tool_calls=True,
     anthropic_cache_instructions="1h",
     anthropic_cache_tool_definitions="1h",
@@ -278,15 +279,12 @@ def Write(ctx: RunContext[AssistantRunDeps], file_path: str, content: str) -> st
     - `/subjects`, `/fact`, and `/dim` are read-only docs paths. Write is blocked there.
     - This tool will overwrite the existing file if there is one at the provided path.
     - If this is an existing file, you MUST use the Read tool first to read the file's contents. This tool will fail if you did not read the file first.
-    - ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
-    - NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
-    - Only use emojis if the user explicitly requests it. Avoid writing emojis to files unless asked.
 
     Args:
         file_path: The absolute path to the file to write (must be absolute, not relative)
         content: The content to write to the file
     """
-    result = write_file(file_path, content, user_id=ctx.deps.user_id)
+    result = write_file(file_path, user_id=ctx.deps.user_id, content=content)
     if result.startswith("Error:"):
         return result
     validation = run_validation_after_write(ctx.deps.user_id, file_path)

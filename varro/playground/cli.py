@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
@@ -75,7 +76,10 @@ def _print_help() -> None:
     print(":snapshot [url]       Snapshot dashboard URL")
     print(":quit | :exit         Exit")
     print("")
-    print("Any non-command input is sent as a user question.")
+    if sys.stdin.isatty():
+        print("Type your message (blank line to send, multi-line supported).")
+    else:
+        print("Any non-command input is sent as a user question.")
 
 
 def _print_status(session: PlaygroundSession) -> None:
@@ -177,6 +181,50 @@ def _create_or_resume_chat(user_id: int, chat_id: int | None) -> int:
     return chat.id
 
 
+def _read_message(is_tty: bool) -> str | None:
+    """Read a user message from stdin.
+
+    TTY mode: accumulate lines until a blank line is entered. Commands (lines
+    starting with ':') on the first line are returned immediately.
+    Pipe mode: read all remaining stdin as one message.
+
+    Returns None on EOF/interrupt, empty string for blank input.
+    """
+    if not is_tty:
+        try:
+            text = sys.stdin.read().strip()
+        except KeyboardInterrupt:
+            return None
+        return text if text else None
+
+    # Interactive: read first line
+    try:
+        first = input("playground> ")
+    except (EOFError, KeyboardInterrupt):
+        return None
+
+    stripped = first.strip()
+    # Commands are single-line — return immediately
+    if stripped.startswith(":"):
+        return stripped
+    # Blank first line — skip
+    if not stripped:
+        return ""
+
+    # Accumulate continuation lines until blank line
+    lines = [first]
+    while True:
+        try:
+            line = input("... ")
+        except (EOFError, KeyboardInterrupt):
+            break
+        if line.strip() == "":
+            break
+        lines.append(line)
+
+    return "\n".join(lines).strip()
+
+
 async def _run(args) -> int:
     chat_id = _create_or_resume_chat(args.user_id, args.chat_id)
     session = PlaygroundSession(
@@ -191,17 +239,14 @@ async def _run(args) -> int:
     print("")
     _print_help()
 
+    is_tty = sys.stdin.isatty()
+
     while True:
-        try:
-            line = input("playground> ")
-        except EOFError:
-            print("")
-            return 0
-        except KeyboardInterrupt:
+        text = _read_message(is_tty)
+        if text is None:
             print("")
             return 0
 
-        text = line.strip()
         if not text:
             continue
 
