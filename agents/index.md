@@ -22,6 +22,7 @@ Last updated: 2026-03-09.
 - [Dashboard Filter Select Value Label](notes/dashboard_filter_select_value_label.md)
 - [Bubblewrap Phase 0 Preflight](notes/bwrap_phase0_preflight.md)
 - [Bubblewrap Phase 2 + 3 Shell Sandbox](notes/bwrap_phase2_phase3_shell_sandbox.md)
+- [DEV Bash Absolute Path Translation](notes/dev_bash_absolute_path_translation.md)
 - [Playground Q1: Befolkning](notes/playground_q1_befolkning.md) — Chat 70 findings: Snapshot auth failure, exploration quality
 - [Playground Q2: Husleje](notes/playground_q2_husleje.md) — Chat 71 findings: Strong session, subject search tool opportunity
 - [Playground Q4: Afgrøder](notes/playground_q4_afgroeder.md) — Chat 72 findings: Cleanest session, SQL cast syntax doc gap

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import deque
 from dataclasses import dataclass
 from functools import lru_cache
@@ -413,7 +414,7 @@ def _worker_env() -> dict[str, str]:
 
 def run_bash_command(user_id: int, cwd_rel: str, command: str) -> tuple[str, str]:
     if not _use_bwrap():
-        return run_bash_command_vanilla(user_id, cwd_rel, command)
+        return run_bash_command_vanilla(user_id, cwd_rel, re.sub(r'(?:(?<=^)|(?<=[\s\(\)\'";|&]))/(?!\*)', f"{user_workspace_root(user_id)}/", command))
     if not command or not command.strip():
         return "Error: command is empty", _sanitize_cwd_rel(cwd_rel)
 
