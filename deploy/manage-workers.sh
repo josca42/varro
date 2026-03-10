@@ -55,6 +55,15 @@ update_caddy() {
 
     cat > "$tmpfile" <<CADDYEOF
 ${DOMAIN} {
+    encode zstd gzip
+    header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+
+    handle /static/* {
+        root * /home/prod/varro
+        file_server
+        header Cache-Control "public, max-age=2592000"
+    }
+
     reverse_proxy ${upstreams}{
         lb_policy cookie ${APP_NAME}_sticky
 

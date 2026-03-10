@@ -6,6 +6,12 @@ varro.dk {
     encode zstd gzip
     header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 
+    handle /static/* {
+        root * /home/prod/varro
+        file_server
+        header Cache-Control "public, max-age=2592000"
+    }
+
     reverse_proxy localhost:8001 localhost:8002 localhost:8003 localhost:8004 localhost:8005 localhost:8006 localhost:8007 localhost:8008 localhost:8009 localhost:8010 {
         lb_policy cookie varro_sticky
 

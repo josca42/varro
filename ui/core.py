@@ -104,19 +104,19 @@ prose_css = Link(
     type="text/css",
 )
 
-# All headers
-ui_hdrs = (
-    daisy_link,
+ui_hdrs_base = (
+    daisy_link, tw_scr, sse_hdr,
+    *alpine_hdrs, *lucid_icons_hdr,
+    theme_css, prose_css,
+)
+
+ui_hdrs_app = (
     MarkdownJS(),
     HighlightJS(langs=["python", "javascript", "html", "css", "json", "bash", "sql"]),
-    tw_scr,
     plotly_hdr,
-    sse_hdr,
-    *alpine_hdrs,
-    *lucid_icons_hdr,
-    theme_css,
-    prose_css,
 )
+
+ui_hdrs = (*ui_hdrs_base, *ui_hdrs_app)
 
 
 def daisy_app(*args, **kwargs):

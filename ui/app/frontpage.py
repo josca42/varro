@@ -1,8 +1,9 @@
 from fasthtml.common import (
-    A, Div, Footer, Img, Nav, P, Section, Span, Title, Video,
+    A, Div, Footer, Html, Head, Body, Img, Meta, Nav, P, Section, Span, Title, Video,
 )
 
 from ui.components import GameOfLifeAnimation
+from ui.core import ui_hdrs_base, DEFAULT_THEME
 
 _STAMPS = [
     {"topic": "Bolig",        "slug": "bolig",        "rotate": "-2deg", "y": "8px"},
@@ -16,7 +17,7 @@ _STAMPS = [
 
 def _stamp(topic, slug, rotate, y):
     return A(
-        Img(src=f"/static/images/maps/{slug}.png", alt=topic, cls="stamp-img"),
+        Img(src=f"/static/images/maps_webp/{slug}.webp", alt=topic, cls="stamp-img"),
         Video(
             src=f"/static/images/maps_video/{slug}.mp4",
             muted=True, loop=True, playsinline=True,
@@ -108,10 +109,15 @@ def Frontpage():
         cls="py-8 bg-base-200",
     )
 
-    return Title("Varro — Danish AI State Statistician"), Div(
-        nav,
-        hero,
-        footer,
-        cls="min-h-screen bg-base-200",
-        data_slot="public-frontpage",
+    return Html(
+        Head(
+            Title("Varro — Danish AI State Statistician"),
+            Meta(charset="utf-8"),
+            Meta(name="viewport", content="width=device-width, initial-scale=1"),
+            *ui_hdrs_base,
+        ),
+        Body(
+            Div(nav, hero, footer, cls="min-h-screen bg-base-200", data_slot="public-frontpage"),
+            data_theme=DEFAULT_THEME,
+        ),
     )
