@@ -14,6 +14,11 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+from varro.dashboard.models import Metric, output
+from varro.dashboard.filters import Filter, validate_options_queries
+from varro.dashboard.parser import ASTNode, parse_dashboard_md, extract_filters
+import geopandas as gpd
+import matplotlib.pyplot as plt
 
 pio.templates.default = "plotly_white"
 pio.templates["plotly_white"].layout.legend = dict(
@@ -23,10 +28,6 @@ pio.templates["plotly_white"].layout.legend = dict(
     xanchor="center",
     x=0.5,
 )
-
-from varro.dashboard.models import Metric, output
-from varro.dashboard.filters import Filter, validate_options_queries
-from varro.dashboard.parser import ASTNode, parse_dashboard_md, extract_filters
 
 
 @dataclass
@@ -77,6 +78,8 @@ def load_outputs(outputs_file: Path) -> dict[str, Callable]:
         "px": px,
         "go": go,
         "pd": pd,
+        "gpd": gpd,
+        "plt": plt,
         "__file__": str(outputs_file),
         "__name__": f"dashboards.{outputs_file.parent.name}.outputs",
     }
