@@ -26,7 +26,7 @@ def _stamp(topic, slug, rotate, y):
             **{"x-ref": "video"},
         ),
         Span(topic, cls="stamp-label"),
-        href=f"/dashboard/{slug}",
+        href=f"/public/3/{slug}",
         cls="stamp",
         style=f"--rotate: {rotate}; --y: {y}",
         **{
@@ -83,15 +83,21 @@ def Frontpage():
                     cls="text-4xl md:text-7xl font-serif font-medium text-base-content max-w-3xl leading-tight",
                 ),
                 P(
-                    "Alle har en holdning. Få har set tallene.",
+                    "Alle har en holdning. Få har prøvet at forstå.",
                     cls="text-xl md:text-2xl text-base-content max-w-xl leading-relaxed mt-3",
                 ),
                 cls="flex flex-col items-center text-center",
             ),
             A(
-                "Se selv →",
+                Span("Tænk selv →", **{"x-show": "!hover"}),
+                Span("Det er lettere end du tror →", **{"x-show": "hover", "x-cloak": True}),
                 href="/signup",
                 cls="btn btn-primary px-12 h-14 rounded-lg text-base font-medium tracking-wide",
+                **{
+                    "x-data": "{ hover: false }",
+                    "@mouseenter": "hover = true",
+                    "@mouseleave": "hover = false",
+                },
             ),
             cls="flex flex-col items-center text-center gap-8 px-6",
         ),
