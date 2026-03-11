@@ -114,6 +114,9 @@ deploy() {
     cd /home/prod/varro
     git pull
     /home/prod/varro/.venv/bin/pip install -r requirements.txt --quiet
+    echo "Syncing static files..."
+    sudo rsync -a --delete /home/prod/varro/static/ /var/www/varro/static/
+    sudo chown -R caddy:caddy /var/www/varro/static
     sudo systemctl daemon-reload
     restart_workers
 }

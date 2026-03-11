@@ -7,7 +7,7 @@ varro.dk {
     header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 
     handle /static/* {
-        root * /home/prod/varro
+        root * /var/www/varro
         file_server
         header Cache-Control "public, max-age=2592000"
     }
