@@ -9,6 +9,7 @@ WorkingDirectory=/home/prod/varro
 Environment="PATH=/home/prod/varro/.venv/bin:/usr/bin:/bin"
 Environment="PYTHONUNBUFFERED=1"
 Environment="VARRO_LIVE=0"
+Environment="VARRO_APP_BASE_URLS=http://127.0.0.1:8001,http://127.0.0.1:8002,http://127.0.0.1:8003,http://127.0.0.1:8004,http://127.0.0.1:8005,http://127.0.0.1:8006,http://127.0.0.1:8007,http://127.0.0.1:8008,http://127.0.0.1:8009,http://127.0.0.1:8010"
 
 ExecStart=/home/prod/varro/.venv/bin/uvicorn app.main:app \
     --host 127.0.0.1 \

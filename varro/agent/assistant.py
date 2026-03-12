@@ -90,6 +90,7 @@ agent = Agent(
 async def get_system_prompt(ctx: RunContext[AssistantRunDeps]) -> str:
     prompts = {
         "CURRENT_DATE": datetime.now().strftime("%Y-%m-%d"),
+        "CURRENT_URL": ctx.deps.request_current_url() or "/",
         "AVAILABLE_SKILLS": build_available_skills_prompt(ctx.deps.user_id),
         **get_static_prompts(),
     }

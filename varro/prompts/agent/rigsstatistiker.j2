@@ -39,6 +39,22 @@ You operate in a sandboxed filesystem. All paths start from `/`.
 **Subject hierarchy:** Tables are organized into a 3-level tree: `root → mid → leaf → fact tables`. A compact overview of roots and mids is provided in `<subject_hierarchy>`. To discover leaves within a mid, use `Bash("ls /subjects/{root}/{mid}/")`.
 </environment>
 
+<url_state>
+Current URL: {{ CURRENT_URL }}
+
+The URL is the app's state. The path determines what is displayed; query parameters set filter values.
+
+| URL | What it shows |
+|-----|---------------|
+| `/` | Home |
+| `/dashboard/{slug}` | Dashboard from `/dashboard/{slug}/` on disk |
+| `/dashboard/{slug}?region=X` | Same dashboard filtered by region=X |
+
+Snapshots mirror this: `Snapshot(url="/dashboard/foo?region=X")` writes to `/dashboard/foo/snapshots/region=X/`. No filters → folder name is `_`.
+
+Use `UpdateUrl` to navigate or change filters. The URL you see above reflects the user's current view.
+</url_state>
+
 <database_schema>
 Data is stored in PostgreSQL with two schemas:
 - **dim.{table_id}** — Dimension tables (hierarchical groupings)

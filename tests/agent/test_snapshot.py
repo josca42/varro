@@ -49,6 +49,21 @@ def test_canonical_query_folder_sorts_query_params() -> None:
     assert snapshot.canonical_query_folder("b=2&a=1&a=0") == "a=0&a=1&b=2"
 
 
+def test_candidate_app_base_urls_shuffle_configured_workers(monkeypatch) -> None:
+    snapshot = importlib.import_module("varro.agent.snapshot")
+    monkeypatch.setenv(
+        "VARRO_APP_BASE_URLS",
+        "http://127.0.0.1:8001, http://127.0.0.1:8002",
+    )
+    monkeypatch.delenv("VARRO_APP_BASE_URL", raising=False)
+    monkeypatch.setattr(snapshot.random, "sample", lambda urls, k: list(reversed(urls)))
+
+    assert snapshot._candidate_app_base_urls() == [
+        "http://127.0.0.1:8002",
+        "http://127.0.0.1:8001",
+    ]
+
+
 def test_snapshot_tool_uses_current_url_when_url_is_omitted(
     assistant_module, monkeypatch
 ) -> None:
@@ -228,7 +243,6 @@ def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatc
     dashboard_dir.mkdir(parents=True)
 
     monkeypatch.setattr(workspace, "DATA_DIR", data_dir)
-    monkeypatch.setattr(workspace, "DOCS_DIR", data_dir / "docs_template")
 
     fake_dashboard = SimpleNamespace(
         filters=[],
@@ -306,3 +320,53 @@ def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatc
     table_df = pd.read_parquet(snapshot_dir / "tables" / "summary_table.parquet")
     assert list(table_df.columns) == ["value"]
     assert table_df["value"].tolist() == [2, 3]
+
+
+def test_snapshot_dashboard_retries_across_worker_base_urls(
+    tmp_path: Path, monkeypatch
+) -> None:
+    workspace = importlib.import_module("varro.agent.workspace")
+    snapshot = importlib.import_module("varro.agent.snapshot")
+
+    data_dir = tmp_path / "data"
+    dashboard_dir = data_dir / "user" / "1" / "dashboard" / "sales"
+    dashboard_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(workspace, "DATA_DIR", data_dir)
+    monkeypatch.setenv(
+        "VARRO_APP_BASE_URLS",
+        "http://127.0.0.1:8001,http://127.0.0.1:8002",
+    )
+    monkeypatch.delenv("VARRO_APP_BASE_URL", raising=False)
+    monkeypatch.setattr(snapshot.random, "sample", lambda urls, k: urls)
+
+    fake_dashboard = SimpleNamespace(filters=[], outputs={})
+
+    def fake_load_dashboard(folder: Path):
+        assert folder == dashboard_dir
+        return fake_dashboard
+
+    attempts: list[str] = []
+
+    async def fake_dashboard_png(url: str):
+        attempts.append(url)
+        if url.startswith("http://127.0.0.1:8001/"):
+            raise RuntimeError("connection refused")
+        return _png_bytes(1200, 800)
+
+    monkeypatch.setattr(snapshot, "load_dashboard", fake_load_dashboard)
+    monkeypatch.setattr(snapshot, "render_dashboard_url_to_png", fake_dashboard_png)
+
+    result = asyncio.run(
+        snapshot.snapshot_dashboard_url(
+            1,
+            "/dashboard/sales",
+            db_engine=None,
+        )
+    )
+
+    assert result.folder == dashboard_dir / "snapshots" / "_"
+    assert attempts == [
+        "http://127.0.0.1:8001/dashboard/sales",
+        "http://127.0.0.1:8002/dashboard/sales",
+    ]
