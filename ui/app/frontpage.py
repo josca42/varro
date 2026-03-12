@@ -6,16 +6,16 @@ from ui.components import GameOfLifeAnimation
 from ui.core import ui_hdrs_base, DEFAULT_THEME
 
 _STAMPS = [
-    {"topic": "Bolig",        "slug": "bolig",        "rotate": "-2deg", "y": "8px"},
-    {"topic": "Forsvar",      "slug": "forsvar",       "rotate": "1.5deg", "y": "-4px"},
-    {"topic": "Indvandring",  "slug": "indvandring",  "rotate": "-1deg", "y": "6px"},
-    {"topic": "Pension",      "slug": "pension",      "rotate": "-1.5deg", "y": "4px"},
-    {"topic": "Sundhed",      "slug": "sundhed",      "rotate": "1deg",  "y": "-8px"},
-    {"topic": "Ulighed",      "slug": "ulighed",      "rotate": "-2.5deg", "y": "5px"},
+    {"topic": "Bolig",        "slug": "bolig",        "href": "/public/3/boligmarked",  "rotate": "-2deg",   "y": "8px"},
+    {"topic": "Forsvar",      "slug": "forsvar",      "href": "/public/3/forsvar",      "rotate": "1.5deg",  "y": "-4px"},
+    {"topic": "Indvandring",  "slug": "indvandring",  "href": "/public/3/indvandring",  "rotate": "-1deg",   "y": "6px"},
+    {"topic": "Pension",      "slug": "pension",      "href": "/public/3/pension",      "rotate": "-1.5deg", "y": "4px"},
+    {"topic": "Sundhed",      "slug": "sundhed",      "href": "/public/3/sundhed",      "rotate": "1deg",    "y": "-8px"},
+    {"topic": "Ulighed",      "slug": "ulighed",      "href": "/public/3/ulighed",      "rotate": "-2.5deg", "y": "5px"},
 ]
+a = 2
 
-
-def _stamp(topic, slug, rotate, y):
+def _stamp(topic, slug, href, rotate, y):
     return A(
         Img(src=f"/static/images/maps_webp/{slug}.webp", alt=topic, cls="stamp-img"),
         Video(
@@ -26,7 +26,7 @@ def _stamp(topic, slug, rotate, y):
             **{"x-ref": "video"},
         ),
         Span(topic, cls="stamp-label"),
-        href=f"/public/3/{slug}",
+        href=href,
         cls="stamp",
         style=f"--rotate: {rotate}; --y: {y}",
         **{
@@ -89,8 +89,8 @@ def Frontpage():
                 cls="flex flex-col items-center text-center",
             ),
             A(
-                Span("Tænk selv →", **{"x-show": "!hover"}),
-                Span("Det er lettere end du tror →", **{"x-show": "hover", "x-cloak": True}),
+                Span("Forstå talle bag →", **{"x-show": "!hover"}),
+                Span("Det er nemmere end som så →", **{"x-show": "hover", "x-cloak": True}),
                 href="/signup",
                 cls="btn btn-primary px-12 h-14 rounded-lg text-base font-medium tracking-wide",
                 **{
