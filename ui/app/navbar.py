@@ -88,7 +88,7 @@ def _user_dropdown(user_name: str | None = None, user_email: str | None = None):
 
 
 def _sign_in_button():
-    return A("Sign in", href="/login", cls="btn btn-outline btn-sm")
+    return A("Log ind", href="/login", cls="btn btn-outline btn-sm")
 
 
 def NavbarNavScript():

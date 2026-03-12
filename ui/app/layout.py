@@ -8,7 +8,7 @@ from __future__ import annotations
 from fasthtml.common import A, Button, Div, Form, H1, Input, Li, P, Script, Span, Ul
 
 from ui.core import cn
-from ui.app.chat import ChatPanel, ChatClientScript
+from ui.app.chat import ChatPanel, ChatClientScript, ChatIntroPublic
 from ui.app.navbar import Navbar
 from ui.app.command_palette import CommandPalette, CommandPaletteScript
 
@@ -250,8 +250,10 @@ def AppShell(
     user_name: str | None = None,
     user_email: str | None = None,
 ):
+    logged_in = user_name is not None
+    intro = None if logged_in else ChatIntroPublic()
     chat_root = Div(
-        ChatPanel(chat),
+        ChatPanel(chat, intro=intro, show_form=logged_in),
         ChatClientScript(),
         id="chat-root",
         cls="flex flex-col min-h-0 h-full shrink-0 border-r border-base-300 bg-base-200 min-w-[280px] max-w-[1200px] w-[700px]",

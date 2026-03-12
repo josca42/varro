@@ -33,7 +33,7 @@ def AuthPage(title: str, *content, cls: str = "", **kw):
         Div(
             _auth_logo(),
             *content,
-            cls=cn("w-full max-w-sm flex flex-col gap-6", cls),
+            cls=cn("w-full max-w-sm flex flex-col gap-5", cls),
             data_slot="auth-card",
             **kw,
         ),
@@ -57,7 +57,7 @@ def AuthFormCard(
 
     heading = Div(
         H2(title, cls="text-2xl font-bold tracking-tight"),
-        P(subtitle, cls="text-base-content/50 text-sm") if subtitle else None,
+        P(subtitle, cls="text-base-content/60 text-sm") if subtitle else None,
         cls="space-y-1",
     )
     parts.append(heading)
@@ -74,7 +74,8 @@ def AuthFormCard(
     if links:
         parts.append(links)
 
-    return AuthPage(title, *parts, cls=cls, **kw)
+    card = Card(CardBody(*parts, cls="flex flex-col gap-4"), variant="border")
+    return AuthPage(title, card, cls=cls, **kw)
 
 
 def AuthSimpleCard(title: str, *content, cls: str = "", **kw):
@@ -97,7 +98,7 @@ def AuthLinks(*links, cls: str = "", **kw):
         gap=4,
         justify="justify-center",
         wrap=True,
-        cls=cn("text-sm text-base-content/50", cls),
+        cls=cn("text-sm text-base-content", cls),
         **kw,
     )
 

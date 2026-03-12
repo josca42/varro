@@ -361,7 +361,7 @@ def navbar_context_action(url: str = "", sess=None):
         if _dashboard_dir(private_slug, user_id=user_id) is None:
             return ""
 
-        label = "Update" if has_public_dashboard(_dashboards_root, user_id, private_slug) else "Publish"
+        label = "Opdater" if has_public_dashboard(_dashboards_root, user_id, private_slug) else "Publicer"
         return Form(
             Button(label, type="submit", cls="btn btn-primary btn-sm"),
             hx_post=f"/dashboard/{private_slug}/publish",
@@ -377,7 +377,7 @@ def navbar_context_action(url: str = "", sess=None):
         owner_id, slug = public_match
         if _public_dashboard_source_dir(owner_id, slug) is None:
             return ""
-        return A("Edit", href=f"/public/{owner_id}/{slug}/fork", cls="btn btn-primary btn-sm")
+        return A("Rediger", href=f"/public/{owner_id}/{slug}/fork", cls="btn btn-primary btn-sm")
 
     return ""
 
@@ -479,7 +479,7 @@ async def dashboard_code_save(name: str, req, sess):
 def _publish_modal(slug, user_id, is_update):
     path = f"/public/{user_id}/{slug}"
     url = f"https://varro.dk{path}"
-    title = "Dashboard updated!" if is_update else "Dashboard published!"
+    title = "Dashboard opdateret!" if is_update else "Dashboard publiceret!"
     return Div(
         Div(
             Div(cls="fixed inset-0 bg-black/30 z-40", **{"x-dialog:overlay": True}),
@@ -488,9 +488,9 @@ def _publish_modal(slug, user_id, is_update):
                     H3(title, cls="text-lg font-semibold", **{"x-dialog:title": True}),
                     P(A(url, href=path, target="_blank", cls="link link-primary break-all"), cls="py-2"),
                     Div(
-                        Button("Copy link", type="button", cls="btn btn-sm btn-outline",
+                        Button("Kopier link", type="button", cls="btn btn-sm btn-outline",
                                **{"@click": f"navigator.clipboard.writeText('{url}')"}),
-                        Button("Close", type="button", cls="btn btn-sm btn-primary",
+                        Button("Luk", type="button", cls="btn btn-sm btn-primary",
                                **{"@click": "$dialog.close()"}),
                         cls="flex gap-2 justify-end",
                     ),

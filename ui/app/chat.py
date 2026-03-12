@@ -68,27 +68,53 @@ def ChatPage(chat: "Chat | None", shell: "TerminalInteractiveShell | None" = Non
 def ChatPanel(
     chat: "Chat | None",
     shell: "TerminalInteractiveShell | None" = None,
+    intro=None,
+    show_form: bool = True,
     **attrs,
 ):
     turns = chat.turns if chat else []
     chat_id = chat.id if chat else None
     return Div(
         ChatHeader(chat),
-        ChatMessages(turns, shell=shell),
+        ChatMessages(turns, shell=shell, intro=intro),
         ChatRunStream(),
-        ChatForm(chat_id=chat_id),
+        ChatForm(chat_id=chat_id) if show_form else None,
         cls="flex flex-col min-h-0 h-full",
         id="chat-panel",
         **attrs,
     )
 
 
-def ChatMessages(
-    turns: list["Turn"], shell: "TerminalInteractiveShell | None" = None, **attrs
-):
+def ChatIntroPublic():
     return Div(
-        *[TurnComponent(t, shell=shell) for t in turns],
-        ChatProgressPlaceholder(),
+        Div(
+            Div("Velkommen til Varro", cls="font-semibold text-sm mb-1"),
+            Div(
+                "Klik ",
+                Span("Rediger", cls="font-semibold"),
+                " oppe i højre hjørne for at få din egen kopi af dashboardet. "
+                "Derefter kan du chatte med det, tilpasse det og gøre det til dit eget.",
+                cls="text-sm text-base-content/70",
+            ),
+            cls="bg-base-200 rounded-box px-4 py-3",
+        ),
+        cls="mb-4",
+    )
+
+
+def ChatMessages(
+    turns: list["Turn"],
+    shell: "TerminalInteractiveShell | None" = None,
+    intro=None,
+    **attrs,
+):
+    children = []
+    if not turns and intro:
+        children.append(intro)
+    children.extend(TurnComponent(t, shell=shell) for t in turns)
+    children.append(ChatProgressPlaceholder())
+    return Div(
+        *children,
         id="chat-messages",
         cls="flex-1 overflow-y-auto px-4 py-6",
         **attrs,
@@ -165,7 +191,7 @@ def ChatForm(
             Textarea(
                 id="message-input",
                 name="msg",
-                placeholder="Ask about Danish statistics...",
+                placeholder="Hvad vil du undersøge?",
                 rows="1",
                 disabled=running,
                 cls="border-none bg-transparent w-full resize-none focus:outline-none text-sm placeholder:text-base-content/50",

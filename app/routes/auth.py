@@ -560,6 +560,8 @@ def auth_google_callback(
 @ar("/logout", methods=["GET"])
 def logout(sess):
     sess.pop("auth", None)
+    sess.pop("user_id", None)
+    sess.pop("chat_id", None)
     sess.pop("oauth_state", None)
     sess.pop("oauth_next", None)
     return RedirectResponse("/login", status_code=303)

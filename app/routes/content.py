@@ -37,9 +37,15 @@ def _content_hash(content: str) -> str:
 
 def _default_welcome_markdown() -> str:
     return (
-        "# Welcome to Varro\n\n"
-        "This page is markdown-first. Edit it from the Code tab.\n\n"
-        "## Dashboards\n\n"
+        "# Velkommen til Varro\n\n"
+        "Varro er din AI-statistiker til dansk data. "
+        "Stil spørgsmål om danske tal i chatten til venstre, "
+        "og udforsk dashboards med interaktive grafer og nøgletal.\n\n"
+        "## Kom i gang\n\n"
+        "1. **Udforsk et dashboard** — gå til [forsiden](/) og klik på et emne\n"
+        "2. **Stil et spørgsmål** — brug chatten til venstre til at spørge om dansk statistik\n"
+        "3. **Lav dit eget dashboard** — bed Varro om at bygge et dashboard til dig\n\n"
+        "## Dine dashboards\n\n"
         f"{WELCOME_DASHBOARD_TOKEN}\n"
     )
 
@@ -53,7 +59,7 @@ def _welcome_path(user_id: int):
 
 def _dashboard_list_markdown(dashboards: list[str], user_id: int, data_root) -> str:
     if not dashboards:
-        return "- _(No dashboards found for this user.)_"
+        return "- _(Ingen dashboards endnu. Spørg Varro i chatten om at bygge et til dig.)_"
     lines = []
     for slug in dashboards:
         line = f"- [{slug}](/dashboard/{slug})"
