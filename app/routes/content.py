@@ -42,9 +42,9 @@ def _default_welcome_markdown() -> str:
         "Stil spørgsmål om danske tal i chatten til venstre, "
         "og udforsk dashboards med interaktive grafer og nøgletal.\n\n"
         "## Kom i gang\n\n"
-        "1. **Udforsk et dashboard** — gå til [forsiden](/) og klik på et emne\n"
-        "2. **Stil et spørgsmål** — brug chatten til venstre til at spørge om dansk statistik\n"
-        "3. **Lav dit eget dashboard** — bed Varro om at bygge et dashboard til dig\n\n"
+        "1. **Stil et spørgsmål** — brug chatten til venstre til at spørge om dansk statistik\n"
+        "2. **Lav dit eget dashboard** — bed Varro om at bygge et dashboard til dig\n\n"
+        "3. **Iterer** — forbered dine analyser - i form af annoterede dashboards - og brug dem som skabelon fremadrettet\n"
         "## Dine dashboards\n\n"
         f"{WELCOME_DASHBOARD_TOKEN}\n"
     )

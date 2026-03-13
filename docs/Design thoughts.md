@@ -1,9 +1,11 @@
 
 # From soft ware you have come to soft ware you shall become
 
-I have designed this app from the view point of the agent and not the human user. The central premise is that the AI agent *is* the software and the app backend can be viewed tools that the agent can use to investigate user queries and the frontend as UI elements the agent can use to communicate with the user.
+I have designed this app from the view point of the agent and not the human user. The central premise is that the AI agent *is* the software and the app backend can be viewed as tools that the agent can use to investigate user queries and the frontend as UI elements the agent can use to communicate with the user.
+
 #### Example used to illustrate each of the statements: Varro.dk
 I am creating a dashboard app, where an AI agent create dashboards to answer question about Denmark. The agent does this by finding relevant tables from statistics Denmark, creating sql queries to extract relevant data from these tables, plotting it using python and then exposing the analysis as a dashboard.
+
 ### 1 - File over app
 AI agents are good at reading files and navigating filesystems using bash commands. So if the app mostly reads/writes/edits files then it can be easily navigated and extended by an AI agent.
 
