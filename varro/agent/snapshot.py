@@ -20,6 +20,7 @@ from varro.agent.workspace import user_workspace_root
 from varro.dashboard.executor import clear_query_cache, execute_output
 from varro.dashboard.loader import Dashboard, load_dashboard
 from varro.dashboard.models import Metric
+from varro.dashboard.snapshot_auth import make_snapshot_token
 from varro.db.db import dst_read_engine as default_engine
 
 DEFAULT_APP_BASE_URL = "http://127.0.0.1:5001"
@@ -104,6 +105,15 @@ def _absolute_app_url(url: str, app_base_url: str) -> str:
     return urljoin(base, url.lstrip("/"))
 
 
+def _internal_snapshot_path(user_id: int, url: str) -> str:
+    slug, query = parse_dashboard_url(url)
+    token = make_snapshot_token(user_id, slug)
+    path = f"/_internal/dashboard/{token}/{slug}"
+    if query:
+        return f"{path}?{query}"
+    return path
+
+
 async def render_dashboard_url_to_png(url: str) -> bytes:
     return await url_to_png(
         url,
@@ -154,7 +164,7 @@ async def snapshot_dashboard_url(
     snapshot_dir.mkdir(parents=True, exist_ok=True)
 
     dashboard_png = await render_dashboard_snapshot_png(
-        target_url,
+        _internal_snapshot_path(user_id, target_url),
         app_base_url=app_base_url,
     )
     save_png(snapshot_dir / "dashboard.png", dashboard_png, max_pixels=max_pixels)

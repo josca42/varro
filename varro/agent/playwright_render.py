@@ -128,5 +128,23 @@ async def url_to_png(
             scale="css",
         )
         return png_bytes
+    except Exception as exc:
+        title = ""
+        body = ""
+        try:
+            title = await page.title()
+        except Exception:
+            pass
+        try:
+            body = (await page.locator("body").inner_text(timeout=1000)).strip()
+        except Exception:
+            pass
+        hint = " ".join(body.split())[:240]
+        details = [f"{page.url}: {exc}"]
+        if title:
+            details.append(f"title={title}")
+        if hint:
+            details.append(f"body={hint}")
+        raise RuntimeError("\n".join(details)) from exc
     finally:
         await page.close()

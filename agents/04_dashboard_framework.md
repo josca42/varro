@@ -96,6 +96,10 @@ Output execution:
 - `GET /public/{owner_id}/{name}/fork`:
   - authenticated: copies published dashboard to viewer workspace and redirects to `/dashboard/{fork_slug}`
   - anonymous: redirects to `/login?next=/public/{owner_id}/{name}/fork`
+- `GET /_internal/dashboard/{token}/{name}` and matching `/_/filters|figure|table|metric` endpoints:
+  - used only by server-side snapshot rendering,
+  - bypass normal session auth,
+  - require a short-lived HMAC token tied to `{user_id, slug}`.
 - `GET /public/_/context-action?url=...`:
   - returns navbar action fragment (`Publish`, `Update`, `Edit`, or empty)
 

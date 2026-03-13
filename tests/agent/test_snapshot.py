@@ -243,6 +243,7 @@ def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatc
     dashboard_dir.mkdir(parents=True)
 
     monkeypatch.setattr(workspace, "DATA_DIR", data_dir)
+    monkeypatch.setattr(snapshot, "make_snapshot_token", lambda user_id, slug: "token-123")
 
     fake_dashboard = SimpleNamespace(
         filters=[],
@@ -270,7 +271,10 @@ def test_snapshot_dashboard_writes_expected_artifacts(tmp_path: Path, monkeypatc
         raise AssertionError(output_name)
 
     async def fake_dashboard_png(url: str):
-        assert url.startswith("http://127.0.0.1:5001/dashboard/sales?")
+        assert (
+            url
+            == "http://127.0.0.1:5001/_internal/dashboard/token-123/sales?b=2&a=1"
+        )
         return _png_bytes(2200, 1200)
 
     async def fake_plotly_png(fig: go.Figure, *, max_pixels: int):
@@ -339,6 +343,7 @@ def test_snapshot_dashboard_retries_across_worker_base_urls(
     )
     monkeypatch.delenv("VARRO_APP_BASE_URL", raising=False)
     monkeypatch.setattr(snapshot.random, "sample", lambda urls, k: urls)
+    monkeypatch.setattr(snapshot, "make_snapshot_token", lambda user_id, slug: "token-456")
 
     fake_dashboard = SimpleNamespace(filters=[], outputs={})
 
@@ -367,6 +372,6 @@ def test_snapshot_dashboard_retries_across_worker_base_urls(
 
     assert result.folder == dashboard_dir / "snapshots" / "_"
     assert attempts == [
-        "http://127.0.0.1:8001/dashboard/sales",
-        "http://127.0.0.1:8002/dashboard/sales",
+        "http://127.0.0.1:8001/_internal/dashboard/token-456/sales",
+        "http://127.0.0.1:8002/_internal/dashboard/token-456/sales",
     ]

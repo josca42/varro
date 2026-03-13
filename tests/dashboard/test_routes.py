@@ -3,6 +3,7 @@ from __future__ import annotations
 from urllib.parse import parse_qs, urlparse
 
 from varro.dashboard.routes import _content_hash
+from varro.dashboard.snapshot_auth import make_snapshot_token
 
 
 def test_dashboard_shell_fragment_renders_filters_and_placeholders(dashboard_env) -> None:
@@ -109,6 +110,80 @@ def test_unknown_dashboard_returns_404(dashboard_env) -> None:
         headers={"HX-Request": "true"},
     )
     assert response.status_code == 404
+
+
+def test_internal_dashboard_shell_renders_without_session(dashboard_env) -> None:
+    token = make_snapshot_token(dashboard_env.user_id, dashboard_env.dashboard_name)
+    dashboard_env.client.get("/__test/logout")
+
+    response = dashboard_env.client.get(
+        f"/_internal/dashboard/{token}/{dashboard_env.dashboard_name}",
+    )
+
+    assert response.status_code == 200
+    assert 'data-slot="dashboard-shell"' in response.text
+    assert (
+        f'hx-get="/_internal/dashboard/{token}/{dashboard_env.dashboard_name}/_/filters"'
+        in response.text
+    )
+
+
+def test_internal_dashboard_shell_rejects_invalid_token(dashboard_env) -> None:
+    dashboard_env.client.get("/__test/logout")
+
+    response = dashboard_env.client.get(
+        f"/_internal/dashboard/bad-token/{dashboard_env.dashboard_name}",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 401
+
+
+def test_internal_dashboard_shell_rejects_expired_token(dashboard_env) -> None:
+    token = make_snapshot_token(
+        dashboard_env.user_id,
+        dashboard_env.dashboard_name,
+        ttl_seconds=-1,
+    )
+    dashboard_env.client.get("/__test/logout")
+
+    response = dashboard_env.client.get(
+        f"/_internal/dashboard/{token}/{dashboard_env.dashboard_name}",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 401
+
+
+def test_internal_filter_sync_preserves_internal_path(dashboard_env) -> None:
+    token = make_snapshot_token(dashboard_env.user_id, dashboard_env.dashboard_name)
+    dashboard_env.client.get("/__test/logout")
+
+    response = dashboard_env.client.get(
+        f"/_internal/dashboard/{token}/{dashboard_env.dashboard_name}/_/filters",
+        params={"region": "North"},
+        headers={"HX-Request": "true"},
+    )
+
+    assert response.status_code == 200
+    parsed = urlparse(response.headers["HX-Replace-Url"])
+    assert parsed.path == f"/_internal/dashboard/{token}/{dashboard_env.dashboard_name}"
+    assert parse_qs(parsed.query) == {"region": ["North"]}
+
+
+def test_internal_metric_endpoint_renders_without_session(dashboard_env) -> None:
+    token = make_snapshot_token(dashboard_env.user_id, dashboard_env.dashboard_name)
+    dashboard_env.client.get("/__test/logout")
+
+    response = dashboard_env.client.get(
+        f"/_internal/dashboard/{token}/{dashboard_env.dashboard_name}/_/metric/total_population",
+        params={"region": "North", "period_to": "2024-04-01"},
+        headers={"HX-Request": "true"},
+    )
+
+    assert response.status_code == 200
+    assert "Total Population" in response.text
+    assert "210" in response.text
 
 
 def test_dashboard_code_editor_fragment_renders(dashboard_env) -> None:
@@ -273,7 +348,7 @@ def test_context_action_endpoint_returns_publish_update_and_edit(dashboard_env) 
         params={"url": dashboard_env.base_url},
     )
     assert publish_action.status_code == 200
-    assert "Publish" in publish_action.text
+    assert "Publicer" in publish_action.text
 
     published = dashboard_env.client.post(
         f"{dashboard_env.base_url}/publish",
@@ -286,14 +361,14 @@ def test_context_action_endpoint_returns_publish_update_and_edit(dashboard_env) 
         params={"url": dashboard_env.base_url},
     )
     assert update_action.status_code == 200
-    assert "Update" in update_action.text
+    assert "Opdater" in update_action.text
 
     edit_action = dashboard_env.client.get(
         "/public/_/context-action",
         params={"url": dashboard_env.public_base_url},
     )
     assert edit_action.status_code == 200
-    assert "Edit" in edit_action.text
+    assert "Rediger" in edit_action.text
     assert f'href="{dashboard_env.public_base_url}/fork"' in edit_action.text
 
     empty_action = dashboard_env.client.get(

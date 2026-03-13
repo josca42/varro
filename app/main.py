@@ -42,7 +42,7 @@ def before(req, sess):
 
 beforeware = Beforeware(
     before,
-    skip=[*STATIC_SKIP, *AUTH_SKIP, r"/", r"/health", r"/payments/webhook"],
+    skip=[*STATIC_SKIP, *AUTH_SKIP, r"/", r"/health", r"/payments/webhook", r"/_internal/.*"],
 )
 
 LIVE_RELOAD = os.environ.get("VARRO_LIVE", "1") == "1"
