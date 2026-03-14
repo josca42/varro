@@ -11,6 +11,7 @@ from pydantic_ai.messages import ThinkingPart, TextPart, ToolCallPart
 from ui.app.chat import UserPromptBlock, ModelRequestBlock, CallToolsBlock
 from ui.app.tool import ReasoningBlock
 from varro.agent.assistant import AssistantRunDeps, agent
+from varro.chat.model_registry import get_chat_model
 from varro.chat.model_costs import apply_model_charge, has_positive_balance
 from varro.chat.render_cache import save_turn_render_cache
 from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
@@ -66,6 +67,7 @@ async def run_agent(
     msg_history = load_messages_for_turns(chat.turns)
     turn_idx = len(chat.turns)
     state = ReasoningState(turn_idx)
+    assistant_model = get_chat_model(getattr(chat, "assistant_model", None))
 
     request_url = (current_url or "").strip()
     if not request_url.startswith("/"):
@@ -85,11 +87,17 @@ async def run_agent(
         request_current_url=get_current_url,
         request_set_current_url=set_current_url,
     )
-    assistant_model_name = agent.model.model_name
+    billing_model_name = assistant_model.billing_model_name
     turn_charge_key = f"assistant:{run_id}"
     run = None
     try:
-        async with agent.iter(user_text, message_history=msg_history, deps=deps) as run:
+        async with agent.iter(
+            user_text,
+            message_history=msg_history,
+            deps=deps,
+            model=assistant_model.provider_model_name,
+            model_settings=assistant_model.model_settings,
+        ) as run:
             async for node in run:
                 for block in node_to_blocks(node, shell, state):
                     if block:
@@ -103,7 +111,7 @@ async def run_agent(
                 turn_idx=turn_idx,
                 charge_type="assistant_run",
                 charge_key=turn_charge_key,
-                model_name=assistant_model_name,
+                model_name=billing_model_name,
                 usage=usage,
             )
         raise
@@ -119,7 +127,7 @@ async def run_agent(
         turn_idx=turn_idx,
         charge_type="assistant_run",
         charge_key=turn_charge_key,
-        model_name=run_result.response.model_name or assistant_model_name,
+        model_name=run_result.response.model_name or billing_model_name,
         usage=assistant_usage,
     )
 

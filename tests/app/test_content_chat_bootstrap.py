@@ -17,7 +17,11 @@ def test_app_home_full_page_clears_chat_id(monkeypatch, tmp_path) -> None:
 
     monkeypatch.setattr(content_routes, "_welcome_path", lambda _user_id: _write_welcome(tmp_path))
     monkeypatch.setattr(content_routes, "list_dashboards", lambda _user_id: [])
-    monkeypatch.setattr(content_routes, "_render_welcome_page", lambda content, dashboards: (content, dashboards))
+    monkeypatch.setattr(
+        content_routes,
+        "_render_welcome_page",
+        lambda content, dashboards, user_id: (content, dashboards, user_id),
+    )
 
     captured = {}
 
@@ -41,7 +45,11 @@ def test_app_home_htmx_keeps_chat_id(monkeypatch, tmp_path) -> None:
 
     monkeypatch.setattr(content_routes, "_welcome_path", lambda _user_id: _write_welcome(tmp_path))
     monkeypatch.setattr(content_routes, "list_dashboards", lambda _user_id: [])
-    monkeypatch.setattr(content_routes, "_render_welcome_page", lambda content, dashboards: (content, dashboards))
+    monkeypatch.setattr(
+        content_routes,
+        "_render_welcome_page",
+        lambda content, dashboards, user_id: (content, dashboards, user_id),
+    )
 
     captured = {}
 

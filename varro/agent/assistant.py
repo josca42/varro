@@ -36,6 +36,7 @@ from varro.dashboard.verify import (
 )
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.agent.workspace import user_workspace_root
+from varro.chat.model_registry import DEFAULT_CHAT_MODEL_KEY, get_chat_model
 import logfire
 
 logfire.configure(scrubbing=False)
@@ -43,8 +44,9 @@ logfire.instrument_pydantic_ai()
 
 DIM_TABLES = get_dim_tables()
 
-sonnet_model = AnthropicModel("claude-opus-4-6")
-sonnet_settings = AnthropicModelSettings(
+default_chat_model = get_chat_model(DEFAULT_CHAT_MODEL_KEY)
+default_model = AnthropicModel(default_chat_model.billing_model_name)
+default_model_settings = AnthropicModelSettings(
     max_tokens=16000,
     anthropic_thinking={"type": "adaptive"},
     parallel_tool_calls=True,
@@ -64,25 +66,25 @@ class AssistantRunDeps:
 
 
 agent = Agent(
-    model=sonnet_model,
-    model_settings=sonnet_settings,
+    model=default_model,
+    model_settings=default_model_settings,
     deps_type=AssistantRunDeps,
     retries=3,
-    builtin_tools=[
-        # MemoryTool(),
-        WebSearchTool(
-            search_context_size="medium",
-            user_location=WebSearchUserLocation(
-                city="Copenhagen",
-                country="DK",
-                region="DK",
-                timezone="Europe/Copenhagen",
-            ),
-            blocked_domains=None,
-            allowed_domains=None,
-            max_uses=None,
-        ),
-    ],
+    # builtin_tools=[
+    #     # MemoryTool(),
+    #     WebSearchTool(
+    #         search_context_size="medium",
+    #         user_location=WebSearchUserLocation(
+    #             city="Copenhagen",
+    #             country="DK",
+    #             region="DK",
+    #             timezone="Europe/Copenhagen",
+    #         ),
+    #         blocked_domains=None,
+    #         allowed_domains=None,
+    #         max_uses=None,
+    #     ),
+    # ],
 )
 
 

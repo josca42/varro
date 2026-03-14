@@ -15,6 +15,7 @@ from ui.app.chat import (
     ChatRunStream,
     ErrorBlock,
 )
+from varro.chat.model_registry import DEFAULT_CHAT_MODEL_KEY, get_chat_model
 from varro.chat.model_costs import has_positive_balance
 from varro.chat.run_manager import run_manager
 from varro.chat.runtime_state import runtime_state_fp
@@ -52,9 +53,18 @@ def _stream_block(block):
     return Div(block, hx_swap_oob="beforebegin:#chat-progress")
 
 
-def _insufficient_balance_blocks(chat_id: int | None):
+def _resolved_model_key(model_key: str | None, chat: Chat | None = None) -> str:
+    candidate = (model_key or "").strip() or (
+        getattr(chat, "assistant_model", DEFAULT_CHAT_MODEL_KEY)
+        if chat
+        else DEFAULT_CHAT_MODEL_KEY
+    )
+    return get_chat_model(candidate).key
+
+
+def _insufficient_balance_blocks(chat_id: int | None, model_key: str):
     return (
-        ChatFormEnabled(chat_id),
+        ChatFormEnabled(chat_id, model_key),
         Div(
             ErrorBlock("Insufficient balance. Add funds in Settings to continue."),
             hx_swap_oob="beforebegin:#chat-progress",
@@ -76,6 +86,7 @@ async def _execute_run(
     chat_id: int,
     msg: str,
     current_url: str | None,
+    model_key: str,
 ) -> None:
     from varro.chat.agent_run import run_agent
 
@@ -98,13 +109,13 @@ async def _execute_run(
         await _publish_blocks(
             run_id,
             ChatProgressEnd(),
-            ChatFormEnabled(chat_id),
+            ChatFormEnabled(chat_id, model_key),
         )
     except asyncio.CancelledError:
         await _publish_blocks(
             run_id,
             ChatProgressEnd(),
-            ChatFormEnabled(chat_id),
+            ChatFormEnabled(chat_id, model_key),
         )
     except Exception as exc:
         await shell_pool.invalidate(user_id, chat_id)
@@ -112,7 +123,7 @@ async def _execute_run(
             run_id,
             ErrorBlock(str(exc)),
             ChatProgressEnd(),
-            ChatFormEnabled(chat_id),
+            ChatFormEnabled(chat_id, model_key),
         )
     finally:
         await run_manager.close(run_id)
@@ -125,6 +136,7 @@ async def chat_run_start(
     req,
     chat_id: int | None = None,
     current_url: str | None = None,
+    model_key: str | None = None,
 ):
     msg = (msg or "").strip()
     if not msg:
@@ -135,13 +147,20 @@ async def chat_run_start(
         return Response(status_code=403)
 
     chats = req.state.chats
-    if chat_id is not None and not chats.get(chat_id):
+    chat = chats.get(chat_id) if chat_id is not None else None
+    if chat_id is not None and chat is None:
         return Response(status_code=404)
+    try:
+        selected_model_key = _resolved_model_key(model_key, chat)
+    except ValueError:
+        return Response(status_code=400)
     if not has_positive_balance(user_id):
-        return _insufficient_balance_blocks(chat_id)
+        return _insufficient_balance_blocks(chat_id, selected_model_key)
     if chat_id is None:
-        chat = chats.create(Chat())
+        chat = chats.create(Chat(assistant_model=selected_model_key))
         chat_id = chat.id
+    elif getattr(chat, "assistant_model", DEFAULT_CHAT_MODEL_KEY) != selected_model_key:
+        chats.update(Chat(id=chat_id, assistant_model=selected_model_key))
 
     run_id = uuid4().hex
     run = await run_manager.create_run(
@@ -160,12 +179,13 @@ async def chat_run_start(
             chat_id=chat_id,
             msg=msg,
             current_url=current_url,
+            model_key=selected_model_key,
         )
     )
     await run_manager.attach_task(run_id, task)
 
     return (
-        ChatFormRunning(chat_id, run_id),
+        ChatFormRunning(chat_id, run_id, selected_model_key),
         ChatProgressStart(),
         ChatRunStream(run_id, hx_swap_oob="outerHTML:#chat-run-stream"),
     )

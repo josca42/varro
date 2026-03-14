@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from fasthtml.common import Div, to_xml
 
 import app.routes.chat as chat_routes
-from ui.app.chat import ChatForm, ChatFormRunning
+from ui.app.chat import ChatForm, ChatFormRunning, ChatPanel
 
 
 def test_stream_block_wraps_non_oob_blocks():
@@ -22,6 +22,8 @@ def test_stream_block_wraps_non_oob_blocks():
 def test_chat_form_running_renders_run_specific_cancel_button():
     html = to_xml(ChatFormRunning(chat_id=2, run_id="run-abc"))
 
+    assert 'name="model_key"' in html
+    assert 'value="anthropic_opus" selected' in html
     assert 'name="run_id" value="run-abc"' in html
     assert 'hx-post="/chat/runs/run-abc/cancel"' in html
     assert 'type="button"' in html
@@ -31,12 +33,23 @@ def test_chat_form_running_renders_run_specific_cancel_button():
 def test_chat_form_idle_posts_to_run_start_endpoint():
     html = to_xml(ChatForm(chat_id=2))
 
+    assert 'name="model_key"' in html
+    assert "Gemini 3.1 Pro Preview" in html
+    assert "Gemini 3 Flash Preview" in html
     assert 'hx-post="/chat/runs"' in html
     assert 'hx-swap="none"' in html
     assert 'hx-post="/chat/runs/' not in html
     assert 'name="run_id" value=""' in html
     assert 'type="submit"' in html
     assert "<polyline " in html
+
+
+def test_chat_panel_restores_chat_model_selection():
+    chat = SimpleNamespace(id=2, turns=[], assistant_model="gemini_flash", title="Flash")
+
+    html = to_xml(ChatPanel(chat))
+
+    assert 'value="gemini_flash" selected' in html
 
 
 def test_chat_run_cancel_sets_session_chat_and_calls_cancel(monkeypatch):
