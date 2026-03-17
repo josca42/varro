@@ -5,6 +5,7 @@ from datetime import date
 import json
 import os
 from pathlib import Path
+import random
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit
 
@@ -19,9 +20,10 @@ from varro.agent.workspace import user_workspace_root
 from varro.dashboard.executor import clear_query_cache, execute_output
 from varro.dashboard.loader import Dashboard, load_dashboard
 from varro.dashboard.models import Metric
+from varro.dashboard.snapshot_auth import make_snapshot_token
 from varro.db.db import dst_read_engine as default_engine
 
-DEFAULT_APP_BASE_URL = os.getenv("VARRO_APP_BASE_URL", "http://127.0.0.1:5001")
+DEFAULT_APP_BASE_URL = "http://127.0.0.1:5001"
 DASHBOARD_READY_SELECTOR = "[data-slot='dashboard-shell']"
 PLOTLY_READY_SELECTOR = ".plotly-graph-div .main-svg, .plotly-graph-div canvas"
 
@@ -74,9 +76,42 @@ def _serialize_metric(value: Any) -> Any:
     return str(value)
 
 
-def _absolute_app_url(url: str, app_base_url: str | None = None) -> str:
-    base = (app_base_url or DEFAULT_APP_BASE_URL).rstrip("/") + "/"
+def _parse_app_base_urls(raw: str | None) -> list[str]:
+    if not raw:
+        return []
+    return [url.strip().rstrip("/") for url in raw.split(",") if url.strip()]
+
+
+def _configured_app_base_urls() -> list[str]:
+    if urls := _parse_app_base_urls(os.getenv("VARRO_APP_BASE_URLS")):
+        return urls
+    if url := (os.getenv("VARRO_APP_BASE_URL") or "").strip():
+        return [url.rstrip("/")]
+    return [DEFAULT_APP_BASE_URL]
+
+
+def _candidate_app_base_urls(app_base_url: str | None = None) -> list[str]:
+    if app_base_url:
+        return [app_base_url.strip().rstrip("/")]
+
+    urls = _configured_app_base_urls()
+    if len(urls) < 2:
+        return urls
+    return random.sample(urls, k=len(urls))
+
+
+def _absolute_app_url(url: str, app_base_url: str) -> str:
+    base = app_base_url.rstrip("/") + "/"
     return urljoin(base, url.lstrip("/"))
+
+
+def _internal_snapshot_path(user_id: int, url: str) -> str:
+    slug, query = parse_dashboard_url(url)
+    token = make_snapshot_token(user_id, slug)
+    path = f"/_internal/dashboard/{token}/{slug}"
+    if query:
+        return f"{path}?{query}"
+    return path
 
 
 async def render_dashboard_url_to_png(url: str) -> bytes:
@@ -86,6 +121,22 @@ async def render_dashboard_url_to_png(url: str) -> bytes:
         plotly_wait_selector=PLOTLY_READY_SELECTOR,
         full_page=True,
     )
+
+
+async def render_dashboard_snapshot_png(
+    url: str,
+    *,
+    app_base_url: str | None = None,
+) -> bytes:
+    errors: list[str] = []
+    for base_url in _candidate_app_base_urls(app_base_url):
+        absolute_url = _absolute_app_url(url, base_url)
+        try:
+            return await render_dashboard_url_to_png(absolute_url)
+        except Exception as exc:
+            errors.append(f"{absolute_url}: {exc}")
+
+    raise RuntimeError("Dashboard snapshot failed.\n" + "\n".join(errors))
 
 
 async def snapshot_dashboard_url(
@@ -112,8 +163,9 @@ async def snapshot_dashboard_url(
     snapshot_dir = dashboard_dir / "snapshots" / canonical_query_folder(query)
     snapshot_dir.mkdir(parents=True, exist_ok=True)
 
-    dashboard_png = await render_dashboard_url_to_png(
-        _absolute_app_url(target_url, app_base_url=app_base_url)
+    dashboard_png = await render_dashboard_snapshot_png(
+        _internal_snapshot_path(user_id, target_url),
+        app_base_url=app_base_url,
     )
     save_png(snapshot_dir / "dashboard.png", dashboard_png, max_pixels=max_pixels)
 

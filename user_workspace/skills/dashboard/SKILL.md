@@ -179,10 +179,10 @@ Prisindeks for forskellige ejendomstyper (2015=100).
 3. **Write queries** — one `.sql` per query in `queries/`. Use `:param` and `IS NULL OR` for optional filters.
 4. **Write outputs.py** — one `@output` function per visual element.
 5. **Write dashboard.md** — layout with containers and component tags. Add markdown commentary to explain the data.
-6. **Navigate** — `UpdateUrl(path="/dashboard/{name}")` to open it.
-7. **Validate** — Use `ValidateDashboard(url?)` to run full end-to-end check of the dashboard.
-8. **Snapshot and inspect** — `Snapshot()` to materialize outputs. Read the PNGs and JSON selectively to verify the dashboard looks right.
-9. **Iterate** — fix issues, re-validate, re-snapshot.
+6. **Validate** — Use `ValidateDashboard(url?)` to run full end-to-end check of the dashboard.
+7. **Snapshot and inspect** — `Snapshot()` to materialize outputs. Read the PNGs and JSON selectively to verify the dashboard looks right.
+8. **Iterate** — fix issues, re-validate, re-snapshot.
+9. **Navigate** — `UpdateUrl(path="/dashboard/{name}")` to open it.
 
 ## Validation
 

@@ -31,10 +31,12 @@ def test_chat_run_start_blocks_when_balance_is_not_positive(monkeypatch) -> None
             req=req,
             chat_id=None,
             current_url="/app",
+            model_key="gemini_pro",
         )
     )
 
     assert isinstance(response, tuple)
     html = "".join(to_xml(part) for part in response)
     assert "Insufficient balance" in html
+    assert 'value="gemini_pro" selected' in html
     assert "outerHTML:#chat-form" in html

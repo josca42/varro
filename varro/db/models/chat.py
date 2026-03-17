@@ -4,6 +4,8 @@ from typing import Optional
 from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field, Relationship, SQLModel
 
+from varro.chat.model_registry import DEFAULT_CHAT_MODEL_KEY
+
 
 class Chat(SQLModel, table=True):
     """A chat conversation containing multiple turns."""
@@ -11,6 +13,7 @@ class Chat(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", index=True)
     title: str | None = None
+    assistant_model: str = Field(default=DEFAULT_CHAT_MODEL_KEY)
     created_at: Optional[datetime] = Field(
         default=None,
         sa_column=Column(DateTime, server_default=func.now()),

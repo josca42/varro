@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from varro.agent.snapshot import snapshot_dashboard_url
 from varro.chat.agent_run import run_agent
+from varro.chat.model_registry import DEFAULT_CHAT_MODEL_KEY
 from varro.chat.shell_pool import shell_pool
 from varro.chat.trace import extract_trace
 from varro.chat.turn_store import load_turn_messages
@@ -175,7 +176,7 @@ def _create_or_resume_chat(user_id: int, chat_id: int | None) -> int:
         if not chat:
             raise ValueError(f"Chat {chat_id} not found for user {user_id}")
         return chat_id
-    chat = chats.create(Chat())
+    chat = chats.create(Chat(assistant_model=DEFAULT_CHAT_MODEL_KEY))
     if chat.id is None:
         raise ValueError("Failed to create chat")
     return chat.id

@@ -75,10 +75,10 @@ def add_parent_kode_col(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_tid_col(df: pd.DataFrame) -> pd.DataFrame:
     if "tid" in df.columns:
-        if df["tid"].dtype == "object":
+        if pd.api.types.is_string_dtype(df["tid"]):
             tid_sample = str(df["tid"].dropna().iloc[0])
             if "K" in tid_sample:
-                df["tid"] = pd.to_datetime(df["tid"].str.replace("K", "Q"))
+                df["tid"] = pd.PeriodIndex(df["tid"].str.replace("K", "Q"), freq="Q").to_timestamp()
             elif "M" in tid_sample and "D" in tid_sample:
                 df["tid"] = pd.to_datetime(df["tid"], format="%YM%mD%d")
             elif "H" in tid_sample:
@@ -87,20 +87,22 @@ def process_tid_col(df: pd.DataFrame) -> pd.DataFrame:
                 df["tid"] = pd.to_datetime(df["tid"], format="%YM%m")
             elif ":" in tid_sample:
                 df["tid"] = df["tid"].str.replace(":", "-").map(to_int4range_text)
+            elif tid_sample.isdigit() and 1700 < int(tid_sample) < 2150:
+                df["tid"] = pd.to_datetime(df["tid"], format="%Y")
             else:
                 pass
         else:
             assert 1700 < df["tid"].iloc[0] < 2150, "Not a year column"
             df["tid"] = pd.to_datetime(df["tid"], format="%Y")
 
-        if df["tid"].dtype != "object":
+        if pd.api.types.is_datetime64_any_dtype(df["tid"]):
             df["tid"] = df["tid"].dt.date
     return df
 
 
 def process_alder_col(df: pd.DataFrame) -> pd.DataFrame:
     if "alder" in df.columns:
-        if df["alder"].dtype == "object":
+        if pd.api.types.is_string_dtype(df["alder"]) or df["alder"].dtype == "object":
             try:
                 # Check if object do to upper open ended i.e. "99-"
                 if sum(["-" in v for v in df["alder"].unique()]) < 2:
@@ -121,10 +123,9 @@ def process_alder_col(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_indhold_col(df: pd.DataFrame) -> pd.DataFrame:
     if "indhold" in df.columns:
-        if df["indhold"].dtype == "object":
-            if sum(df["indhold"] == "..") > 0:
-                df.loc[df["indhold"] == "..", "indhold"] = np.nan
-                df["indhold"] = df["indhold"].str.replace(",", ".").astype(float)
+        if pd.api.types.is_string_dtype(df["indhold"]) or df["indhold"].dtype == "object":
+            df.loc[df["indhold"] == "..", "indhold"] = np.nan
+            df["indhold"] = df["indhold"].str.replace(",", ".").astype(float)
     return df
 
 

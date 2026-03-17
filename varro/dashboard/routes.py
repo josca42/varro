@@ -47,6 +47,7 @@ from varro.dashboard.public_fs import (
     next_fork_slug,
     public_dashboard_dir,
 )
+from varro.dashboard.snapshot_auth import verify_snapshot_token
 from varro.db import crud
 from ui.app.layout import AppShell
 
@@ -321,6 +322,20 @@ def _render_output_fragment(dash: Dashboard, output_name: str, req, renderer):
         return None
 
 
+def _internal_dashboard_base_path(token: str, name: str) -> str:
+    return f"/_internal/dashboard/{token}/{name}"
+
+
+def _internal_dashboard_or_response(token: str, name: str):
+    user_id = verify_snapshot_token(token, name)
+    if user_id is None:
+        return None, Response("Unauthorized", status_code=401)
+    dash = get_dashboard(name, user_id=user_id)
+    if dash is None:
+        return None, Response("Dashboard not found", status_code=404)
+    return dash, None
+
+
 def _match_private_dashboard_path(path: str) -> str | None:
     match = re.match(r"^/dashboard/([^/]+)$", path)
     if not match:
@@ -394,6 +409,14 @@ def dashboard_shell(name: str, req, sess):
 
     content = _dashboard_content(dash, req, base_path=f"/dashboard/{name}")
     return _shell_or_fragment(req, sess, content)
+
+
+@ar("/_internal/dashboard/{token}/{name}", methods=["GET"])
+def internal_dashboard_shell(token: str, name: str, req):
+    dash, error = _internal_dashboard_or_response(token, name)
+    if error is not None:
+        return error
+    return _dashboard_content(dash, req, base_path=_internal_dashboard_base_path(token, name))
 
 
 @ar("/public/{owner_id}/{name}", methods=["GET"])
@@ -576,6 +599,23 @@ def filter_sync(name: str, req, sess):
     )
 
 
+@ar("/_internal/dashboard/{token}/{name}/_/filters", methods=["GET"])
+def internal_filter_sync(token: str, name: str, req):
+    dash, error = _internal_dashboard_or_response(token, name)
+    if error is not None:
+        return error
+
+    filters = parse_filters_from_request(req, dash.filters)
+    url = build_filter_url(_internal_dashboard_base_path(token, name), filters, dash.filters)
+    return Response(
+        "",
+        headers={
+            "HX-Replace-Url": url,
+            "HX-Trigger": '{"filtersChanged": {}}',
+        },
+    )
+
+
 @ar("/public/{owner_id}/{name}/_/filters", methods=["GET"])
 def public_filter_sync(owner_id: int, name: str, req):
     dash = get_public_dashboard(name, owner_id=owner_id)
@@ -601,6 +641,18 @@ def render_figure_endpoint(name: str, output_name: str, req, sess):
     dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
+
+    content = _render_output_fragment(dash, output_name, req, render_figure)
+    if content is None:
+        return Div("Error loading chart", cls="text-error text-center p-4")
+    return content
+
+
+@ar("/_internal/dashboard/{token}/{name}/_/figure/{output_name}", methods=["GET"])
+def render_internal_figure_endpoint(token: str, name: str, output_name: str, req):
+    dash, error = _internal_dashboard_or_response(token, name)
+    if error is not None:
+        return error
 
     content = _render_output_fragment(dash, output_name, req, render_figure)
     if content is None:
@@ -635,6 +687,18 @@ def render_table_endpoint(name: str, output_name: str, req, sess):
     return content
 
 
+@ar("/_internal/dashboard/{token}/{name}/_/table/{output_name}", methods=["GET"])
+def render_internal_table_endpoint(token: str, name: str, output_name: str, req):
+    dash, error = _internal_dashboard_or_response(token, name)
+    if error is not None:
+        return error
+
+    content = _render_output_fragment(dash, output_name, req, render_table)
+    if content is None:
+        return Div("Error loading table", cls="text-error text-center p-4")
+    return content
+
+
 @ar("/public/{owner_id}/{name}/_/table/{output_name}", methods=["GET"])
 def render_public_table_endpoint(owner_id: int, name: str, output_name: str, req):
     dash = get_public_dashboard(name, owner_id=owner_id)
@@ -655,6 +719,18 @@ def render_metric_endpoint(name: str, output_name: str, req, sess):
     dash = get_dashboard(name, user_id=user_id)
     if not dash:
         return Response("Dashboard not found", status_code=404)
+
+    content = _render_output_fragment(dash, output_name, req, render_metric_card)
+    if content is None:
+        return Div("Error loading metric", cls="text-error text-center p-4")
+    return content
+
+
+@ar("/_internal/dashboard/{token}/{name}/_/metric/{output_name}", methods=["GET"])
+def render_internal_metric_endpoint(token: str, name: str, output_name: str, req):
+    dash, error = _internal_dashboard_or_response(token, name)
+    if error is not None:
+        return error
 
     content = _render_output_fragment(dash, output_name, req, render_metric_card)
     if content is None:

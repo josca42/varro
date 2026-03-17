@@ -14,6 +14,7 @@ A dashboard folder requires:
 
 - `load_queries(folder)` reads all `queries/*.sql` by stem name.
 - `load_outputs(outputs.py)` uses `exec` with injected symbols (`output`, `Metric`, `px`, `go`, `pd`).
+- `load_outputs(outputs.py)` wraps injected `gpd.read_parquet` so absolute `/geo/...` paths resolve to `varro.config.GEO_DIR` outside bwrap too; plain `pd` remains unwrapped.
 - `load_dashboard(folder)` validates files, parses markdown AST, extracts filters, validates select options queries.
 
 ## Parser (`parser.py`)
@@ -95,6 +96,10 @@ Output execution:
 - `GET /public/{owner_id}/{name}/fork`:
   - authenticated: copies published dashboard to viewer workspace and redirects to `/dashboard/{fork_slug}`
   - anonymous: redirects to `/login?next=/public/{owner_id}/{name}/fork`
+- `GET /_internal/dashboard/{token}/{name}` and matching `/_/filters|figure|table|metric` endpoints:
+  - used only by server-side snapshot rendering,
+  - bypass normal session auth,
+  - require a short-lived HMAC token tied to `{user_id, slug}`.
 - `GET /public/_/context-action?url=...`:
   - returns navbar action fragment (`Publish`, `Update`, `Edit`, or empty)
 

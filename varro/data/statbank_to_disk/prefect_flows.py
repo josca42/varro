@@ -1,175 +1,106 @@
 from prefect import flow, get_run_logger, task
 
-from varro.data.disk_to_db.fact_tables_incremental_to_db import apply_incremental_run
+from varro.data.disk_to_db.fact_tables_incremental_to_db import apply_table_delta, table_exists_in_db
 from varro.data.statbank_to_disk import copy_tables_statbank as sync
 
 
-@task(name="statbank-fetch-catalog", retries=3, retry_delay_seconds=[30, 120, 300])
+@task(name="fetch-catalog", retries=3, retry_delay_seconds=[30, 120, 300])
 def fetch_catalog_task() -> list[dict]:
     return sync.fetch_catalog()
 
 
 @task(
-    name="statbank-sync-table",
+    name="sync-table",
     task_run_name="sync-{table_id}",
-    retries=3,
-    retry_delay_seconds=[30, 120, 300],
+    retries=2,
+    retry_delay_seconds=[30, 120],
 )
-def sync_table_task(table_id: str, catalog_updated: str, run_id: str) -> dict:
-    return sync.sync_table(table_id=table_id, catalog_updated=catalog_updated, run_id=run_id)
+def sync_and_apply_table_task(table_id: str, catalog_updated: str, state_entry: dict) -> dict:
+    if state_entry.get("updated") == catalog_updated:
+        return {"status": "skipped", "reason": "unchanged"}
 
+    info = sync.fetch_table_info(table_id)
+    sync.save_table_info(table_id, info)
+    remote_tids = sync.get_tid_values(info)
+    overrides = sync.load_frequency_overrides()
+    frequency = sync.resolve_frequency(table_id, remote_tids, overrides)
+    local_tids = sync.list_local_tids(table_id)
+    periods = sync.pick_periods_to_fetch(remote_tids, local_tids, frequency)
 
-@task(name="fact-db-apply", retries=1, retry_delay_seconds=60)
-def apply_incremental_run_task(run_id: str) -> dict:
-    return apply_incremental_run(run_id)
+    if not periods:
+        return {"status": "skipped", "reason": "no_periods", "frequency": frequency}
 
+    rows_written = 0
+    files_written = 0
+    per_call = sync.max_tid_values_per_call(info, remote_tids)
+    for batch in sync.chunk(periods, per_call):
+        df = sync.copy_table_batch(table_id, info, batch)
+        batch_rows, batch_files = sync.write_batch_partitions(table_id, batch, df)
+        rows_written += batch_rows
+        files_written += batch_files
 
-def no_changed_tids_result(run_id: str) -> dict:
+    db_result = None
+    if table_exists_in_db(table_id):
+        db_result = apply_table_delta(table_id, periods)
+
     return {
-        "run_id": run_id,
-        "status": "skipped",
-        "reason": "no_changed_tids",
-        "summary": {
-            "tables_total": 0,
-            "tables_applied": 0,
-            "tables_skipped": 0,
-            "tables_failed": 0,
-        },
+        "status": "synced",
+        "frequency": frequency,
+        "periods_fetched": len(periods),
+        "rows_written": rows_written,
+        "files_written": files_written,
+        "bootstrap": len(local_tids) == 0,
+        "db_apply": db_result,
     }
 
 
-def update_failed_table_state(table_id: str, catalog_updated: str, run_id: str, error: str) -> None:
-    state = sync.load_state()
-    previous = state["tables"].get(table_id, {})
-    frequency = previous.get("frequency", "other")
-    state["tables"][table_id] = sync.build_table_state(
-        previous,
-        catalog_updated=catalog_updated,
-        frequency=frequency,
-        run_id=run_id,
-        now=sync.now_utc(),
-        status="failed",
-        error=error,
-    )
-    state["last_run_id"] = run_id
-    sync.save_state(state)
-
-
-@flow(name="weekly-statbank-sync")
-def weekly_statbank_sync_flow(force_catalog_poll: bool = False, max_tables: int | None = None) -> dict:
+@flow(name="monthly-statbank-sync")
+def monthly_sync_flow(max_tables: int | None = None) -> dict:
     logger = get_run_logger()
     sync.ensure_dirs()
-    started = sync.now_utc()
-    run_id = sync.make_run_id(started)
+
+    catalog = fetch_catalog_task()
+    if max_tables is not None:
+        catalog = catalog[:max_tables]
+
     state = sync.load_state()
-    manifest = {
-        "run_id": run_id,
-        "started_at": sync.iso_utc(started),
-        "finished_at": None,
-        "force_catalog_poll": force_catalog_poll,
-        "status": "running",
-        "catalog": {},
-        "tables": {},
-        "summary": {},
+    results = {}
+    total = len(catalog)
+
+    for idx, row in enumerate(catalog, start=1):
+        table_id = row["id"]
+        catalog_updated = row.get("updated")
+        state_entry = state.get(table_id, {})
+
+        logger.info("table %s (%s/%s)", table_id, idx, total)
+        try:
+            result = sync_and_apply_table_task(table_id, catalog_updated, state_entry)
+        except Exception as exc:
+            logger.error("table %s failed: %s", table_id, exc)
+            result = {"status": "failed", "error": str(exc)}
+
+        results[table_id] = result
+        if result["status"] == "synced":
+            state[table_id] = {
+                "updated": catalog_updated,
+                "frequency": result["frequency"],
+            }
+
+    sync.save_state(state)
+
+    synced = sum(1 for r in results.values() if r["status"] == "synced")
+    skipped = sum(1 for r in results.values() if r["status"] == "skipped")
+    failed = sum(1 for r in results.values() if r["status"] == "failed")
+    logger.info("done: %s synced, %s skipped, %s failed", synced, skipped, failed)
+
+    return {
+        "tables_total": total,
+        "tables_synced": synced,
+        "tables_skipped": skipped,
+        "tables_failed": failed,
+        "tables": results,
     }
-
-    try:
-        if not sync.should_poll_catalog(state, started, force_catalog_poll):
-            manifest["status"] = "skipped"
-            manifest["catalog"] = {
-                "polled": False,
-                "reason": "weekly_gate",
-                "last_catalog_poll_at": state.get("last_catalog_poll_at"),
-            }
-            manifest["summary"] = {
-                "tables_total": 0,
-                "tables_synced": 0,
-                "tables_skipped": 0,
-                "tables_failed": 0,
-                "tables_with_changed_tids": 0,
-            }
-            db_apply = no_changed_tids_result(run_id)
-            manifest["db_apply"] = db_apply
-            return {"sync": manifest, "db_apply": db_apply}
-
-        catalog = fetch_catalog_task()
-        if max_tables is not None:
-            catalog = catalog[:max_tables]
-
-        polled_at = sync.iso_utc(sync.now_utc())
-        state["last_catalog_poll_at"] = polled_at
-        state["last_run_id"] = run_id
-        sync.save_state(state)
-        manifest["catalog"] = {
-            "polled": True,
-            "table_count": len(catalog),
-            "polled_at": polled_at,
-        }
-
-        total = len(catalog)
-        for idx, row in enumerate(catalog, start=1):
-            table_id = row["id"]
-            catalog_updated = row.get("updated")
-            logger.info("sync table %s (%s/%s)", table_id, idx, total)
-            try:
-                result = sync_table_task(
-                    table_id=table_id,
-                    catalog_updated=catalog_updated,
-                    run_id=run_id,
-                )
-            except Exception as exc:
-                result = {
-                    "status": "failed",
-                    "catalog_updated": catalog_updated,
-                    "error": str(exc),
-                    "changed_tids": [],
-                }
-                update_failed_table_state(
-                    table_id=table_id,
-                    catalog_updated=catalog_updated,
-                    run_id=run_id,
-                    error=str(exc),
-                )
-            manifest["tables"][table_id] = result
-
-        table_results = list(manifest["tables"].values())
-        synced = sum(1 for result in table_results if result["status"] == "synced")
-        skipped = sum(1 for result in table_results if result["status"] == "skipped")
-        failed = sum(1 for result in table_results if result["status"] == "failed")
-        changed = sum(1 for result in table_results if result.get("changed_tids"))
-        manifest["summary"] = {
-            "tables_total": len(table_results),
-            "tables_synced": synced,
-            "tables_skipped": skipped,
-            "tables_failed": failed,
-            "tables_with_changed_tids": changed,
-        }
-        manifest["status"] = "partial_failure" if failed else "success"
-
-        if changed > 0:
-            db_apply = apply_incremental_run_task(run_id)
-        else:
-            db_apply = no_changed_tids_result(run_id)
-        manifest["db_apply"] = db_apply
-
-        logger.info(
-            "run_id=%s sync_status=%s db_status=%s",
-            run_id,
-            manifest.get("status"),
-            db_apply.get("status"),
-        )
-        return {"sync": manifest, "db_apply": db_apply}
-    except Exception as exc:
-        manifest["status"] = "failed"
-        manifest["error"] = str(exc)
-        raise
-    finally:
-        manifest["finished_at"] = sync.iso_utc(sync.now_utc())
-        state = sync.load_state()
-        state["last_run_id"] = run_id
-        sync.write_run_manifest(run_id, manifest)
-        sync.save_state(state)
 
 
 if __name__ == "__main__":
-    weekly_statbank_sync_flow()
+    monthly_sync_flow()

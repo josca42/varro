@@ -92,3 +92,4 @@ journalctl -u varro@001.service -f
 
 - `VARRO_LIVE=0` — set in the systemd unit, disables live reload
 - `VARRO_LIVE=1` (default) — used in development with `uv run python app/main.py`
+- `VARRO_APP_BASE_URLS` — comma-separated loopback worker URLs used by dashboard snapshot rendering in production; snapshot shuffles and retries these URLs to bypass Caddy while avoiding a fixed worker target

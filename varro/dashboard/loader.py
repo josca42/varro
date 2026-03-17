@@ -5,15 +5,17 @@ Load dashboard folders and queries from queries/ folder.
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+from varro.config import GEO_DIR
 from varro.dashboard.models import Metric, output
 from varro.dashboard.filters import Filter, validate_options_queries
 from varro.dashboard.parser import ASTNode, parse_dashboard_md, extract_filters
@@ -39,6 +41,34 @@ class Dashboard:
     outputs: dict[str, Callable]
     ast: list[ASTNode]
     filters: list[Filter] = field(default_factory=list)
+
+
+def _resolve_geo_parquet_path(path):
+    try:
+        raw_path = os.fspath(path)
+    except TypeError:
+        return path
+
+    posix_path = PurePosixPath(raw_path)
+    parts = [part for part in posix_path.parts if part != "/"]
+    if not posix_path.is_absolute() or not parts or parts[0] != "geo":
+        return path
+    return GEO_DIR.joinpath(*parts[1:])
+
+
+class _GeoParquetProxy:
+    def __init__(self, module):
+        self._module = module
+
+    def __getattr__(self, name: str):
+        attr = getattr(self._module, name)
+        if name != "read_parquet" or not callable(attr):
+            return attr
+
+        def wrapped(path, *args, **kwargs):
+            return attr(_resolve_geo_parquet_path(path), *args, **kwargs)
+
+        return wrapped
 
 
 def load_queries(folder: Path) -> dict[str, str]:
@@ -78,7 +108,7 @@ def load_outputs(outputs_file: Path) -> dict[str, Callable]:
         "px": px,
         "go": go,
         "pd": pd,
-        "gpd": gpd,
+        "gpd": _GeoParquetProxy(gpd),
         "plt": plt,
         "__file__": str(outputs_file),
         "__name__": f"dashboards.{outputs_file.parent.name}.outputs",

@@ -165,7 +165,12 @@ def test_get_system_prompt_injects_available_skills(assistant_module, monkeypatc
     )
     monkeypatch.setattr(assistant_module, "get_static_prompts", lambda: {"SUBJECT_HIERARCHY": "x"})
 
-    ctx = SimpleNamespace(deps=SimpleNamespace(user_id=7))
+    ctx = SimpleNamespace(
+        deps=SimpleNamespace(
+            user_id=7,
+            request_current_url=lambda: "/",
+        )
+    )
     result = asyncio.run(assistant_module.get_system_prompt(ctx))
 
     assert result == "rendered"

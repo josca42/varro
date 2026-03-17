@@ -37,6 +37,7 @@ from ui.app.tool import (
     _tool_call_item,
 )
 from ui.components import DataTable, Figure, GameOfLifeAnimation
+from varro.chat.model_registry import DEFAULT_CHAT_MODEL_KEY, all_chat_models, get_chat_model
 from varro.chat.tool_results import ToolRenderRecord, extract_tool_render_records
 from varro.config import DATA_DIR
 from varro.dashboard.parser import (
@@ -74,11 +75,12 @@ def ChatPanel(
 ):
     turns = chat.turns if chat else []
     chat_id = chat.id if chat else None
+    model_key = getattr(chat, "assistant_model", DEFAULT_CHAT_MODEL_KEY) if chat else DEFAULT_CHAT_MODEL_KEY
     return Div(
-        ChatHeader(chat),
+        ChatHeader(chat, model_key=model_key),
         ChatMessages(turns, shell=shell, intro=intro),
         ChatRunStream(),
-        ChatForm(chat_id=chat_id) if show_form else None,
+        ChatForm(chat_id=chat_id, model_key=model_key) if show_form else None,
         cls="flex flex-col min-h-0 h-full",
         id="chat-panel",
         **attrs,
@@ -160,12 +162,68 @@ def ChatRunStream(run_id: str | None = None, **attrs):
     )
 
 
+def ChatModelSelector(model_key: str | None = None):
+    selected = get_chat_model(model_key)
+    models = all_chat_models()
+    chevron = NotStr(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"'
+        ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"'
+        ' stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
+    )
+    check = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"'
+        ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"'
+        ' stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    )
+    return Div(
+        Button(
+            Span(selected.label, **{"x-text": "label"}),
+            chevron,
+            type="button",
+            cls="btn btn-ghost btn-sm gap-1 font-normal text-sm",
+            **{"@click": "open = !open"},
+        ),
+        Div(
+            *[
+                Button(
+                    Span(model.label, cls="flex-1 text-left"),
+                    NotStr(
+                        f'<span x-show="key === \'{model.key}\'" class="text-primary">{check}</span>'
+                    ),
+                    type="button",
+                    cls="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-base-200 rounded-lg transition-colors",
+                    **{"@click": f"selectModel('{model.key}', '{model.label}')"},
+                )
+                for model in models
+            ],
+            cls="absolute left-0 mt-1 w-60 bg-base-100 shadow-lg rounded-box border border-base-300 p-1 z-50 flex flex-col",
+            x_show="open",
+            x_transition="",
+            **{"@click.outside": "open = false"},
+        ),
+        x_data=(
+            "{"
+            f" open: false, key: '{selected.key}', label: '{selected.label}',"
+            " selectModel(k, l) {"
+            "   this.key = k; this.label = l; this.open = false;"
+            "   const el = document.querySelector('input[name=model_key]');"
+            "   if (el) el.value = k;"
+            " }"
+            "}"
+        ),
+        cls="relative",
+        id="chat-model-selector",
+    )
+
+
 def ChatForm(
     chat_id: int | None = None,
     *,
+    model_key: str | None = None,
     running: bool = False,
     run_id: str | None = None,
 ):
+    selected_model_key = get_chat_model(model_key).key
     send_icon = NotStr(
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'
     )
@@ -216,6 +274,7 @@ def ChatForm(
             ),
             cls="bg-base-100 rounded-box p-3 flex flex-col gap-2 border border-base-300",
         ),
+        Input(type="hidden", name="model_key", value=selected_model_key),
         Input(type="hidden", name="run_id", value=run_id or ""),
         Input(type="hidden", name="current_url", value=""),
         Input(type="hidden", name="chat_id", value=chat_id)
@@ -230,15 +289,19 @@ def ChatForm(
     )
 
 
-def ChatFormRunning(chat_id: int | None = None, run_id: str | None = None):
+def ChatFormRunning(
+    chat_id: int | None = None,
+    run_id: str | None = None,
+    model_key: str | None = None,
+):
     return Div(
-        ChatForm(chat_id=chat_id, running=True, run_id=run_id),
+        ChatForm(chat_id=chat_id, model_key=model_key, running=True, run_id=run_id),
         hx_swap_oob="outerHTML:#chat-form",
     )
 
 
-def ChatFormEnabled(chat_id: int | None = None):
-    return Div(ChatForm(chat_id=chat_id), hx_swap_oob="outerHTML:#chat-form")
+def ChatFormEnabled(chat_id: int | None = None, model_key: str | None = None):
+    return Div(ChatForm(chat_id=chat_id, model_key=model_key), hx_swap_oob="outerHTML:#chat-form")
 
 
 def ChatClientScript():
@@ -344,8 +407,12 @@ def ChatProgressPlaceholder():
     )
 
 
-def ChatHeader(chat: "Chat | None"):
+def ChatHeader(chat: "Chat | None", model_key: str | None = None):
     return Header(
+        Div(
+            ChatModelSelector(model_key),
+            cls="absolute left-4",
+        ),
         ChatDropdownTrigger(chat),
         Button(
             NotStr(

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import pandas as pd
+from pathlib import Path
+from textwrap import dedent
 from types import SimpleNamespace
 
 from varro.dashboard.executor import execute_options_query, execute_output, execute_query
@@ -87,3 +89,44 @@ def test_execute_options_query_handles_value_and_label_columns(dashboard_env) ->
         ("84", "Region Hovedstaden"),
         ("85", "Region Sjælland"),
     ]
+
+
+def test_execute_output_maps_geo_parquet_from_virtual_root(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import geopandas as gpd
+    import varro.dashboard.loader as loader
+
+    dashboard_dir = tmp_path / "user" / "1" / "dashboard" / "map"
+    queries_dir = dashboard_dir / "queries"
+    queries_dir.mkdir(parents=True)
+    (queries_dir / "base.sql").write_text("select 1", encoding="utf-8")
+    (dashboard_dir / "dashboard.md").write_text("# Map", encoding="utf-8")
+    (dashboard_dir / "outputs.py").write_text(
+        dedent(
+            """
+            from varro.dashboard import output
+
+            @output
+            def geo_table(filters):
+                return gpd.read_parquet("/geo/kommuner.parquet")
+            """
+        ).strip(),
+        encoding="utf-8",
+    )
+
+    expected = tmp_path / "agent_data" / "geo" / "kommuner.parquet"
+    calls: list[Path] = []
+
+    def fake_read_parquet(path):
+        calls.append(Path(path))
+        return pd.DataFrame({"navn": ["A"]})
+
+    monkeypatch.setattr(loader, "GEO_DIR", expected.parent)
+    monkeypatch.setattr(gpd, "read_parquet", fake_read_parquet)
+
+    dash = load_dashboard(dashboard_dir)
+    result = execute_output(dash, "geo_table", {}, engine=None)
+
+    assert result["navn"].tolist() == ["A"]
+    assert calls == [expected]
