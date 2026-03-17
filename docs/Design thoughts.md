@@ -115,5 +115,5 @@ A key aspect of the "file over app" philosophy is that the filesystem is the sta
 
 - **Dashboards as memory**: A dashboard represents an analysis that the user has iterated on. As such it encapsulates various decisions about what a good analysis is. What tables were used, what plots were created and how were the pieces put together. By having the dashboard be easily read and viewed by the AI agent it can always consult previous examples of user preferences and use that as guidelines going forward.
 
-- **Skills**:
-- **Agent notes**:  
+- **Skills**: Markdown files and cli's. Based on claude skills.
+- **Agent notes**: Markdown files with the agents own notes
