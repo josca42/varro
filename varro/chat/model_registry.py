@@ -44,20 +44,20 @@ CHAT_MODELS = (
         billing_model_name="claude-sonnet-4-6",
         model_settings=_ANTHROPIC_MODEL_SETTINGS,
     ),
-    ChatModel(
-        key="gemini_pro",
-        label="Gemini 3.1 Pro Preview",
-        provider_model_name="google-gla:gemini-3.1-pro-preview",
-        billing_model_name="gemini-3.1-pro-preview",
-        model_settings=_GOOGLE_MODEL_SETTINGS,
-    ),
-    ChatModel(
-        key="gemini_flash",
-        label="Gemini 3 Flash Preview",
-        provider_model_name="google-gla:gemini-3-flash-preview",
-        billing_model_name="gemini-3-flash-preview",
-        model_settings=_GOOGLE_MODEL_SETTINGS,
-    ),
+    # ChatModel(
+    #     key="gemini_pro",
+    #     label="Gemini 3.1 Pro Preview",
+    #     provider_model_name="google-gla:gemini-3.1-pro-preview",
+    #     billing_model_name="gemini-3.1-pro-preview",
+    #     model_settings=_GOOGLE_MODEL_SETTINGS,
+    # ),
+    # ChatModel(
+    #     key="gemini_flash",
+    #     label="Gemini 3 Flash Preview",
+    #     provider_model_name="google-gla:gemini-3-flash-preview",
+    #     billing_model_name="gemini-3-flash-preview",
+    #     model_settings=_GOOGLE_MODEL_SETTINGS,
+    # ),
 )
 
 CHAT_MODEL_BY_KEY = {model.key: model for model in CHAT_MODELS}

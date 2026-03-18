@@ -102,18 +102,20 @@ def extract_params(query: str) -> set[str]:
 
 def load_outputs(outputs_file: Path) -> dict[str, Callable]:
     """Load outputs with exec to avoid module caching."""
+    geo_proxy = _GeoParquetProxy(gpd)
     namespace: dict[str, object] = {
         "output": output,
         "Metric": Metric,
         "px": px,
         "go": go,
         "pd": pd,
-        "gpd": _GeoParquetProxy(gpd),
+        "gpd": geo_proxy,
         "plt": plt,
         "__file__": str(outputs_file),
         "__name__": f"dashboards.{outputs_file.parent.name}.outputs",
     }
     exec(outputs_file.read_text(), namespace)
+    namespace["gpd"] = geo_proxy
     return {
         name: fn
         for name, fn in namespace.items()

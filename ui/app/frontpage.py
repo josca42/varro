@@ -10,7 +10,7 @@ _STAMPS = [
     {"topic": "Forsvar",      "slug": "forsvar",      "href": "/public/3/forsvar",      "rotate": "1.5deg",  "y": "-4px"},
     {"topic": "Indvandring",  "slug": "indvandring",  "href": "/public/3/indvandring",  "rotate": "-1deg",   "y": "6px"},
     {"topic": "Pension",      "slug": "pension",      "href": "/public/3/pension",      "rotate": "-1.5deg", "y": "4px"},
-    {"topic": "Sundhed",      "slug": "sundhed",      "href": "/public/3/sundhed",      "rotate": "1deg",    "y": "-8px"},
+    {"topic": "Sundhed",      "slug": "sundhed",      "href": "/public/3/aeldreomsorg",      "rotate": "1deg",    "y": "-8px"},
     {"topic": "Ulighed",      "slug": "ulighed",      "href": "/public/3/ulighed",      "rotate": "-2.5deg", "y": "5px"},
 ]
 a = 2

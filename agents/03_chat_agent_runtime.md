@@ -174,6 +174,7 @@ Snapshot contract:
 
 ## Recent updates
 
+- Chats now persist an `assistant_model` key. The composer renders a model selector, `POST /chat/runs` stores the selected model before execution, and `run_agent(...)` overrides `agent.iter(...)` per chat to support Claude Opus 4.6, Claude Sonnet 4.6, Gemini 3.1 Pro Preview, and Gemini 3 Flash Preview.
 - Shell runtime now routes through `varro.agent.sandbox`:
   - `ShellPool` creates/closes shells via `create_shell(...)` / `close_shell(...)`.
   - In `BASH_MODE=BWRAP`, Jupyter runs in a separate bubblewrap worker process (`varro.agent.ipython_worker`) instead of in the main server process.

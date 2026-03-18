@@ -14,7 +14,7 @@ A dashboard folder requires:
 
 - `load_queries(folder)` reads all `queries/*.sql` by stem name.
 - `load_outputs(outputs.py)` uses `exec` with injected symbols (`output`, `Metric`, `px`, `go`, `pd`).
-- `load_outputs(outputs.py)` wraps injected `gpd.read_parquet` so absolute `/geo/...` paths resolve to `varro.config.GEO_DIR` outside bwrap too; plain `pd` remains unwrapped.
+- `load_outputs(outputs.py)` wraps injected `gpd.read_parquet` so absolute `/geo/...` paths resolve to `varro.config.GEO_DIR` outside bwrap too; if `outputs.py` imports `geopandas as gpd`, the loader restores the proxy after `exec`; plain `pd` remains unwrapped.
 - `load_dashboard(folder)` validates files, parses markdown AST, extracts filters, validates select options queries.
 
 ## Parser (`parser.py`)

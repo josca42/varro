@@ -304,6 +304,60 @@ def test_validate_dashboard_supports_geo_parquet_paths_outside_bwrap(
     assert read_paths == [expected]
 
 
+def test_validate_dashboard_supports_geo_parquet_paths_when_outputs_import_geopandas(
+    tmp_path: Path, monkeypatch
+) -> None:
+    validation = importlib.import_module("varro.dashboard.verify")
+    loader = importlib.import_module("varro.dashboard.loader")
+    root = _workspace_root(tmp_path, slug="geo-board")
+    dashboard_dir = root / "dashboard" / "geo-board"
+    queries_dir = dashboard_dir / "queries"
+    queries_dir.mkdir(parents=True)
+    (queries_dir / "q1.sql").write_text("select 1", encoding="utf-8")
+    (dashboard_dir / "dashboard.md").write_text("<metric name=\"geo_count\" />", encoding="utf-8")
+    (dashboard_dir / "outputs.py").write_text(
+        dedent(
+            """
+            import geopandas as gpd
+            from varro.dashboard import Metric, output
+
+            @output
+            def geo_count(filters):
+                geo = gpd.read_parquet("/geo/landsdele.parquet")
+                return Metric(value=len(geo), label="Landsdele")
+            """
+        ).strip(),
+        encoding="utf-8",
+    )
+
+    expected = tmp_path / "agent_data" / "geo" / "landsdele.parquet"
+    read_paths: list[Path] = []
+
+    def fake_read_parquet(path):
+        read_paths.append(Path(path))
+        return pd.DataFrame({"navn": ["A", "B"]})
+
+    monkeypatch.setattr(validation, "user_workspace_root", lambda user_id: root)
+    monkeypatch.setattr(
+        validation,
+        "execute_query",
+        lambda query, filters, engine: pd.DataFrame({"value": [1]}),
+    )
+    monkeypatch.setattr(loader, "GEO_DIR", expected.parent)
+    monkeypatch.setattr(loader.gpd, "read_parquet", fake_read_parquet)
+
+    result = validation.validate_dashboard_url(
+        1,
+        "/dashboard/geo-board",
+        db_engine=None,
+        strict_structure=True,
+    )
+
+    assert not result.has_errors
+    assert result.outputs == {"geo_count": "metric"}
+    assert read_paths == [expected]
+
+
 def test_validate_with_incomplete_structure_returns_pending_when_not_strict(
     tmp_path: Path, monkeypatch
 ) -> None:

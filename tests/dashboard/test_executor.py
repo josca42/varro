@@ -130,3 +130,45 @@ def test_execute_output_maps_geo_parquet_from_virtual_root(
 
     assert result["navn"].tolist() == ["A"]
     assert calls == [expected]
+
+
+def test_execute_output_maps_geo_parquet_when_outputs_imports_geopandas(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import geopandas as gpd
+    import varro.dashboard.loader as loader
+
+    dashboard_dir = tmp_path / "user" / "1" / "dashboard" / "map"
+    queries_dir = dashboard_dir / "queries"
+    queries_dir.mkdir(parents=True)
+    (queries_dir / "base.sql").write_text("select 1", encoding="utf-8")
+    (dashboard_dir / "dashboard.md").write_text("# Map", encoding="utf-8")
+    (dashboard_dir / "outputs.py").write_text(
+        dedent(
+            """
+            import geopandas as gpd
+            from varro.dashboard import output
+
+            @output
+            def geo_table(filters):
+                return gpd.read_parquet("/geo/landsdele.parquet")
+            """
+        ).strip(),
+        encoding="utf-8",
+    )
+
+    expected = tmp_path / "agent_data" / "geo" / "landsdele.parquet"
+    calls: list[Path] = []
+
+    def fake_read_parquet(path):
+        calls.append(Path(path))
+        return pd.DataFrame({"navn": ["A"]})
+
+    monkeypatch.setattr(loader, "GEO_DIR", expected.parent)
+    monkeypatch.setattr(gpd, "read_parquet", fake_read_parquet)
+
+    dash = load_dashboard(dashboard_dir)
+    result = execute_output(dash, "geo_table", {}, engine=None)
+
+    assert result["navn"].tolist() == ["A"]
+    assert calls == [expected]
