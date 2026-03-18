@@ -38,10 +38,11 @@ def _content_hash(content: str) -> str:
 def _default_welcome_markdown() -> str:
     return (
         "# Velkommen til Varro\n\n"
-        "Varro er din AI-statistiker til dansk data. "
-        "Stil spørgsmål om danske tal i chatten til venstre, "
-        "og udforsk dashboards med interaktive grafer og nøgletal. Inde du går igang så se evt. denne [intro video](https://varro.dk/guide) for at komme i gang.\n\n"
-        "Varro.dk er [open source](https://github.com/varro-ai/varro) og alt infrastruktur kører på europæiske servere. Bemærk, derudover at varro.dk er en tidlig prototype, så der kan være fejl og mangler.\n\n"
+        "Varro er din AI-statistiker. "
+        "Stil spørgsmål om Danmark i chatten til venstre, "
+        "og udforsk dashboards med interaktive grafer og nøgletal. Inden du går igang så se gerne denne [intro video](https://youtu.be/T2XpAvG2zDo).\n\n"
+        "Varro.dk er [open source](https://github.com/josca42/varro) og alt infrastruktur kører på europæiske servere. Bemærk, derudover at varro.dk er en tidlig prototype, så der vil være fejl og mangler. Har du gode ideer til forbedringer eller interesseret i at hjælpe med at udvikle varro.dk så skriv til jonathan@varro.dk.\n\n"
+        "For at kunne bruge chatten skal du have tilføjet penge på din konto i [settings](/settings). Alt går ubeskåret til api kald til AI modellerne og der er ingen indtjening for varro.dk.\n\n"
         "## Kom i gang\n\n"
         "1. **Stil et spørgsmål** — brug chatten til venstre til at spørge om dansk statistik\n"
         "2. **Lav dit eget dashboard** — bed Varro om at bygge et dashboard til dig\n\n"

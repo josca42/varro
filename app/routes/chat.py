@@ -66,7 +66,7 @@ def _insufficient_balance_blocks(chat_id: int | None, model_key: str):
     return (
         ChatFormEnabled(chat_id, model_key),
         Div(
-            ErrorBlock("Insufficient balance. Add funds in Settings to continue."),
+            ErrorBlock("Der er ikke nok penge på din konto. Tilføj penge i [settings](/settings) for at fortsætte."),
             hx_swap_oob="beforebegin:#chat-progress",
         ),
     )
