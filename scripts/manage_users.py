@@ -32,6 +32,15 @@ def create_user(email: str, name: str | None = None):
     print(f"Created user {email} (id={new_user.id})")
     print(f"Credentials written to {cred_file}")
 
+def add_balance(email: str, balance: int):
+    existing = crud_user.get_by_email(email)
+    if not existing:
+        print(f"User {email} not found")
+        return
+
+    crud_user.update(existing, balance=balance)
+    print(f"Added {balance} to user {email} (id={existing.id})")
+    print(f"User balance: {existing.balance}")
 
 def delete_user(email: str):
     existing = crud_user.get_by_email(email)
